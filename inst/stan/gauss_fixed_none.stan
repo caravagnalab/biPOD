@@ -33,8 +33,6 @@ parameters {
 }
 
 model {
-
-
   for (i in 1:S) {
     lambda[i] ~ inv_gamma(2,2);
     mu[i] ~ inv_gamma(2,2);
@@ -42,6 +40,17 @@ model {
       N[i] ~ normal(mean_t(n0, lambda[i], mu[i], T[1]), sigma_t(n0, lambda[i], mu[i], T[1]));
     } else {
       N[i] ~ normal(mean_t(N[i-1], lambda[i], mu[i], T[i] - T[i-1]), sigma_t(N[i-1], lambda[i], mu[i], T[i] - T[i-1]));
+    }
+  }
+}
+
+generated quantities {
+  real N_rep[S];
+  for (i in 1:S) {
+    if (i == 1) {
+      N_rep[i] = normal_rng(mean_t(n0, lambda[i], mu[i], T[1]), sigma_t(n0, lambda[i], mu[i], T[1]));
+    } else {
+      N_rep[i] = normal_rng(mean_t(n0, lambda[i], mu[i], T[1]), sigma_t(n0, lambda[i], mu[i], T[1]));
     }
   }
 }

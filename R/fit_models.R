@@ -1,8 +1,7 @@
 
 #' Fit a Bayesian model for the evolution of a population.
 #'
-#' @param d Data frame. Must have at least three columns with the following names:
-#' "time", "count" or "pop.size", and "sample".
+#' @param x A biPOD object of class `bipod`.
 #' @param factor_size Integer. Counts will be divided by this factor size.
 #' @param gaussian_approx Boolean. If True, a Gaussian approximation will be applied
 #' @param rates_mode Boolean. If True, a Gaussian approximation will be applied
@@ -14,16 +13,14 @@
 #' @returns A plot. Represents the evolution of the population over time.
 #' @importFrom rstan stan_model sampling
 #' @export
-fit_biPOD = function(d, factor_size = 1, gaussian_approx = F, rates_mode = "fixed_all", chains=4, iter=4000, warmup=2000, cores=4) {
-  # preprocess input
-  check_input(d)
-  d = clean_input(d)
+fit_exp <- function(x, factor_size = 1, gaussian_approx = F, rates_mode = "fixed_all", chains = 4, iter = 4000, warmup = 2000, cores = 4) {
+  stopifnot(inherits(x, "bipod"))
 
   # prepare data
-  Ns = d$count
-  Ts = d$time
+  Ns <- x$counts$count
+  Ts <- x$counts$time
 
-  data_model = list(
+  data_model <- list(
     S = length(Ns) - 1,
     n0 = as.integer(Ns[1] / factor_size),
     N = as.integer(Ns[2:length(Ns)] / factor_size),
@@ -31,15 +28,18 @@ fit_biPOD = function(d, factor_size = 1, gaussian_approx = F, rates_mode = "fixe
   )
 
   # choose model name
-  n0 <- if (gaussian_approx) "gauss" else "exact"
-  model_name <- paste(n0, rates_mode, sep="_")
+  m0 <- if (gaussian_approx) "gauss" else "exact"
+  model_name <- paste(m0, rates_mode, sep = "_")
 
   # fit model
-  model = get(model_name, stanmodels)
+  model <- get(model_name, stanmodels)
   fit_model <- sampling(
-    model, data = data_model,
-    chains= chains, iter=iter, warmup=warmup,
+    model,
+    data = data_model,
+    chains = chains, iter = iter, warmup = warmup,
     cores = cores
   )
-  fit_model
+
+  x$fit <- fit_model
+  x
 }

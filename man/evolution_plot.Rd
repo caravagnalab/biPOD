@@ -4,11 +4,10 @@
 \alias{evolution_plot}
 \title{Plot the evolution of the population over time}
 \usage{
-evolution_plot(d, estimate_rates = FALSE)
+evolution_plot(x, estimate_rates = FALSE)
 }
 \arguments{
-\item{d}{Data frame. Must have at least three columns with the following names:
-"time", "count" or "pop.size", and "sample".}
+\item{x}{A biPOD object of class \code{bipod}.}
 
 \item{estimate_rates}{Boolean. If TRUE, curves computed by a rough estimation of the
 growth rates for each time interval will be plotted.}

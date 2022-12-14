@@ -1,112 +1,178 @@
 
 COLORS <- c("darkgreen", "dodgerblue", "darkorange", "darkorchid3")
+base_color <- "IndianRed3"
 
 #' Plot the evolution of the population over time
 #'
-#' @param d Data frame. Must have at least three columns with the following names:
-#' "time", "count" or "pop.size", and "sample".
+#' @param x A biPOD object of class `bipod`.
 #' @param estimate_rates Boolean. If TRUE, curves computed by a rough estimation of the
 #' growth rates for each time interval will be plotted.
 #' @returns A plot. Represents the evolution of the population over time.
 #' @import ggplot2
-#' @importFrom dplyr tibble
-#' @importFrom glue glue
 #' @export
-evolution_plot = function(d, estimate_rates = FALSE) {
-  check_input(d)
-  d = clean_input(d)
+evolution_plot <- function(x, estimate_rates = FALSE) {
+  stopifnot(inherits(x, 'bipod'))
 
-  sample = d$sample[1]
+  sample <- x$sample
+  times <- x$counts$time
+  counts <- x$counts$count
+  l <- length(times)
 
   if (estimate_rates) {
-    delta_t = d$time[2:nrow(d)] - d$time[1:nrow(d)-1]
-    n_ratio = d$count[2:nrow(d)] / d$count[1:nrow(d)-1]
-    lambda = 1 / delta_t * log(n_ratio)
+    delta_t <- times[2:l] - times[1:l - 1]
+    n_ratio <- counts[2:l] / counts[1:l - 1]
+    lambda <- 1 / delta_t * log(n_ratio)
 
     pop.plot <- ggplot()
 
-    for (i in 2:nrow(d)) {
-      dt = delta_t[i-1]
-      new_xs = seq(0, dt, by = 0.01)
-      new_ys = d$count[i-1] * exp(new_xs * lambda[i-1])
-      new_xs = new_xs + d$time[i-1]
-      col = c(col, rep(COLORS[i-1], length(new_xs)))
+    for (i in 2:length(times)) {
+      dt <- delta_t[i - 1]
+      new_xs <- seq(0, dt, by = 0.01)
+      new_ys <- counts[i - 1] * exp(new_xs * lambda[i - 1])
+      new_xs <- new_xs + times[i - 1]
+      col <- c(col, rep(COLORS[i - 1], length(new_xs)))
 
-      D = tibble(time=new_xs, count = new_ys)
-      pop.plot <- pop.plot + geom_line(data=D, aes(x=time, y=count), show.legend = F, col=COLORS[i-1])
+      D <- tibble(time = new_xs, count = new_ys)
+      pop.plot <- pop.plot + geom_line(data = D, aes(x = time, y = count), show.legend = F, col = COLORS[i - 1])
     }
 
     pop.plot <- pop.plot +
-      geom_point(data=d, aes(x=time, y=count), col="black") +
-      ggtitle(glue("{sample}")) +
+      geom_point(data = x$counts, aes(x = time, y = count), col = "black") +
+      ggtitle(sample) +
       theme_bw()
     return(pop.plot)
   }
 
   ggplot() +
-    geom_line(data=d, aes(x=time, y=count), col=COLORS[1:nrow(d)]) +
-    geom_point(data=d, aes(x=time, y=count), col="black") +
-    ggtitle(glue("{sample}")) +
+    geom_line(data = x$counts, aes(x = time, y = count), col = COLORS[1:nrow(x$counts)]) +
+    geom_point(data = x$counts, aes(x = time, y = count), col = "black") +
+    ggtitle(sample) +
     theme_bw() -> pop.plot
   pop.plot
 }
 
-#' Plot the posterior distribution for the birth rates.
+#' Plot the posterior distribution for a specific group of parameters.
 #'
-#' @param fit_model Is the result obtained by fitting a stan model over the data.
-#' @returns A plot. Represents the posterior distribution for the birth rates.
+#' @param x A biPOD object of class `bipod`. Must contains 'fit'
+#' @param param_name A string indicating the desired parameters.
+#' @returns A plot. Represents the posterior distribution for the desired parameters.
 #' @import ggplot2
+#' @importFrom tidyr gather
 #' @export
-birth_posterior_plot = function(fit_model) {
+posterior_plot <- function(x, param_name) {
+  stopifnot(inherits(x, "bipod"))
+  stopifnot(param_name %in% c("lambda", "mu", "birth", "death"))
+
+  if (param_name %in% c("lambda", "birth")) {
+    rex = "^lambda"
+    legend_name = "Birth rates"
+    title = "Posterior density for birth rates"
+  } else {
+    rex = "^mu"
+    legend_name = "Death rates"
+    title = "Posterior density for death rates"
+  }
+
   # plot density of growth
+  fit_model <- x$fit
   posterior <- as.data.frame(fit_model)
 
   posterior.gathered <- tidyr::gather(posterior)
-  lambda.posterior <- posterior.gathered[posterior.gathered$key %in% unique(posterior.gathered$key)[grep("^lambda", unique(posterior.gathered$key))],]
-  max_x <- max(as.numeric(unlist(posterior.gathered[!(posterior.gathered$key %in% c("lp__")),2])))
+  pos <- posterior.gathered[posterior.gathered$key %in% unique(posterior.gathered$key)[grep(rex, unique(posterior.gathered$key))], ]
+  max_x <- max(pos$value)
 
-  n_params = length(unique(lambda.posterior$key))
-  if (n_params == 1) color_values = "gray" else color_values = COLORS[1:n_params]
+  n_params <- length(unique(pos$key))
+  if (n_params == 1) color_values <- base_color else color_values <- COLORS[1:n_params]
 
-  lambda.plot <- ggplot(lambda.posterior, aes(x=value, fill=key)) +
-    geom_density(alpha=.5) +
+  p <- ggplot(pos, aes(x = value, fill = key)) +
+    geom_density(alpha = .5) +
     theme_bw() +
     scale_fill_manual(
       values = color_values,
-      name = "Birth rates") +
-    ggtitle("Posterior density for birth rates") +
-    theme(plot.title = element_text(size=16),
-          axis.title = element_text(size=14)) +
+      name = legend_name
+    ) +
+    ggtitle(title) +
+    theme(
+      plot.title = element_text(size = 16),
+      axis.title = element_text(size = 14)
+    ) +
     xlim(0, max_x)
-  lambda.plot
+  p
 }
 
-#' Plot the posterior distribution for the birth rates.
+
+#' Plot the posterior predictive checks for the population counts.
 #'
-#' @param fit_model Is the result obtained by fitting a stan model over the data.
-#' @returns A plot. Represents the posterior distribution for the death rates.
+#' @param x A biPOD object of class `bipod`. Must contains 'fit'
+#' @param prob A value between `0` and `1` indicating the desired probability
+#'   mass to include in the intervals of the generated samples.
+#' @returns A plot. Represents the posterior predictive checks for the population counts.
 #' @import ggplot2
 #' @export
-death_posterior_plot = function(fit_model) {
-  # plot posteriors for deltas
-  posterior <- as.data.frame(fit_model)
+ppc_plot <- function(x, prob) {
+  stopifnot(inherits(x, "bipod"))
+  stopifnot((prob <= 1 && prob >= 0))
 
-  posterior.gathered <- tidyr::gather(posterior)
-  mu.posterior <- posterior.gathered[posterior.gathered$key %in% unique(posterior.gathered$key)[grep("^mu", unique(posterior.gathered$key))],]
-  max_x <- max(as.numeric(unlist(posterior.gathered[!(posterior.gathered$key %in% c("lp__")),2])))
+  y_data <- .get_ppc_data(x, prob)
 
-  n_params = length(unique(mu.posterior$key))
-  if (n_params == 1) color_values = "gray" else color_values = COLORS[1:n_params]
+  p <- ggplot(y_data) +
+    geom_bar(
+      aes(x=t, y=y, fill=y_col),
+      stat = "identity",
+      alpha = .5
+    ) +
+    geom_pointrange(
+      aes(x=t, ymin=l, ymax=h, y=m, colour=y_rep_col),
+      size = 1,
+      fatten = 1.5
+    ) +
+    scale_color_manual(values = base_color) +
+    scale_fill_manual(values = base_color) +
+    labs(fill = "", colour="") +
+    ggtitle("PPC") +
+    theme(
+      plot.title = element_text(size = 16),
+      axis.title = element_text(size = 14)
+    ) +
+    scale_x_continuous(breaks = pretty) +
+    theme_bw()
+  p
+}
 
-  mu.plot <- ggplot(mu.posterior, aes(x=value, fill=key)) +
-    geom_density(alpha=.5) +
-    theme_bw() +
-    scale_fill_manual(
-      values = color_values,
-      name = "Death rates") +
-    ggtitle("Posterior density for death rates") +
-    theme(plot.title = element_text(size=16),
-          axis.title = element_text(size=14)) +
-    xlim(0, max_x)
-  mu.plot
+.get_ppc_data = function(x, prob) {
+  # extract fit and data
+  fit <- x$fit
+
+  t <- x$counts$time
+  y <- x$counts$count
+  n = length(y)
+  t <- t[2:n]
+  y <- y[2:n]
+
+  y_generated <- as.data.frame(rstan::extract(fit, pars="N_rep")$N_rep)
+
+  # prepare data
+  y_data <- data.frame(t = t, y=y)
+
+  alpha <- (1 - prob) / 2
+  probs <- sort(c(alpha, 0.5, 1 - alpha))
+
+  # Prepare for final summary
+  lo  <- function(x) quantile(x, probs[1])
+  mid <- function(x) quantile(x, probs[2])
+  hi  <- function(x) quantile(x, probs[3])
+  summary_funs <- list(l = lo, m = mid, h = hi)
+  summary_names <- c("l", "m", "h")
+
+  y_generated %>%
+    dplyr::summarise_all(summary_funs) -> y_gen_summary
+
+  for (sn in summary_names) {
+    y_gen_summary %>%
+      dplyr::select(contains(sn)) -> v
+    y_data[sn] = as.numeric(v[1,])
+  }
+  y_data <- y_data %>%
+    dplyr::mutate(y_rep_col = "y_rep", y_col = "y")
+  y_data
 }

@@ -44,3 +44,14 @@ model {
     }
   }
 }
+
+generated quantities {
+  real N_rep[S];
+  for (i in 1:S) {
+    if (i == 1) {
+      N_rep[i] = normal_rng(mean_t(n0, lambda[i], mu, T[1]), sigma_t(n0, lambda[i], mu, T[1]));
+    } else {
+      N_rep[i] = normal_rng(mean_t(N[i-1], lambda[i], mu, T[i] - T[i-1]), sigma_t(N[i-1], lambda[i], mu, T[i] - T[i-1]));
+    }
+  }
+}

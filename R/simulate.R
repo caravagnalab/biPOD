@@ -8,29 +8,28 @@
 #' @returns An integer number, indicating the population size at the end of the process.
 #' @importFrom stats runif
 #' @export
-sim_single_stochastic = function(n0, lambda, mu, delta_t) {
+sim_single_stochastic <- function(n0, lambda, mu, delta_t) {
+  w <- lambda + mu
+  p <- lambda / w
 
-  w = lambda + mu
-  p = lambda / w
+  event_time <- 0
+  pop_size <- n0
 
-  event_time = 0
-  pop_size = n0
-
-  counter = 1
-  t = delta_t
+  counter <- 1
+  t <- delta_t
 
   while (TRUE) {
-    event_time = event_time - log(runif(1,0,1)) / (pop_size * w)
+    event_time <- event_time - log(runif(1, 0, 1)) / (pop_size * w)
 
     while (event_time > t && counter <= 1) {
-      counter = counter + 1
-      t = counter * delta_t
+      counter <- counter + 1
+      t <- counter * delta_t
     }
 
-    if (runif(1,0,1) <= p) {
-      pop_size = pop_size + 1
+    if (runif(1, 0, 1) <= p) {
+      pop_size <- pop_size + 1
     } else {
-      pop_size = pop_size - 1
+      pop_size <- pop_size - 1
     }
 
     if (counter > 1 || pop_size == 0) break
@@ -48,42 +47,41 @@ sim_single_stochastic = function(n0, lambda, mu, delta_t) {
 #' @returns A data frame with the columns: "time", "count", "death.rates", and "birth.rates".
 #' @importFrom dplyr tibble
 #' @export
-sim_stochastic = function(n0, lambda, mu, steps, delta_t) {
-
+sim_stochastic <- function(n0, lambda, mu, steps, delta_t) {
   if (length(mu) == 1) {
-    mu = rep(mu, steps)
+    mu <- rep(mu, steps)
   } else {
     stopifnot(steps == length(mu))
   }
 
   if (length(lambda) == 1) {
-    lambda = rep(lambda, steps)
+    lambda <- rep(lambda, steps)
   } else {
     stopifnot(steps == length(lambda))
   }
 
   if (length(delta_t) == 1) {
-    delta_t = c(0, rep(delta_t, steps))
+    delta_t <- c(0, rep(delta_t, steps))
   } else {
     stopifnot(steps == length(lambda))
-    delta_t = c(0, delta_t)
+    delta_t <- c(0, delta_t)
   }
 
   if (steps == 0) {
     return(c(n0))
   }
 
-  pop.size = rep(0, steps+1)
-  pop.size[1] = n0
+  pop.size <- rep(0, steps + 1)
+  pop.size[1] <- n0
 
   for (i in c(2:length(pop.size))) {
-    pop.size[i] = sim_single_stochastic(n0=pop.size[i-1], lambda=lambda[i-1], mu=mu[i-1], delta_t = delta_t[i])
+    pop.size[i] <- sim_single_stochastic(n0 = pop.size[i - 1], lambda = lambda[i - 1], mu = mu[i - 1], delta_t = delta_t[i])
   }
 
   # produce final results
-  time = cumsum(delta_t)
-  birth.rates = c(lambda, 0)
-  death.rates = c(mu, 0)
+  time <- cumsum(delta_t)
+  birth.rates <- c(lambda, 0)
+  death.rates <- c(mu, 0)
 
   d <- tibble(time, pop.size, birth.rates, death.rates)
 
@@ -104,49 +102,48 @@ sim_stochastic = function(n0, lambda, mu, steps, delta_t) {
 #' @importFrom dplyr tibble
 #' @importFrom stats rnorm
 #' @export
-sim_noisy = function(n0, lambda, mu, steps, delta_t, sigma, as_int=T) {
-
+sim_noisy <- function(n0, lambda, mu, steps, delta_t, sigma, as_int = T) {
   if (length(mu) == 1) {
-    mu = rep(mu, steps)
+    mu <- rep(mu, steps)
   } else {
     stopifnot(steps == length(mu))
   }
 
   if (length(lambda) == 1) {
-    lambda = rep(lambda, steps)
+    lambda <- rep(lambda, steps)
   } else {
     stopifnot(steps == length(lambda))
   }
 
   if (length(delta_t) == 1) {
-    delta_t = c(0, rep(delta_t, steps))
+    delta_t <- c(0, rep(delta_t, steps))
   } else {
     stopifnot(steps == length(lambda))
-    delta_t = c(0, delta_t)
+    delta_t <- c(0, delta_t)
   }
 
   if (steps == 0) {
     return(c(n0))
   }
 
-  pop.size = rep(0, steps+1)
-  pop.size[1] = n0
+  pop.size <- rep(0, steps + 1)
+  pop.size[1] <- n0
 
   for (i in c(2:length(pop.size))) {
-    pop.size[i] = pop.size[i-1] * exp(delta_t[i] * (lambda[i-1] - mu[i-1]))
+    pop.size[i] <- pop.size[i - 1] * exp(delta_t[i] * (lambda[i - 1] - mu[i - 1]))
   }
 
-  stds = pop.size * sigma
-  noise = rnorm(length(pop.size), 0, stds)
-  pop.size = pop.size + noise
+  stds <- pop.size * sigma
+  noise <- rnorm(length(pop.size), 0, stds)
+  pop.size <- pop.size + noise
   if (as_int) {
-    pop.size = as.integer(pop.size)
+    pop.size <- as.integer(pop.size)
   }
 
   # produce final results
-  time = cumsum(delta_t)
-  birth.rates = c(lambda, 0)
-  death.rates = c(mu, 0)
+  time <- cumsum(delta_t)
+  birth.rates <- c(lambda, 0)
+  death.rates <- c(mu, 0)
 
   d <- tibble(time, pop.size, birth.rates, death.rates)
 

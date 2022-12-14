@@ -33,7 +33,7 @@ static int current_statement_begin__;
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
     reader.add_event(0, 0, "start", "model_gauss_fixed_all");
-    reader.add_event(48, 46, "end", "model_gauss_fixed_all");
+    reader.add_event(59, 57, "end", "model_gauss_fixed_all");
     return reader;
 }
 template <typename T0__, typename T1__, typename T2__, typename T3__>
@@ -332,6 +332,7 @@ public:
         names__.resize(0);
         names__.push_back("lambda");
         names__.push_back("mu");
+        names__.push_back("N_rep");
     }
     void get_dims(std::vector<std::vector<size_t> >& dimss__) const {
         dimss__.resize(0);
@@ -339,6 +340,9 @@ public:
         dims__.resize(0);
         dimss__.push_back(dims__);
         dims__.resize(0);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dims__.push_back(S);
         dimss__.push_back(dims__);
     }
     template <typename RNG>
@@ -368,6 +372,36 @@ public:
         try {
             if (!include_gqs__ && !include_tparams__) return;
             if (!include_gqs__) return;
+            // declare and define generated quantities
+            current_statement_begin__ = 49;
+            validate_non_negative_index("N_rep", "S", S);
+            std::vector<double> N_rep(S, double(0));
+            stan::math::initialize(N_rep, DUMMY_VAR__);
+            stan::math::fill(N_rep, DUMMY_VAR__);
+            // generated quantities statements
+            current_statement_begin__ = 50;
+            for (int i = 1; i <= S; ++i) {
+                current_statement_begin__ = 51;
+                if (as_bool(logical_eq(i, 1))) {
+                    current_statement_begin__ = 52;
+                    stan::model::assign(N_rep, 
+                                stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
+                                normal_rng(mean_t(n0, lambda, mu, get_base1(T, 1, "T", 1), pstream__), sigma_t(n0, lambda, mu, get_base1(T, 1, "T", 1), pstream__), base_rng__), 
+                                "assigning variable N_rep");
+                } else {
+                    current_statement_begin__ = 54;
+                    stan::model::assign(N_rep, 
+                                stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
+                                normal_rng(mean_t(get_base1(N, (i - 1), "N", 1), lambda, mu, (get_base1(T, i, "T", 1) - get_base1(T, (i - 1), "T", 1)), pstream__), sigma_t(get_base1(N, (i - 1), "N", 1), lambda, mu, (get_base1(T, i, "T", 1) - get_base1(T, (i - 1), "T", 1)), pstream__), base_rng__), 
+                                "assigning variable N_rep");
+                }
+            }
+            // validate, write generated quantities
+            current_statement_begin__ = 49;
+            size_t N_rep_k_0_max__ = S;
+            for (size_t k_0__ = 0; k_0__ < N_rep_k_0_max__; ++k_0__) {
+                vars__.push_back(N_rep[k_0__]);
+            }
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
             // Next line prevents compiler griping about no return
@@ -408,6 +442,12 @@ public:
         if (include_tparams__) {
         }
         if (!include_gqs__) return;
+        size_t N_rep_k_0_max__ = S;
+        for (size_t k_0__ = 0; k_0__ < N_rep_k_0_max__; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "N_rep" << '.' << k_0__ + 1;
+            param_names__.push_back(param_name_stream__.str());
+        }
     }
     void unconstrained_param_names(std::vector<std::string>& param_names__,
                                    bool include_tparams__ = true,
@@ -423,6 +463,12 @@ public:
         if (include_tparams__) {
         }
         if (!include_gqs__) return;
+        size_t N_rep_k_0_max__ = S;
+        for (size_t k_0__ = 0; k_0__ < N_rep_k_0_max__; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "N_rep" << '.' << k_0__ + 1;
+            param_names__.push_back(param_name_stream__.str());
+        }
     }
 }; // model
 }  // namespace
