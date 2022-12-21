@@ -6,9 +6,10 @@
 \usage{
 fit_exp(
   x,
+  model_name,
   factor_size = 1,
-  gaussian_approx = F,
-  rates_mode = "fixed_all",
+  fix_rates = 0,
+  prior_par = 2,
   chains = 4,
   iter = 4000,
   warmup = 2000,
@@ -18,12 +19,23 @@ fit_exp(
 \arguments{
 \item{x}{A biPOD object of class \code{bipod}.}
 
+\item{model_name}{String. Indicates the name of the model desired.
+\itemize{
+\item \code{exact} Slowest model. Particularly good for low counts data.
+\item \code{gauss} Use a gaussian approximation. Works well when counts data are far from 0.
+\item \code{poisson} Fastest model. Can be applied both to high and low counts data.
+}}
+
 \item{factor_size}{Integer. Counts will be divided by this factor size.}
 
-\item{gaussian_approx}{Boolean. If True, a Gaussian approximation will be applied}
+\item{fix_rates}{An integer value. Indicates which rates must be fixed.
+\itemize{
+\item \code{1} Birth rates are free. Death rate is fixed
+\item \code{0} Both birth and death rate are fixed.
+\item \code{-1} Death rates are free. Birth rate is fixed
+}}
 
-\item{rates_mode}{Boolean. If True, a Gaussian approximation will be applied
-to the distributions used for the inference.}
+\item{prior_par}{Parameter for inverse gamma prior. InvGamma(p,p).}
 
 \item{chains}{Integer. Number of MCMC chains}
 

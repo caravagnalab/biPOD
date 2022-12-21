@@ -4,12 +4,12 @@
 \alias{posterior_plot}
 \title{Plot the posterior distribution for a specific group of parameters.}
 \usage{
-posterior_plot(x, param_name)
+posterior_plot(x, p_name)
 }
 \arguments{
 \item{x}{A biPOD object of class \code{bipod}. Must contains 'fit'}
 
-\item{param_name}{A string indicating the desired parameters.}
+\item{p_name}{A string indicating the desired parameters.}
 }
 \value{
 A plot. Represents the posterior distribution for the desired parameters.

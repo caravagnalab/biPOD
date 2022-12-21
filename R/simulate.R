@@ -144,7 +144,6 @@ sim_noisy <- function(n0, lambda, mu, steps, delta_t, sigma, as_int = T) {
   time <- cumsum(delta_t)
   birth.rates <- c(lambda, 0)
   death.rates <- c(mu, 0)
-
   d <- tibble(time, pop.size, birth.rates, death.rates)
 
   return(d)

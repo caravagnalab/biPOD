@@ -1,178 +1,87 @@
 
 COLORS <- c("darkgreen", "dodgerblue", "darkorange", "darkorchid3")
-base_color <- "IndianRed3"
+base_color <- "#008080"
 
 #' Plot the evolution of the population over time
 #'
 #' @param x A biPOD object of class `bipod`.
-#' @param estimate_rates Boolean. If TRUE, curves computed by a rough estimation of the
-#' growth rates for each time interval will be plotted.
 #' @returns A plot. Represents the evolution of the population over time.
 #' @import ggplot2
 #' @export
-evolution_plot <- function(x, estimate_rates = FALSE) {
+evolution_plot <- function(x) {
   stopifnot(inherits(x, 'bipod'))
 
-  sample <- x$sample
-  times <- x$counts$time
-  counts <- x$counts$count
-  l <- length(times)
+  data <- data.frame(x = x$counts$time, y = x$counts$count)
 
-  if (estimate_rates) {
-    delta_t <- times[2:l] - times[1:l - 1]
-    n_ratio <- counts[2:l] / counts[1:l - 1]
-    lambda <- 1 / delta_t * log(n_ratio)
+  pop.plot <- ggplot(data, aes(x=.data$x, y=.data$y)) +
+    geom_line(col=base_color) +
+    geom_point(col=base_color) +
+    ggtitle(x$sample) +
+    my_ggplot_theme()
 
-    pop.plot <- ggplot()
-
-    for (i in 2:length(times)) {
-      dt <- delta_t[i - 1]
-      new_xs <- seq(0, dt, by = 0.01)
-      new_ys <- counts[i - 1] * exp(new_xs * lambda[i - 1])
-      new_xs <- new_xs + times[i - 1]
-      col <- c(col, rep(COLORS[i - 1], length(new_xs)))
-
-      D <- tibble(time = new_xs, count = new_ys)
-      pop.plot <- pop.plot + geom_line(data = D, aes(x = time, y = count), show.legend = F, col = COLORS[i - 1])
-    }
-
-    pop.plot <- pop.plot +
-      geom_point(data = x$counts, aes(x = time, y = count), col = "black") +
-      ggtitle(sample) +
-      theme_bw()
-    return(pop.plot)
-  }
-
-  ggplot() +
-    geom_line(data = x$counts, aes(x = time, y = count), col = COLORS[1:nrow(x$counts)]) +
-    geom_point(data = x$counts, aes(x = time, y = count), col = "black") +
-    ggtitle(sample) +
-    theme_bw() -> pop.plot
   pop.plot
 }
 
 #' Plot the posterior distribution for a specific group of parameters.
 #'
 #' @param x A biPOD object of class `bipod`. Must contains 'fit'
-#' @param param_name A string indicating the desired parameters.
+#' @param p_name A string indicating the desired parameters.
+#'
 #' @returns A plot. Represents the posterior distribution for the desired parameters.
 #' @import ggplot2
-#' @importFrom tidyr gather
+#' @importFrom bayesplot mcmc_areas_ridges
 #' @export
-posterior_plot <- function(x, param_name) {
+posterior_plot <- function(x, p_name) {
   stopifnot(inherits(x, "bipod"))
-  stopifnot(param_name %in% c("lambda", "mu", "birth", "death"))
+  stopifnot(p_name %in% c("lambda", "mu", "ro"))
+  stopifnot('fit' %in% names(x))
 
-  if (param_name %in% c("lambda", "birth")) {
-    rex = "^lambda"
-    legend_name = "Birth rates"
+  if (p_name %in% c("lambda")) {
     title = "Posterior density for birth rates"
-  } else {
-    rex = "^mu"
-    legend_name = "Death rates"
+  } else if (p_name %in% c("mu")) {
     title = "Posterior density for death rates"
+  } else {
+    title = "Posterior density for growth rates"
   }
 
-  # plot density of growth
-  fit_model <- x$fit
-  posterior <- as.data.frame(fit_model)
-
-  posterior.gathered <- tidyr::gather(posterior)
-  pos <- posterior.gathered[posterior.gathered$key %in% unique(posterior.gathered$key)[grep(rex, unique(posterior.gathered$key))], ]
-  max_x <- max(pos$value)
-
-  n_params <- length(unique(pos$key))
-  if (n_params == 1) color_values <- base_color else color_values <- COLORS[1:n_params]
-
-  p <- ggplot(pos, aes(x = value, fill = key)) +
-    geom_density(alpha = .5) +
-    theme_bw() +
-    scale_fill_manual(
-      values = color_values,
-      name = legend_name
-    ) +
-    ggtitle(title) +
-    theme(
-      plot.title = element_text(size = 16),
-      axis.title = element_text(size = 14)
-    ) +
-    xlim(0, max_x)
+  p <- bayesplot::mcmc_areas_ridges(as.matrix(x$fit), regex_pars = "ro", prob = 1) +
+    ggplot2::ggtitle(title) +
+    my_ggplot_theme()
   p
 }
 
-
-#' Plot the posterior predictive checks for the population counts.
+#' Plot the posterior predictive checks for counts data.
 #'
 #' @param x A biPOD object of class `bipod`. Must contains 'fit'
-#' @param prob A value between `0` and `1` indicating the desired probability
-#'   mass to include in the intervals of the generated samples.
-#' @returns A plot. Represents the posterior predictive checks for the population counts.
+#' @param ptype A string representing the type of visualization.
+#'
+#' `intervals` vertical bars with points indicating generated values medians and darker points indicating observed values
+#' `ribbon` ribbon of connected intervals with a line through the median of generated values and a darker line connecting observed values
+#'
+#' @param prob,prob_outer Values between 0 and 1 indicating the desired probability mass to include in the inner and outer intervals. The defaults are prob=0.5 and prob_outer=0.9.
+#'
+#' @returns A plot. Represents the posterior predictive checks.
 #' @import ggplot2
+#' @importFrom bayesplot ppc_intervals ppc_ribbon
 #' @export
-ppc_plot <- function(x, prob) {
-  stopifnot(inherits(x, "bipod"))
-  stopifnot((prob <= 1 && prob >= 0))
+ppc_plot = function(x, ptype, prob = 0.5, prob_outer = 0.9) {
+  stopifnot(ptype %in% c("intervals", "ribbon"))
+  stopifnot(prob >= 0 && prob <= 1)
+  stopifnot(prob_outer >= 0 && prob <= 1)
 
-  y_data <- .get_ppc_data(x, prob)
+  y <- x$counts$count[2:length(x$counts$count)]
+  yrep <- rstan::extract(x$fit, pars="N_rep")$N_rep
 
-  p <- ggplot(y_data) +
-    geom_bar(
-      aes(x=t, y=y, fill=y_col),
-      stat = "identity",
-      alpha = .5
-    ) +
-    geom_pointrange(
-      aes(x=t, ymin=l, ymax=h, y=m, colour=y_rep_col),
-      size = 1,
-      fatten = 1.5
-    ) +
-    scale_color_manual(values = base_color) +
-    scale_fill_manual(values = base_color) +
-    labs(fill = "", colour="") +
-    ggtitle("PPC") +
-    theme(
-      plot.title = element_text(size = 16),
-      axis.title = element_text(size = 14)
-    ) +
-    scale_x_continuous(breaks = pretty) +
-    theme_bw()
+  if (ptype == "intervals") {
+    p <- bayesplot::ppc_intervals(y, yrep, prob = prob, prob_outer = prob_outer)
+  } else {
+    p <- bayesplot::ppc_ribbon(y, yrep, prob = prob, prob_outer = prob_outer, y_draw = "points")
+  }
+
+  p <- p + ggplot2::xlab("Time") + ggplot2::ylab("Count") + my_ggplot_theme()
   p
 }
 
-.get_ppc_data = function(x, prob) {
-  # extract fit and data
-  fit <- x$fit
-
-  t <- x$counts$time
-  y <- x$counts$count
-  n = length(y)
-  t <- t[2:n]
-  y <- y[2:n]
-
-  y_generated <- as.data.frame(rstan::extract(fit, pars="N_rep")$N_rep)
-
-  # prepare data
-  y_data <- data.frame(t = t, y=y)
-
-  alpha <- (1 - prob) / 2
-  probs <- sort(c(alpha, 0.5, 1 - alpha))
-
-  # Prepare for final summary
-  lo  <- function(x) quantile(x, probs[1])
-  mid <- function(x) quantile(x, probs[2])
-  hi  <- function(x) quantile(x, probs[3])
-  summary_funs <- list(l = lo, m = mid, h = hi)
-  summary_names <- c("l", "m", "h")
-
-  y_generated %>%
-    dplyr::summarise_all(summary_funs) -> y_gen_summary
-
-  for (sn in summary_names) {
-    y_gen_summary %>%
-      dplyr::select(contains(sn)) -> v
-    y_data[sn] = as.numeric(v[1,])
-  }
-  y_data <- y_data %>%
-    dplyr::mutate(y_rep_col = "y_rep", y_col = "y")
-  y_data
+my_ggplot_theme = function() {
+  theme_light()
 }
