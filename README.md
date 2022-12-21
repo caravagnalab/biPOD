@@ -4,6 +4,8 @@
 # biPOD
 
 <!-- badges: start -->
+
+[![R-CMD-check](https://github.com/caravagnalab/biPOD/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/caravagnalab/biPOD/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 The goal of biPOD is to …
