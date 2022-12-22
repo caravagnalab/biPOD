@@ -21,7 +21,7 @@
 #' @param warmup Integer. Number of MCMC warmup steps, must be smaller than 'chains'.
 #' @param cores Integer. Number of cores to use.
 #' @returns A plot. Represents the evolution of the population over time.
-#' @importFrom rstan stan_model sampling
+#' @importFrom rstan sampling
 #' @export
 fit_exp <- function(x, model_name, factor_size = 1, fix_rates = 0, prior_par = 2, chains = 4, iter = 4000, warmup = 2000, cores = 4) {
   stopifnot(inherits(x, "bipod"))
@@ -42,7 +42,7 @@ fit_exp <- function(x, model_name, factor_size = 1, fix_rates = 0, prior_par = 2
 
   # fit model
   model <- get(model_name, stanmodels)
-  fit_model <- sampling(
+  fit_model <- rstan::sampling(
     model,
     data = data_model,
     chains = chains, iter = iter, warmup = warmup,
