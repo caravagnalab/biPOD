@@ -34,7 +34,7 @@ biPOD::fit_plot(bipod)
 
 A fit with variable growth rates can be obtained as follows
 
-```{r fit exp fixed}
+```{r fit exp variable}
 bipod <- biPOD::fit_exp(bipod, "poisson", fix_rates = 1)
 ```
 And the results can be once again visually inspected:
