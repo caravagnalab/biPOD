@@ -2,8 +2,7 @@
 % Please edit documentation in R/fit_models.R
 \name{fit_exp}
 \alias{fit_exp}
-\title{Fit a  Bayesian model for the evolution of a population
-with the assumption of an exponential growth.}
+\title{Fit exponential growth model to bipod object}
 \usage{
 fit_exp(
   x,
@@ -18,38 +17,37 @@ fit_exp(
 )
 }
 \arguments{
-\item{x}{A biPOD object of class \code{bipod}.}
+\item{x}{a bipod object}
 
-\item{model_name}{String. Indicates the name of the model desired.
+\item{model_name}{character string specifying the model to fit, one of "gauss", "exact", or "poisson"
 \itemize{
 \item \code{exact} Slowest model. Particularly good for low counts data.
 \item \code{gauss} Use a gaussian approximation. Works well when counts data are far from 0.
 \item \code{poisson} Fastest model. Can be applied both to high and low counts data.
 }}
 
-\item{factor_size}{Integer. Counts will be divided by this factor size.}
+\item{factor_size}{numeric factor by which to divide counts in the bipod object}
 
-\item{fix_rates}{An integer value. Indicates which rates must be fixed.
+\item{fix_rates}{logical indicating whether to fix rates at values specified in the bipod object
 \itemize{
 \item \code{1} Birth rates are free. Death rate is fixed
 \item \code{0} Both birth and death rate are fixed.
 \item \code{-1} Death rates are free. Birth rate is fixed
 }}
 
-\item{prior_par}{Parameter for inverse gamma prior. InvGamma(p,p).}
+\item{prior_par}{numeric parameter for the prior distribution on rates}
 
-\item{chains}{Integer. Number of MCMC chains}
+\item{chains}{integer number of chains to run in the Markov Chain Monte Carlo (MCMC) algorithm}
 
-\item{iter}{Integer. Number of MCMC steps}
+\item{iter}{integer number of iterations to run in the MCMC algorithm}
 
-\item{warmup}{Integer. Number of MCMC warmup steps, must be smaller than 'chains'.}
+\item{warmup}{integer number of warmup iterations to run in the MCMC algorithm}
 
-\item{cores}{Integer. Number of cores to use.}
+\item{cores}{integer number of cores to use in parallel processing}
 }
 \value{
-A plot. Represents the evolution of the population over time.
+the input bipod object with an added 'fit' slot containing the fitted model and an added 'fit_info' slot containing information about the fit
 }
 \description{
-Fit a  Bayesian model for the evolution of a population
-with the assumption of an exponential growth.
+Fit exponential growth model to bipod object
 }

@@ -2,8 +2,7 @@
 % Please edit documentation in R/fit_models.R
 \name{fit_log}
 \alias{fit_log}
-\title{Fit a  Bayesian model for the evolution of a population
-with the assumption of a logistic growth.}
+\title{Fit logistic growth model to bipod object}
 \usage{
 fit_log(
   x,
@@ -11,6 +10,7 @@ fit_log(
   factor_size = 1,
   fix_rates = 0,
   prior_par = 2,
+  prior_K = NULL,
   chains = 4,
   iter = 4000,
   warmup = 2000,
@@ -18,35 +18,37 @@ fit_log(
 )
 }
 \arguments{
-\item{x}{A biPOD object of class \code{bipod}.}
+\item{x}{a bipod object}
 
-\item{model_name}{String. Indicates the name of the model desired.
+\item{model_name}{character string specifying the model to fit, currently only "gauss" is supported
 \itemize{
 \item \code{gauss} Use a gaussian approximation. Works well when counts data are far from 0.
 }}
 
-\item{factor_size}{Integer. Counts will be divided by this factor size.}
+\item{factor_size}{numeric factor by which to divide counts in the bipod object}
 
-\item{fix_rates}{An integer value. Indicates which rates must be fixed.
+\item{fix_rates}{logical indicating whether to fix rates at values specified in the bipod object
 \itemize{
 \item \code{1} Growth rate is not fixed at every time step.
 \item \code{0} Growth rate is fixed throughout all time steps.
 }}
 
-\item{prior_par}{Parameter for inverse gamma prior. InvGamma(p,p).}
+\item{prior_par}{numeric parameter for the prior distribution on rates}
 
-\item{chains}{Integer. Number of MCMC chains}
+\item{prior_K}{numeric parameter for the prior distribution for the carrying capacity,
+if NULL a normal prior centered on the highest count will be used}
 
-\item{iter}{Integer. Number of MCMC steps}
+\item{chains}{integer number of chains to run in the Markov Chain Monte Carlo (MCMC) algorithm}
 
-\item{warmup}{Integer. Number of MCMC warmup steps, must be smaller than 'chains'.}
+\item{iter}{integer number of iterations to run in the MCMC algorithm}
 
-\item{cores}{Integer. Number of cores to use.}
+\item{warmup}{integer number of warmup iterations to run in the MCMC algorithm}
+
+\item{cores}{integer number of cores to use in parallel processing}
 }
 \value{
-A plot. Represents the evolution of the population over time.
+the input bipod object with an added 'fit' slot containing the fitted model and an added 'fit_info' slot containing information about the fit
 }
 \description{
-Fit a  Bayesian model for the evolution of a population
-with the assumption of a logistic growth.
+Fit logistic growth model to bipod object
 }

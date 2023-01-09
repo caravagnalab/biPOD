@@ -6,12 +6,11 @@
 #' @param counts A dataframe of counts with the following fields:
 #'
 #' * `time` time step;
-#' * `count` population count, integer. Alternatively can be named 'pop.size';
+#' * `count` population count, integer. Alternatively can be named `pop.size`;
 #'
 #' @param sample A string containing the sample name.
 #'
-#' @return A biPOD object of class `bipod`, with S3 methods for printing,
-#' plotting and analyzing data.
+#' @return A biPOD object of class `bipod`.
 #'
 #' @export
 init = function(counts, sample) {
@@ -27,8 +26,20 @@ init = function(counts, sample) {
   cli::cli_alert_info("Using sample named: {.field {sample}}.")
 
   # Parse input
-  input <- prepare_input_data(counts)
+  input <- check_input_data(counts)
   bipod$counts <- input
 
   bipod
+}
+
+check_input_data <- function(counts) {
+  assertthat::assert_that("count" %in% names(counts) | "pop.size" %in% names(counts), msg = "input dataframe should contain a column named either 'count' or 'pop.size'")
+  assertthat::assert_that("time" %in% names(counts), msg = "input dataframe should contain a column named 'time'")
+
+  if ("pop.size" %in% names(counts)) {
+    counts <- counts %>%
+      dplyr::rename(count = .data$pop.size)
+  }
+  counts <- counts %>% dplyr::select(.data$time, .data$count)
+  counts
 }

@@ -29,12 +29,3 @@ You can install the development version of biPOD from [GitHub](https://github.co
 # install.packages("devtools")
 devtools::install_github("caravagnalab/biPOD")
 ```
-
-## Example
-
-This is a basic example which shows you how to solve a common problem:
-
-```{r example}
-library(biPOD)
-## basic example code
-```

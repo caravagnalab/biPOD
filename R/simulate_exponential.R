@@ -14,7 +14,12 @@
 #'
 #' @importFrom stats runif
 #' @export
-sim_single_stochastic <- function(n0, lambda, mu, delta_t) {
+sim_single_stochastic_exponential <- function(n0, lambda, mu, delta_t) {
+  assertthat::assert_that(n0 >= 0 , msg = "n0 must be a positive integer")
+  assertthat::assert_that(lambda >= 0 , msg = "lambda must be positive")
+  assertthat::assert_that(mu >= 0 , msg = "mu must be positive")
+  assertthat::assert_that(delta_t >= 0 , msg = "delta_t must be positive")
+
   # Calculate the total event rate and the probability of a birth event
   w <- lambda + mu
   p <- lambda / w
@@ -68,7 +73,7 @@ sim_single_stochastic <- function(n0, lambda, mu, delta_t) {
 #'
 #' @importFrom dplyr tibble
 #' @export
-sim_stochastic <- function(n0, lambda, mu, steps, delta_t) {
+sim_stochastic_exponential <- function(n0, lambda, mu, steps, delta_t) {
   # Convert single values of lambda, mu, and delta_t to vectors of length steps
   if (length(mu) == 1) {
     mu <- rep(mu, steps)
@@ -89,6 +94,13 @@ sim_stochastic <- function(n0, lambda, mu, steps, delta_t) {
     delta_t <- c(0, delta_t)
   }
 
+  # Check input
+  assertthat::assert_that(n0 >= 0 , msg = "n0 must be a positive integer")
+  assertthat::assert_that(all(lambda >= 0) , msg = "lambda must be positive")
+  assertthat::assert_that(all(mu >= 0) , msg = "mu must be positive")
+  assertthat::assert_that(steps >= 0 , msg = "steps must a integere greater or equal than 0")
+  assertthat::assert_that(all(delta_t >= 0) , msg = "delta_t must be positive")
+
   # Return the initial population size if no steps are requested
   if (steps == 0) {
     return(c(n0))
@@ -100,7 +112,7 @@ sim_stochastic <- function(n0, lambda, mu, steps, delta_t) {
 
   # Simulate the stochastic process at each time step
   for (i in c(2:length(pop.size))) {
-    pop.size[i] <- sim_single_stochastic(n0 = pop.size[i - 1], lambda = lambda[i - 1], mu = mu[i - 1], delta_t = delta_t[i])
+    pop.size[i] <- sim_single_stochastic_exponential(n0 = pop.size[i - 1], lambda = lambda[i - 1], mu = mu[i - 1], delta_t = delta_t[i])
   }
 
   # Calculate the time, birth rates, and death rates vectors
@@ -162,6 +174,13 @@ sim_noisy <- function(n0, lambda, mu, steps, delta_t, sigma, as_int = T) {
     stopifnot(steps == length(lambda))
     delta_t <- c(0, delta_t)
   }
+
+  # Check input
+  assertthat::assert_that(n0 >= 0 , msg = "n0 must be a positive integer")
+  assertthat::assert_that(all(lambda >= 0) , msg = "lambda must be positive")
+  assertthat::assert_that(all(mu >= 0) , msg = "mu must be positive")
+  assertthat::assert_that(steps >= 0 , msg = "steps must a integere greater or equal than 0")
+  assertthat::assert_that(all(delta_t >= 0) , msg = "delta_t must be positive")
 
   # Return the initial population size if no steps are requested
   if (steps == 0) {

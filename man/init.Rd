@@ -10,14 +10,13 @@ init(counts, sample)
 \item{counts}{A dataframe of counts with the following fields:
 \itemize{
 \item \code{time} time step;
-\item \code{count} population count, integer. Alternatively can be named 'pop.size';
+\item \code{count} population count, integer. Alternatively can be named \code{pop.size};
 }}
 
 \item{sample}{A string containing the sample name.}
 }
 \value{
-A biPOD object of class \code{bipod}, with S3 methods for printing,
-plotting and analyzing data.
+A biPOD object of class \code{bipod}.
 }
 \description{
 Creates a biPOD object from a table containing

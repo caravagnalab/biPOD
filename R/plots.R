@@ -9,7 +9,8 @@ base_color <- "#008080"
 #' @import ggplot2
 #' @export
 evolution_plot <- function(x) {
-  stopifnot(inherits(x, 'bipod'))
+  # Check input
+  assertthat::assert_that(inherits(x, "bipod"), msg = "Input must be a bipod object")
 
   data <- data.frame(x = x$counts$time, y = x$counts$count)
 
@@ -32,9 +33,10 @@ evolution_plot <- function(x) {
 #' @importFrom bayesplot mcmc_areas_ridges
 #' @export
 posterior_plot <- function(x, p_name) {
-  stopifnot(inherits(x, "bipod"))
-  stopifnot(p_name %in% c("lambda", "mu", "ro"))
-  stopifnot('fit' %in% names(x))
+  # Check input
+  assertthat::assert_that(inherits(x, "bipod"), msg = "Input must be a bipod object")
+  assertthat::assert_that(p_name %in% c("lambda", "mu", "ro"), msg = "p_name must be one of: lambda, mu, ro")
+  assertthat::assert_that("fit" %in% names(x), msg = "Input must contain a 'fit' field")
 
   if (p_name %in% c("lambda")) {
     title = "Posterior density for birth rates"
@@ -66,9 +68,12 @@ posterior_plot <- function(x, p_name) {
 #' @importFrom bayesplot ppc_intervals ppc_ribbon
 #' @export
 ppc_plot = function(x, ptype, prob = 0.5, prob_outer = 0.9) {
-  stopifnot(ptype %in% c("intervals", "ribbon"))
-  stopifnot(prob >= 0 && prob <= 1)
-  stopifnot(prob_outer >= 0 && prob <= 1)
+  assertthat::assert_that(inherits(x, "bipod"), msg = "Input must be a bipod object")
+  assertthat::assert_that("fit" %in% names(x), msg = "Input must contain a 'fit' field")
+  assertthat::assert_that(ptype %in% c("intervals", "ribbon"), msg = "ptype must be one of: intervals, ribbon")
+  assertthat::assert_that(prob >= 0 && prob < 1, msg = "prob should be between 0 and 1 (with 1 excluded)")
+  assertthat::assert_that(prob_outer >= 0 && prob_outer <= 1, msg = "prob_outer should be between 0 and 1")
+  assertthat::assert_that(length(grep("N_rep", names(x$fit))) >= 1, msg = "ppc_plot not support ppc_plot does not support the type of model used")
 
   y <- x$counts$count[2:length(x$counts$count)]
   yrep <- extract(x$fit, pars="N_rep")$N_rep
@@ -98,147 +103,140 @@ ppc_plot = function(x, ptype, prob = 0.5, prob_outer = 0.9) {
 #' @importFrom rstan extract
 #' @export
 fit_plot = function(x) {
-  stopifnot(inherits(x, "bipod"))
-  stopifnot('fit' %in% names(x))
+  # Check input
+  assertthat::assert_that(inherits(x, "bipod"), msg = "Input must be a bipod object")
+  assertthat::assert_that("fit" %in% names(x), msg = "Input must contain a 'fit' field")
 
   growth_type <- x$fit_info$growth_type
   fix_rates <- x$fit_info$fix_rates
 
   if (growth_type == "exponential") {
+    p <- plot_exponential_fit(x, fix_rates)
 
-    if (fix_rates == 0) {
-      ros <- as.numeric(quantile(extract(x$fit, pars="ro")$ro, c(.05, .5, .95)))
-
-      d <- x$counts
-      n0 <- x$counts$count[1] / x$fit_info$factor_size
-
-      Ts <- seq(0, max(d$time), by=0.1)
-      N_low <- n0 * exp(ros[1] * Ts)
-      N_medium <- n0 * exp(ros[2] * Ts)
-      N_high <- n0 * exp(ros[3] * Ts)
-
-      p <- ggplot() +
-        geom_point(d, mapping=aes(x=.data$time, y=.data$count)) +
-        geom_line(data.frame(x=Ts, y=N_medium), mapping=aes(x=.data$x, y=.data$y), col=base_color) +
-        geom_ribbon(data.frame(x=Ts, y=N_medium, yl=N_low, yh=N_high), mapping=aes(x=.data$x, y=.data$y, ymin=.data$yl, ymax=.data$yh), fill="#008080", alpha=.5) +
-        ggtitle("Exponential fit") +
-        my_ggplot_theme()
-    } else {
-
-      # Use all ros
-      S <- nrow(x$counts) - 1
-      ros_medium = rep(0, S)
-      ros_low = ros_high = ros_medium
-      for (i in 1:S) {
-        ros <- as.numeric(quantile(extract(x$fit, pars=paste0("ro[", i, "]"))$ro, c(.05, .5, .95)))
-        ros_low[i] = ros[1]
-        ros_medium[i] = ros[2]
-        ros_high[i] = ros[3]
-      }
-
-      d <- x$counts
-      n0 <- x$counts$count[1] / x$fit_info$factor_size
-
-      Ts = c()
-      N_medium = c()
-      N_low = N_high = N_medium
-
-      for (i in 1:S) {
-        current_t = d$time[i+1]
-        previous_n = d$count[i]
-
-        if (i == 1) {
-          times <- seq(0, current_t, by = 0.1)
-        } else {
-          times <- seq(0, current_t - d$time[i], by = 0.1)
-        }
-
-        N_low = c(N_low, previous_n * exp(ros_low[i] * times))
-        N_medium = c(N_medium, previous_n * exp(ros_medium[i] * times))
-        N_high = c(N_high, previous_n * exp(ros_high[i] * times))
-
-        Ts = c(Ts, times + d$time[i])
-      }
-
-      times + d$time[i]
-
-      p <- ggplot() +
-        geom_point(d, mapping=aes(x=.data$time, y=.data$count)) +
-        geom_line(data.frame(x=Ts, y=N_medium), mapping=aes(x=.data$x, y=.data$y), col=base_color) +
-        geom_ribbon(data.frame(x=Ts, y=N_medium, yl=N_low, yh=N_high), mapping=aes(x=.data$x, y=.data$y, ymin=.data$yl, ymax=.data$yh), fill="#008080", alpha=.5) +
-        ggtitle("Logistic fit") +
-        my_ggplot_theme()
-
-    }
   } else {
-
-    if (fix_rates == 0) {
-      ros <- as.numeric(quantile(extract(x$fit, pars="ro")$ro, c(.05, .5, .95)))
-      K <- mean(extract(x$fit, pars="K")$K)
-
-      d <- x$counts
-      n0 <- x$counts$count[1] / x$fit_info$factor_size
-
-      Ts <- seq(0, max(d$time), by=0.1)
-      N_low <- K * n0 / (n0 + (K - n0) * exp(-Ts*(ros[1])))
-      N_medium <- K * n0 / (n0 + (K - n0) * exp(-Ts*(ros[2])))
-      N_high <- K * n0 / (n0 + (K - n0) * exp(-Ts*(ros[3])))
-
-      p <- ggplot() +
-        geom_point(d, mapping=aes(x=.data$time, y=.data$count)) +
-        geom_line(data.frame(x=Ts, y=N_medium), mapping=aes(x=.data$x, y=.data$y), col=base_color) +
-        geom_ribbon(data.frame(x=Ts, y=N_medium, yl=N_low, yh=N_high), mapping=aes(x=.data$x, y=.data$y, ymin=.data$yl, ymax=.data$yh), fill="#008080", alpha=.5) +
-        ggtitle("Logistic fit") +
-        my_ggplot_theme()
-    } else {
-      S <- nrow(x$counts) - 1
-      ros_medium = rep(0, S)
-      ros_low = ros_high = ros_medium
-      for (i in 1:S) {
-        ros <- as.numeric(quantile(extract(x$fit, pars=paste0("ro[", i, "]"))$ro, c(.05, .5, .95)))
-        ros_low[i] = ros[1]
-        ros_medium[i] = ros[2]
-        ros_high[i] = ros[3]
-      }
-
-      K <- mean(extract(x$fit, pars="K")$K)
-
-      d <- x$counts
-      n0 <- x$counts$count[1] / x$fit_info$factor_size
-
-      Ts = c()
-      N_medium = c()
-      N_low = N_high = N_medium
-
-      for (i in 1:S) {
-        current_t = d$time[i+1]
-        previous_n = d$count[i]
-
-        if (i == 1) {
-          times <- seq(0, current_t, by = 0.1)
-        } else {
-          times <- seq(0, current_t - d$time[i], by = 0.1)
-        }
-
-        N_low = c(N_low, K * previous_n / (previous_n + (K - previous_n) * exp(-times*(ros_low[i]))))
-        N_medium = c(N_medium, K * previous_n / (previous_n + (K - previous_n) * exp(-times*(ros_medium[i]))))
-        N_high = c(N_high, K * previous_n / (previous_n + (K - previous_n) * exp(-times*(ros_high[i]))))
-        Ts = c(Ts, times + d$time[i])
-      }
-
-      times + d$time[i]
-
-      p <- ggplot() +
-        geom_point(d, mapping=aes(x=.data$time, y=.data$count)) +
-        geom_line(data.frame(x=Ts, y=N_medium), mapping=aes(x=.data$x, y=.data$y), col=base_color) +
-        geom_ribbon(data.frame(x=Ts, y=N_medium, yl=N_low, yh=N_high), mapping=aes(x=.data$x, y=.data$y, ymin=.data$yl, ymax=.data$yh), fill="#008080", alpha=.5) +
-        ggtitle("Logistic fit") +
-        my_ggplot_theme()
-    }
+    p <- plot_logistic_fit(x, fix_rates)
   }
 
   return(p)
 }
+
+#' @importFrom purrr map_df
+plot_exponential_fit = function(x, fix_rates) {
+
+  if (fix_rates == 0) {
+    ros <- as.numeric(quantile(extract(x$fit, pars="ro")$ro, c(.05, .5, .95)))
+
+    d <- x$counts
+    n0 <- x$counts$count[1] / x$fit_info$factor_size
+
+    Ts <- seq(0, max(d$time), length = 10 * nrow(d))
+    N_low <- n0 * exp(ros[1] * Ts)
+    N_medium <- n0 * exp(ros[2] * Ts)
+    N_high <- n0 * exp(ros[3] * Ts)
+
+  } else {
+    # Use different growth rates
+    S <- nrow(x$counts) - 1
+    ros_df <- purrr::map_df(1:S, ~{
+      ros <- as.numeric(quantile(extract(x$fit, pars=paste0("ro[", .x, "]"))$ro, c(.05, .5, .95)))
+      data_frame(low = ros[1], medium = ros[2], high = ros[3])
+    })
+
+    d <- x$counts
+    n0 <- x$counts$count[1] / x$fit_info$factor_size
+
+    Ts = c()
+    N_medium = c()
+    N_low = N_high = N_medium
+    for (i in 1:S) {
+      current_t = d$time[i+1]
+      previous_n = d$count[i]
+
+      if (i == 1) {
+        times <- seq(0, current_t, length=10)
+      } else {
+        times <- seq(0, current_t - d$time[i], length=10)
+      }
+
+      N_low = c(N_low, previous_n * exp(ros_df$low[i] * times))
+      N_medium = c(N_medium, previous_n * exp(ros_df$medium[i] * times))
+      N_high = c(N_high, previous_n * exp(ros_df$high[i] * times))
+
+      Ts = c(Ts, times + d$time[i])
+    }
+
+    times + d$time[i]
+  }
+
+  # Create plot
+  p <- ggplot() +
+    geom_point(d, mapping=aes(x=.data$time, y=.data$count)) +
+    geom_line(data.frame(x=Ts, y=N_medium), mapping=aes(x=.data$x, y=.data$y), col=base_color) +
+    geom_ribbon(data.frame(x=Ts, y=N_medium, yl=N_low, yh=N_high), mapping=aes(x=.data$x, y=.data$y, ymin=.data$yl, ymax=.data$yh), fill="#008080", alpha=.5) +
+    ggtitle("Exponential fit") +
+    my_ggplot_theme()
+  p
+}
+
+#' @importFrom purrr map_df
+plot_logistic_fit = function(x, fix_rates) {
+  if (fix_rates == 0) {
+    ros <- as.numeric(quantile(extract(x$fit, pars="ro")$ro, c(.05, .5, .95)))
+    K <- mean(extract(x$fit, pars="K")$K)
+
+    d <- x$counts
+    n0 <- x$counts$count[1] / x$fit_info$factor_size
+
+    Ts <- seq(0, max(d$time), length = 10 * nrow(d))
+    N_low <- K * n0 / (n0 + (K - n0) * exp(-Ts*(ros[1])))
+    N_medium <- K * n0 / (n0 + (K - n0) * exp(-Ts*(ros[2])))
+    N_high <- K * n0 / (n0 + (K - n0) * exp(-Ts*(ros[3])))
+
+  } else {
+    # Use all ros
+    S <- nrow(x$counts) - 1
+    ros_df <- purrr::map_df(1:S, ~{
+      ros <- as.numeric(quantile(extract(x$fit, pars=paste0("ro[", .x, "]"))$ro, c(.05, .5, .95)))
+      data_frame(low = ros[1], medium = ros[2], high = ros[3])
+    })
+
+    K <- mean(extract(x$fit, pars="K")$K)
+
+    d <- x$counts
+    n0 <- x$counts$count[1] / x$fit_info$factor_size
+
+    Ts = c()
+    N_medium = c()
+    N_low = N_high = N_medium
+
+    for (i in 1:S) {
+      current_t = d$time[i+1]
+      previous_n = d$count[i]
+
+      if (i == 1) {
+        times <- seq(0, current_t, length=10)
+      } else {
+        times <- seq(0, current_t - d$time[i], length=10)
+      }
+
+      N_low = c(N_low, K * previous_n / (previous_n + (K - previous_n) * exp(-times*(ros_df$low[i]))))
+      N_medium = c(N_medium, K * previous_n / (previous_n + (K - previous_n) * exp(-times*(ros_df$medium[i]))))
+      N_high = c(N_high, K * previous_n / (previous_n + (K - previous_n) * exp(-times*(ros_df$high[i]))))
+      Ts = c(Ts, times + d$time[i])
+    }
+
+    times + d$time[i]
+  }
+
+  p <- ggplot() +
+    geom_point(d, mapping=aes(x=.data$time, y=.data$count)) +
+    geom_line(data.frame(x=Ts, y=N_medium), mapping=aes(x=.data$x, y=.data$y), col=base_color) +
+    geom_ribbon(data.frame(x=Ts, y=N_medium, yl=N_low, yh=N_high), mapping=aes(x=.data$x, y=.data$y, ymin=.data$yl, ymax=.data$yh), fill="#008080", alpha=.5) +
+    ggtitle("Logistic fit") +
+    my_ggplot_theme()
+  return(p)
+}
+
 
 my_ggplot_theme = function() {
   theme_light()
