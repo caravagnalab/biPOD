@@ -10,7 +10,7 @@ fit_plot(x)
 \item{x}{A biPOD object of class \code{bipod}. Must contains 'fit'}
 }
 \value{
-A plot.
+A plot of the fit over the input data.
 }
 \description{
 Plot the fit over the input data.

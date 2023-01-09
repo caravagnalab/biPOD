@@ -1,66 +1,98 @@
 
-#' Simulate a stochastic birth-death process with logistic grwoth for one time step
+#' Simulate population growth with logistic growth
 #'
-#' @param n0 Integer value greater than zero. Starting population.
-#' @param lambda Real value greater than zero. Birth rate
-#' @param mu Real value greater than zero. Death rate
-#' @param K Integer value, carrying capacity.
-#' @param delta_t Real value strictly greater than zero. Interval of time.
-#' @returns An integer number, indicating the population size at the end of the process.
+#' This function simulates population growth for a single individual with a logistic
+#' growth model. The population size at each time step is calculated based on the
+#' growth rate (lambda) and death rate (mu) at that step, and the carrying capacity
+#' (K). The time step (delta_t) is determined by randomly sampling from an exponential
+#' distribution. The function returns the final population size.
+#'
+#' @param n0 Initial population size (must be 1).
+#' @param lambda Growth rate.
+#' @param mu Death rate.
+#' @param K Carrying capacity.
+#' @param delta_t Time step.
+#' @return The final population size.
+#'
 #' @importFrom stats runif
 #' @export
 sim_single_stochastic_logistic = function(n0, lambda, mu, K, delta_t) {
-
+  # Calculate the intrinsic growth rate, which is the difference between
+  # the per-capita birth rate and death rate.
   ro <- lambda - mu
+
+  # Calculate the density-dependent term, which describes
+  # how the growth rate changes as the population size approaches the carrying capacity.
   b2 <- ro / K
 
+  # Set the time of the last event to zero and the current population size to the initial population size.
   event_time <- 0
   pop_size <- n0
 
+  # Initialize a counter and a time variable for the simulation loop.
   counter <- 1
   t <- delta_t
 
+  # Run the simulation loop until the population size reaches zero or until the counter exceeds 1.
   while(TRUE) {
+    # Calculate the birth and death rates for the current population size.
     birth <- lambda - b2 * pop_size
     death <- mu
+
+    # Calculate the overall rate of change in the population size.
     rate <- (lambda - b2 * pop_size) * pop_size + (death) * pop_size
 
-    event_time <- event_time- log(runif(1,0,1)) / rate
+    # Update the time of the next event by sampling from an exponential distribution with rate parameter "rate".
+    event_time <- event_time - log(runif(1,0,1)) / rate
+
+    # Update the time variable for the simulation loop until it exceeds the time step or the counter exceeds 1.
     while (event_time > t && counter <= 1) {
       counter <- counter + 1
       t <- counter * delta_t
     }
 
+    # If the population size has reached zero, exit the simulation loop.
     if (pop_size == 0) break
 
+    # Calculate the probability of a birth event occurring at the next event.
     p <- (lambda - b2 * pop_size) * pop_size / ((lambda - b2 * pop_size) * pop_size + (mu) * pop_size)
 
+    # If the probability is not a number (NA), exit the simulation loop.
     if (is.na(p)) break
 
+    # If a random uniform value is less than or equal to p, increment the population size by 1. Otherwise, decrement it by 1.
     if (runif(1, 0, 1) <= p) {
       pop_size <- pop_size + 1
     } else {
       pop_size <- pop_size - 1
     }
 
+    # If the counter exceeds 1 or the population size reaches zero, exit the simulation loop.
     if (counter > 1 || pop_size == 0) break
   }
-  pop_size
 
+  # Return the final population size after the simulation.
+  pop_size
 }
 
-#' Simulate a stochastic birth-death process for multiple time steps
+#' Simulate population growth with logistic growth for multiple time steps
 #'
-#' @param n0 Integer value greater than zero. Starting population.
-#' @param lambda Vector of real values or single real value. Must be greater than zero. Birth rates.
-#' @param mu Vector of real values or single real value. Must be greater than zero. Death rates.
-#' #' @param K Integer value, carrying capacity.
-#' @param steps Integer value strictly greater than zero. Number of time steps.
-#' @param delta_t Vector of real values or single real value. Must be greater than zero. Time intervals.
-#' @returns A data frame with the columns: "time", "count", "death.rates", and "birth.rates".
+#' @param n0 The initial population size.
+#' @param lambda The rate at which births occur. Can be a single value or a vector
+#'   of length `steps`.
+#' @param mu The rate at which deaths occur. Can be a single value or a vector
+#'   of length `steps`.
+#' @param K Carrying capacity.
+#' @param steps The number of time steps to simulate.
+#' @param delta_t The size of the time step. Can be a single value or a vector
+#'   of length `steps`.
+#' @return A tibble with the time, population size, birth rates, and death rates
+#'   at each time step.
+#'
 #' @importFrom dplyr tibble
 #' @export
 sim_stochastic_logistic <- function(n0, lambda, mu, K, steps, delta_t) {
+  # Convert single values of lambda, mu, and delta_t to vectors of length steps
   if (length(mu) == 1) {
     mu <- rep(mu, steps)
   } else {
@@ -80,22 +112,26 @@ sim_stochastic_logistic <- function(n0, lambda, mu, K, steps, delta_t) {
     delta_t <- c(0, delta_t)
   }
 
+  # Return the initial population size if no steps are requested
   if (steps == 0) {
     return(c(n0))
   }
 
+  # Initialize the population size vector
   pop.size <- rep(0, steps + 1)
   pop.size[1] <- n0
 
+  # Simulate the stochastic process at each time step
   for (i in c(2:length(pop.size))) {
     pop.size[i] <- sim_single_stochastic_logistic(pop.size[i - 1], lambda[i - 1], mu[i - 1], K, delta_t[i])
   }
 
-  # produce final results
+  # Calculate the time, birth rates, and death rates vectors
   time <- cumsum(delta_t)
   birth.rates <- c(lambda, 0)
   death.rates <- c(mu, 0)
 
+  # Return result as a tibble
   d <- tibble(time, pop.size, birth.rates, death.rates)
   return(d)
 }

@@ -2,24 +2,28 @@
 % Please edit documentation in R/simulate_logistic.R
 \name{sim_single_stochastic_logistic}
 \alias{sim_single_stochastic_logistic}
-\title{Simulate a stochastic birth-death process with logistic grwoth for one time step}
+\title{Simulate population growth with logistic growth}
 \usage{
 sim_single_stochastic_logistic(n0, lambda, mu, K, delta_t)
 }
 \arguments{
-\item{n0}{Integer value greater than zero. Starting population.}
+\item{n0}{Initial population size (must be 1).}
 
-\item{lambda}{Real value greater than zero. Birth rate}
+\item{lambda}{Growth rate.}
 
-\item{mu}{Real value greater than zero. Death rate}
+\item{mu}{Death rate.}
 
-\item{K}{Integer value, carrying capacity.}
+\item{K}{Carrying capacity.}
 
-\item{delta_t}{Real value strictly greater than zero. Interval of time.}
+\item{delta_t}{Time step.}
 }
 \value{
-An integer number, indicating the population size at the end of the process.
+The final population size.
 }
 \description{
-Simulate a stochastic birth-death process with logistic grwoth for one time step
+This function simulates population growth for a single individual with a logistic
+growth model. The population size at each time step is calculated based on the
+growth rate (lambda) and death rate (mu) at that step, and the carrying capacity
+(K). The time step (delta_t) is determined by randomly sampling from an exponential
+distribution. The function returns the final population size.
 }

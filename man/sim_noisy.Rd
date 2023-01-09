@@ -2,29 +2,41 @@
 % Please edit documentation in R/simulate.R
 \name{sim_noisy}
 \alias{sim_noisy}
-\title{Simulate a deterministic birth-death process for multiple time steps with noise.}
+\title{Simulate population growth with noise}
 \usage{
 sim_noisy(n0, lambda, mu, steps, delta_t, sigma, as_int = T)
 }
 \arguments{
-\item{n0}{Integer value greater than zero. Starting population.}
+\item{n0}{Initial population size.}
 
-\item{lambda}{Vector of real values or single real value. Must be greater than zero. Birth rates.}
+\item{lambda}{Growth rate. If a single value is provided, it is assumed to be
+constant across all steps. If a vector is provided, it must be the same
+length as the number of steps.}
 
-\item{mu}{Vector of real values or single real value. Must be greater than zero. Death rates.}
+\item{mu}{Death rate. If a single value is provided, it is assumed to be
+constant across all steps. If a vector is provided, it must be the same
+length as the number of steps.}
 
-\item{steps}{Integer value strictly greater than zero. Number of time steps.}
+\item{steps}{Number of steps to simulate.}
 
-\item{delta_t}{Vector of real values or single real value. Must be greater than zero. Time intervals.}
+\item{delta_t}{Delta time between steps. If a single value is provided, it is
+assumed to be constant across all steps. If a vector is provided, it must be
+the same length as the number of steps.}
 
-\item{sigma}{Real value strictly greater than zero. For each count x, a noise n drawn from a normal
-with mean x and variance x * sigma will be added.}
+\item{sigma}{Noise parameter.}
 
-\item{as_int}{Boolean. If noisy counts should be returned as integers.}
+\item{as_int}{Logical indicating whether to round the population size to the
+nearest integer at each step.}
 }
 \value{
-A data frame with the columns: "time", "count", "death.rates", and "birth.rates".
+A tibble containing columns for time, population size, birth rate, and
+death rate at each step.
 }
 \description{
-Simulate a deterministic birth-death process for multiple time steps with noise.
+This function simulates population growth over a given number of steps, with
+noise introduced at each step. The population size at each step is calculated
+based on the growth rate (lambda) and death rate (mu) at that step, and the
+delta time (delta_t) between steps. Noise is introduced to the population size
+at each step according to a normal distribution with standard deviation equal
+to the population size multiplied by a given noise parameter (sigma).
 }

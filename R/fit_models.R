@@ -105,7 +105,7 @@ fit_log <- function(x, model_name, factor_size = 1, fix_rates = 0, prior_par = 2
     T = Ts[2:length(Ts)], # / Ts[length(Ts)],
     k = fix_rates,
     prior_par = prior_par,
-    max_K = max(d$pop.size)
+    max_K = max(x$counts$count)
   )
 
   # fit model

@@ -2,25 +2,30 @@
 % Please edit documentation in R/simulate_logistic.R
 \name{sim_stochastic_logistic}
 \alias{sim_stochastic_logistic}
-\title{Simulate a stochastic birth-death process for multiple time steps}
+\title{Simulate population growth with logistic growth for multiple time steps}
 \usage{
 sim_stochastic_logistic(n0, lambda, mu, K, steps, delta_t)
 }
 \arguments{
-\item{n0}{Integer value greater than zero. Starting population.}
+\item{n0}{The initial population size.}
 
-\item{lambda}{Vector of real values or single real value. Must be greater than zero. Birth rates.}
+\item{lambda}{The rate at which births occur. Can be a single value or a vector
+of length \code{steps}.}
 
-\item{mu}{Vector of real values or single real value. Must be greater than zero. Death rates.
-#' @param K Integer value, carrying capacity.}
+\item{mu}{The rate at which deaths occur. Can be a single value or a vector
+of length \code{steps}.}
 
-\item{steps}{Integer value strictly greater than zero. Number of time steps.}
+\item{K}{Carrying capacity.}
 
-\item{delta_t}{Vector of real values or single real value. Must be greater than zero. Time intervals.}
+\item{steps}{The number of time steps to simulate.}
+
+\item{delta_t}{The size of the time step. Can be a single value or a vector
+of length \code{steps}.}
 }
 \value{
-A data frame with the columns: "time", "count", "death.rates", and "birth.rates".
+A tibble with the time, population size, birth rates, and death rates
+at each time step.
 }
 \description{
-Simulate a stochastic birth-death process for multiple time steps
+Simulate population growth with logistic growth for multiple time steps
 }

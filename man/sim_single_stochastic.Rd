@@ -2,22 +2,25 @@
 % Please edit documentation in R/simulate.R
 \name{sim_single_stochastic}
 \alias{sim_single_stochastic}
-\title{Simulate a stochastic birth-death process for one time step}
+\title{Simulate a single realization of a stochastic process with birth and death events.}
 \usage{
 sim_single_stochastic(n0, lambda, mu, delta_t)
 }
 \arguments{
-\item{n0}{Integer value greater than zero. Starting population.}
+\item{n0}{The initial population size.}
 
-\item{lambda}{Real value greater than zero. Birth rate}
+\item{lambda}{The rate at which births occur.}
 
-\item{mu}{Real value greater than zero. Death rate}
+\item{mu}{The rate at which deaths occur.}
 
-\item{delta_t}{Real value strictly greater than zero. Interval of time.}
+\item{delta_t}{The size of the time step.}
 }
 \value{
-An integer number, indicating the population size at the end of the process.
+The final population size after the simulation.
 }
 \description{
-Simulate a stochastic birth-death process for one time step
+This function simulates a single realization of a stochastic process where the
+population size is subject to birth and death events. The rates at which these
+events occur are given by the \code{lambda} and \code{mu} parameters, respectively. The
+function returns the final population size after the simulation is completed.
 }

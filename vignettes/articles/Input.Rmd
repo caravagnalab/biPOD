@@ -55,6 +55,6 @@ bipod <- init(counts, sample = sample_name)
 ```
 
 ```{r evo plot}
-evolution_plot(bipod)
+biPOD::evolution_plot(bipod)
 ```
 

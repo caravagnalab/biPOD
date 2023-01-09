@@ -44,8 +44,8 @@ posterior_plot <- function(x, p_name) {
     title = "Posterior density for growth rates"
   }
 
-  p <- bayesplot::mcmc_areas_ridges(as.matrix(x$fit), regex_pars = p_name, prob = 1) +
-    ggplot2::ggtitle(title) +
+  p <- mcmc_areas_ridges(as.matrix(x$fit), regex_pars = p_name, prob = 1) +
+    ggtitle(title) +
     my_ggplot_theme()
   p
 }
@@ -62,6 +62,7 @@ posterior_plot <- function(x, p_name) {
 #'
 #' @returns A plot. Represents the posterior predictive checks.
 #' @import ggplot2
+#' @importFrom rstan extract
 #' @importFrom bayesplot ppc_intervals ppc_ribbon
 #' @export
 ppc_plot = function(x, ptype, prob = 0.5, prob_outer = 0.9) {
@@ -70,15 +71,18 @@ ppc_plot = function(x, ptype, prob = 0.5, prob_outer = 0.9) {
   stopifnot(prob_outer >= 0 && prob <= 1)
 
   y <- x$counts$count[2:length(x$counts$count)]
-  yrep <- rstan::extract(x$fit, pars="N_rep")$N_rep
+  yrep <- extract(x$fit, pars="N_rep")$N_rep
 
   if (ptype == "intervals") {
-    p <- bayesplot::ppc_intervals(y, yrep, prob = prob, prob_outer = prob_outer)
+    p <- ppc_intervals(y, yrep, prob = prob, prob_outer = prob_outer)
   } else {
-    p <- bayesplot::ppc_ribbon(y, yrep, prob = prob, prob_outer = prob_outer, y_draw = "points")
+    p <- ppc_ribbon(y, yrep, prob = prob, prob_outer = prob_outer, y_draw = "points")
   }
 
-  p <- p + ggplot2::xlab("Time") + ggplot2::ylab("Count") + my_ggplot_theme()
+  p <- p +
+    xlab("Time") +
+    ylab("Count") +
+    my_ggplot_theme()
   p
 }
 
@@ -87,8 +91,11 @@ ppc_plot = function(x, ptype, prob = 0.5, prob_outer = 0.9) {
 #'
 #' @param x A biPOD object of class `bipod`. Must contains 'fit'
 
-#' @returns A plot.
+#' @returns A plot of the fit over the input data.
+#'
 #' @import ggplot2
+#' @importFrom stats quantile
+#' @importFrom rstan extract
 #' @export
 fit_plot = function(x) {
   stopifnot(inherits(x, "bipod"))
@@ -100,7 +107,7 @@ fit_plot = function(x) {
   if (growth_type == "exponential") {
 
     if (fix_rates == 0) {
-      ros <- as.numeric(quantile(rstan::extract(x$fit, pars="ro")$ro, c(.05, .5, .95)))
+      ros <- as.numeric(quantile(extract(x$fit, pars="ro")$ro, c(.05, .5, .95)))
 
       d <- x$counts
       n0 <- x$counts$count[1] / x$fit_info$factor_size
@@ -110,10 +117,10 @@ fit_plot = function(x) {
       N_medium <- n0 * exp(ros[2] * Ts)
       N_high <- n0 * exp(ros[3] * Ts)
 
-      p <- ggplot2::ggplot() +
-        ggplot2::geom_point(d, mapping=aes(x=time, y=count)) +
-        ggplot2::geom_line(data.frame(x=Ts, y=N_medium), mapping=aes(x=x, y=y), col=base_color) +
-        ggplot2::geom_ribbon(data.frame(x=Ts, y=N_medium, yl=N_low, yh=N_high), mapping=aes(x=x, y=y, ymin=yl, ymax=yh), fill="#008080", alpha=.5) +
+      p <- ggplot() +
+        geom_point(d, mapping=aes(x=.data$time, y=.data$count)) +
+        geom_line(data.frame(x=Ts, y=N_medium), mapping=aes(x=.data$x, y=.data$y), col=base_color) +
+        geom_ribbon(data.frame(x=Ts, y=N_medium, yl=N_low, yh=N_high), mapping=aes(x=.data$x, y=.data$y, ymin=.data$yl, ymax=.data$yh), fill="#008080", alpha=.5) +
         ggtitle("Exponential fit") +
         my_ggplot_theme()
     } else {
@@ -123,7 +130,7 @@ fit_plot = function(x) {
       ros_medium = rep(0, S)
       ros_low = ros_high = ros_medium
       for (i in 1:S) {
-        ros <- as.numeric(quantile(rstan::extract(x$fit, pars=paste0("ro[", i, "]"))$ro, c(.05, .5, .95)))
+        ros <- as.numeric(quantile(extract(x$fit, pars=paste0("ro[", i, "]"))$ro, c(.05, .5, .95)))
         ros_low[i] = ros[1]
         ros_medium[i] = ros[2]
         ros_high[i] = ros[3]
@@ -155,18 +162,19 @@ fit_plot = function(x) {
 
       times + d$time[i]
 
-      p <- ggplot2::ggplot() +
-        ggplot2::geom_point(d, mapping=aes(x=time, y=count)) +
-        ggplot2::geom_ribbon(data.frame(x=Ts, y=N_medium, yl=N_low, yh=N_high), mapping=aes(x=x, y=y, ymin=yl, ymax=yh), fill="#008080", alpha=.5) +
-        ggplot2::ggtitle("Logistic fit") +
+      p <- ggplot() +
+        geom_point(d, mapping=aes(x=.data$time, y=.data$count)) +
+        geom_line(data.frame(x=Ts, y=N_medium), mapping=aes(x=.data$x, y=.data$y), col=base_color) +
+        geom_ribbon(data.frame(x=Ts, y=N_medium, yl=N_low, yh=N_high), mapping=aes(x=.data$x, y=.data$y, ymin=.data$yl, ymax=.data$yh), fill="#008080", alpha=.5) +
+        ggtitle("Logistic fit") +
         my_ggplot_theme()
 
     }
   } else {
 
     if (fix_rates == 0) {
-      ros <- as.numeric(quantile(rstan::extract(x$fit, pars="ro")$ro, c(.05, .5, .95)))
-      K <- mean(rstan::extract(x$fit, pars="K")$K)
+      ros <- as.numeric(quantile(extract(x$fit, pars="ro")$ro, c(.05, .5, .95)))
+      K <- mean(extract(x$fit, pars="K")$K)
 
       d <- x$counts
       n0 <- x$counts$count[1] / x$fit_info$factor_size
@@ -176,10 +184,10 @@ fit_plot = function(x) {
       N_medium <- K * n0 / (n0 + (K - n0) * exp(-Ts*(ros[2])))
       N_high <- K * n0 / (n0 + (K - n0) * exp(-Ts*(ros[3])))
 
-      p <- ggplot2::ggplot() +
-        ggplot2::geom_point(d, mapping=aes(x=time, y=count)) +
-        ggplot2::geom_line(data.frame(x=Ts, y=N_medium), mapping=aes(x=x, y=y), col=base_color) +
-        ggplot2::geom_ribbon(data.frame(x=Ts, y=N_medium, yl=N_low, yh=N_high), mapping=aes(x=x, y=y, ymin=yl, ymax=yh), fill="#008080", alpha=.5) +
+      p <- ggplot() +
+        geom_point(d, mapping=aes(x=.data$time, y=.data$count)) +
+        geom_line(data.frame(x=Ts, y=N_medium), mapping=aes(x=.data$x, y=.data$y), col=base_color) +
+        geom_ribbon(data.frame(x=Ts, y=N_medium, yl=N_low, yh=N_high), mapping=aes(x=.data$x, y=.data$y, ymin=.data$yl, ymax=.data$yh), fill="#008080", alpha=.5) +
         ggtitle("Logistic fit") +
         my_ggplot_theme()
     } else {
@@ -187,13 +195,13 @@ fit_plot = function(x) {
       ros_medium = rep(0, S)
       ros_low = ros_high = ros_medium
       for (i in 1:S) {
-        ros <- as.numeric(quantile(rstan::extract(x$fit, pars=paste0("ro[", i, "]"))$ro, c(.05, .5, .95)))
+        ros <- as.numeric(quantile(extract(x$fit, pars=paste0("ro[", i, "]"))$ro, c(.05, .5, .95)))
         ros_low[i] = ros[1]
         ros_medium[i] = ros[2]
         ros_high[i] = ros[3]
       }
 
-      K <- mean(rstan::extract(x$fit, pars="K")$K)
+      K <- mean(extract(x$fit, pars="K")$K)
 
       d <- x$counts
       n0 <- x$counts$count[1] / x$fit_info$factor_size
@@ -220,10 +228,11 @@ fit_plot = function(x) {
 
       times + d$time[i]
 
-      p <- ggplot2::ggplot() +
-        ggplot2::geom_point(d, mapping=aes(x=time, y=count)) +
-        ggplot2::geom_ribbon(data.frame(x=Ts, y=N_medium, yl=N_low, yh=N_high), mapping=aes(x=x, y=y, ymin=yl, ymax=yh), fill="#008080", alpha=.5) +
-        ggplot2::ggtitle("Logistic fit") +
+      p <- ggplot() +
+        geom_point(d, mapping=aes(x=.data$time, y=.data$count)) +
+        geom_line(data.frame(x=Ts, y=N_medium), mapping=aes(x=.data$x, y=.data$y), col=base_color) +
+        geom_ribbon(data.frame(x=Ts, y=N_medium, yl=N_low, yh=N_high), mapping=aes(x=.data$x, y=.data$y, ymin=.data$yl, ymax=.data$yh), fill="#008080", alpha=.5) +
+        ggtitle("Logistic fit") +
         my_ggplot_theme()
     }
   }

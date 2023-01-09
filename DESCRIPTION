@@ -16,8 +16,7 @@ Imports:
     magrittr,
     methods,
     Rcpp (>= 0.12.0),
-    rstan (>= 2.18.1),
-    rstantools
+    rstan (>= 2.18.1)
 LinkingTo: 
     BH (>= 1.66.0),
     Rcpp (>= 0.12.0),
@@ -34,3 +33,4 @@ Suggests:
     knitr,
     rmarkdown
 VignetteBuilder: knitr
+URL: https://caravagnalab.github.io/biPOD/
