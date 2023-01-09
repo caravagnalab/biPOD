@@ -1,5 +1,6 @@
 
-#' Fit a Bayesian model for the evolution of a population.
+#' Fit a  Bayesian model for the evolution of a population
+#' with the assumption of an exponential growth.
 #'
 #' @param x A biPOD object of class `bipod`.
 #' @param factor_size Integer. Counts will be divided by this factor size.
@@ -27,6 +28,8 @@ fit_exp <- function(x, model_name, factor_size = 1, fix_rates = 0, prior_par = 2
   stopifnot(inherits(x, "bipod"))
   stopifnot(model_name %in% c("gauss", "exact", "poisson"))
 
+  model_name <- paste0(model_name, "_exp")
+
   # prepare data
   Ns <- x$counts$count
   Ts <- x$counts$time
@@ -35,7 +38,7 @@ fit_exp <- function(x, model_name, factor_size = 1, fix_rates = 0, prior_par = 2
     S = length(Ns) - 1,
     n0 = as.integer(Ns[1] / factor_size),
     N = as.integer(Ns[2:length(Ns)] / factor_size),
-    T = Ts[2:length(Ts)], #/ Ts[length(Ts)],
+    T = Ts[2:length(Ts)], # / Ts[length(Ts)],
     k = fix_rates,
     prior_par = prior_par
   )
@@ -54,7 +57,73 @@ fit_exp <- function(x, model_name, factor_size = 1, fix_rates = 0, prior_par = 2
     factor_size = factor_size,
     model_name = model_name,
     fix_rates = fix_rates,
-    prior_par = prior_par
+    prior_par = prior_par,
+    growth_type = "exponential"
+  )
+
+  x$fit <- fit_model
+  x$fit_info <- fit_info
+  x
+}
+
+#' Fit a  Bayesian model for the evolution of a population
+#' with the assumption of a logistic growth.
+#'
+#' @param x A biPOD object of class `bipod`.
+#' @param factor_size Integer. Counts will be divided by this factor size.
+#' @param model_name String. Indicates the name of the model desired.
+#'
+#'  * `gauss` Use a gaussian approximation. Works well when counts data are far from 0.
+#'
+#' @param fix_rates An integer value. Indicates which rates must be fixed.
+#'
+#'  * `1` Growth rate is not fixed at every time step.
+#'  * `0` Growth rate is fixed throughout all time steps.
+#'
+#' @param prior_par Parameter for inverse gamma prior. InvGamma(p,p).
+#' @param chains Integer. Number of MCMC chains
+#' @param iter Integer. Number of MCMC steps
+#' @param warmup Integer. Number of MCMC warmup steps, must be smaller than 'chains'.
+#' @param cores Integer. Number of cores to use.
+#' @returns A plot. Represents the evolution of the population over time.
+#' @importFrom rstan sampling
+#' @export
+fit_log <- function(x, model_name, factor_size = 1, fix_rates = 0, prior_par = 2, chains = 4, iter = 4000, warmup = 2000, cores = 4) {
+  stopifnot(inherits(x, "bipod"))
+  stopifnot(model_name %in% c("gauss"))
+
+  model_name <- paste0(model_name, "_log")
+
+  # prepare data
+  Ns <- x$counts$count
+  Ts <- x$counts$time
+
+  data_model <- list(
+    S = length(Ns) - 1,
+    n0 = as.integer(Ns[1] / factor_size),
+    N = as.integer(Ns[2:length(Ns)] / factor_size),
+    T = Ts[2:length(Ts)], # / Ts[length(Ts)],
+    k = fix_rates,
+    prior_par = prior_par,
+    max_K = max(d$pop.size)
+  )
+
+  # fit model
+  model <- get(model_name, stanmodels)
+  fit_model <- rstan::sampling(
+    model,
+    data = data_model,
+    chains = chains, iter = iter, warmup = warmup,
+    cores = cores
+  )
+
+  # write fit info
+  fit_info <- list(
+    factor_size = factor_size,
+    model_name = model_name,
+    fix_rates = fix_rates,
+    prior_par = prior_par,
+    growth_type = "logistic"
   )
 
   x$fit <- fit_model

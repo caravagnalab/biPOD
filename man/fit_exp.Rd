@@ -2,7 +2,8 @@
 % Please edit documentation in R/fit_models.R
 \name{fit_exp}
 \alias{fit_exp}
-\title{Fit a Bayesian model for the evolution of a population.}
+\title{Fit a  Bayesian model for the evolution of a population
+with the assumption of an exponential growth.}
 \usage{
 fit_exp(
   x,
@@ -49,5 +50,6 @@ fit_exp(
 A plot. Represents the evolution of the population over time.
 }
 \description{
-Fit a Bayesian model for the evolution of a population.
+Fit a  Bayesian model for the evolution of a population
+with the assumption of an exponential growth.
 }

@@ -11,4 +11,38 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(biPOD)
+bipod <- init(sim_stochastic(10, 1, c(0.5, .75, 1), steps = 3, delta_t = 1), "exponential sample")
 ```
+
+The `fit_exp` function can be used to fit a model over an input dataframe assuming an exponential growth.
+The function requires as input a `biPOD` object along with two main additional parameters:
+
+- `model_name` : the type of model to use among `gauss`, `exact` and `poisson`
+- `fix_rates` : in order to fix the birth and death rates or to let one of them vary
+
+A fit with fixed rates can be obtained as follows
+
+```{r fit exp fixed}
+bipod <- biPOD::fit_exp(bipod, "poisson", fix_rates = 0)
+```
+
+The results of the fit can be visualized using the `fit_plot` function. 
+
+```{r}
+biPOD::fit_plot(bipod)
+```
+
+A fit with variable growth rates can be obtained as follows
+
+```{r fit exp fixed}
+bipod <- biPOD::fit_exp(bipod, "poisson", fix_rates = 1)
+```
+And the results can be once again visually inspected:
+
+```{r}
+biPOD::fit_plot(bipod)
+biPOD::posterior_plot(bipod, "ro")
+biPOD::ppc_plot(bipod, "ribbon")
+```
+
+

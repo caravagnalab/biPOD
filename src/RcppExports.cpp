@@ -45,16 +45,18 @@ BEGIN_RCPP
 END_RCPP
 }
 
-RcppExport SEXP _rcpp_module_boot_stan_fit4exact_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4gauss_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4poisson_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4exact_exp_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4gauss_exp_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4gauss_log_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4poisson_exp_mod();
 
 static const R_CallMethodDef CallEntries[] = {
     {"_biPOD_birthDeathLike_log", (DL_FUNC) &_biPOD_birthDeathLike_log, 6},
     {"_biPOD_birthDeathLike_rng", (DL_FUNC) &_biPOD_birthDeathLike_rng, 6},
-    {"_rcpp_module_boot_stan_fit4exact_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4exact_mod, 0},
-    {"_rcpp_module_boot_stan_fit4gauss_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4gauss_mod, 0},
-    {"_rcpp_module_boot_stan_fit4poisson_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4poisson_mod, 0},
+    {"_rcpp_module_boot_stan_fit4exact_exp_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4exact_exp_mod, 0},
+    {"_rcpp_module_boot_stan_fit4gauss_exp_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4gauss_exp_mod, 0},
+    {"_rcpp_module_boot_stan_fit4gauss_log_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4gauss_log_mod, 0},
+    {"_rcpp_module_boot_stan_fit4poisson_exp_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4poisson_exp_mod, 0},
     {NULL, NULL, 0}
 };
 
