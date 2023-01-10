@@ -35,7 +35,7 @@ Both `lambda`, `mu` and `delta_t` can either be single values or vectors. Vector
 An example for an exponential growth is the following:
 
 ```{r exponential dataframe}
-sim_stochastic(n0 = 10, lambda = 1, mu = c(.5, .75, 1), steps = 3, delta_t = c(1, 2, 3))
+sim_stochastic_exponential(n0 = 10, lambda = 1, mu = c(.5, .75, 1), steps = 3, delta_t = c(1, 2, 3))
 ```
 
 An example for a logistic growth is the following:
@@ -49,7 +49,7 @@ sim_stochastic_logistic(n0 = 10, lambda = 1, mu = .5, K = 100, steps = 20, delta
 Given an input dataframe and a sample name, it is possible to use the `init` function to create a `biPOD` object.
 
 ```{r init}
-counts <- sim_stochastic(n0 = 10, lambda = .5, mu = .3, steps = 50, delta_t = .1)
+counts <- sim_stochastic_exponential(n0 = 10, lambda = .5, mu = .3, steps = 50, delta_t = .1)
 sample_name <- "Exponential sample"
 bipod <- init(counts, sample = sample_name)
 ```

@@ -11,7 +11,7 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(biPOD)
-bipod <- init(sim_stochastic(10, 1, c(0.5, .75, 1), steps = 3, delta_t = 1), "exponential sample")
+bipod <- init(sim_stochastic_exponential(10, 1, c(0.5, .75, 1), steps = 3, delta_t = 1), "exponential sample")
 ```
 
 The `fit_exp` function can be used to fit a model over an input dataframe assuming an exponential growth.

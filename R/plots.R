@@ -48,6 +48,7 @@ posterior_plot <- function(x, p_name) {
 
   p <- mcmc_areas_ridges(as.matrix(x$fit), regex_pars = p_name, prob = 1) +
     ggtitle(title) +
+    xlab("Value") +
     my_ggplot_theme()
   p
 }
@@ -117,6 +118,10 @@ fit_plot = function(x) {
     p <- plot_logistic_fit(x, fix_rates)
   }
 
+  p <- p +
+    xlab("Time") +
+    ylab("Count")
+
   return(p)
 }
 
@@ -173,7 +178,7 @@ plot_exponential_fit = function(x, fix_rates) {
     geom_point(d, mapping=aes(x=.data$time, y=.data$count)) +
     geom_line(data.frame(x=Ts, y=N_medium), mapping=aes(x=.data$x, y=.data$y), col=base_color) +
     geom_ribbon(data.frame(x=Ts, y=N_medium, yl=N_low, yh=N_high), mapping=aes(x=.data$x, y=.data$y, ymin=.data$yl, ymax=.data$yh), fill="#008080", alpha=.5) +
-    ggtitle("Exponential fit") +
+    ggtitle(paste("Exponential fit", x$sample)) +
     my_ggplot_theme()
   p
 }
@@ -232,7 +237,7 @@ plot_logistic_fit = function(x, fix_rates) {
     geom_point(d, mapping=aes(x=.data$time, y=.data$count)) +
     geom_line(data.frame(x=Ts, y=N_medium), mapping=aes(x=.data$x, y=.data$y), col=base_color) +
     geom_ribbon(data.frame(x=Ts, y=N_medium, yl=N_low, yh=N_high), mapping=aes(x=.data$x, y=.data$y, ymin=.data$yl, ymax=.data$yh), fill="#008080", alpha=.5) +
-    ggtitle("Logistic fit") +
+    ggtitle(paste("Logistic fit", x$sample)) +
     my_ggplot_theme()
   return(p)
 }
