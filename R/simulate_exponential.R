@@ -20,6 +20,9 @@ sim_single_stochastic_exponential <- function(n0, lambda, mu, delta_t) {
   assertthat::assert_that(mu >= 0 , msg = "mu must be positive")
   assertthat::assert_that(delta_t >= 0 , msg = "delta_t must be positive")
 
+  # Return n0 if n0 is zero
+  if (n0 == 0) return(n0)
+
   # Calculate the total event rate and the probability of a birth event
   w <- lambda + mu
   p <- lambda / w

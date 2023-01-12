@@ -40,6 +40,9 @@ check_input_data <- function(counts) {
     counts <- counts %>%
       dplyr::rename(count = .data$pop.size)
   }
+
+  assertthat::assert_that(all(counts$count >= 0), msg = "The values of the 'count' column should be all greater or equal than zero!")
+
   counts <- counts %>% dplyr::select(.data$time, .data$count)
   counts
 }

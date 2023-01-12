@@ -1,0 +1,60 @@
+---
+title: "1. Introdcution"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(biPOD)
+```
+
+The `init` function of the library requires an input dataset and a sample name.
+
+# Input dataframe
+
+The input dataset requires the following columns:
+
+- `time` : the time points at which the population counts have been measured
+- `count` or `pop.size` : the population counts
+
+# Simulating dataframes
+
+The package offers the possibility of simulating datasets which arises from two different types of growth starting from a population of `n0` individuals.
+
+1. Exponential growth, with two main parameters: birth rate `lambda` and death rate `mu`
+2. Logistic growth, with three main parameters: birth rate `lambda`, death rate `mu`, and carrying capacity `K`
+
+Additional parameters are the number of desired time points `steps` and the time intervals `delta_t`.
+Both `lambda`, `mu` and `delta_t` can either be single values or vectors. Vectors can be used in order to simulate processes with varying growth rates or counts sampled using non-homogeneous time intervals.
+
+An example for an exponential growth is the following:
+
+```{r exponential dataframe}
+sim_stochastic_exponential(n0 = 10, lambda = 1, mu = c(.5, .75, 1), steps = 3, delta_t = c(1, 2, 3))
+```
+
+An example for a logistic growth is the following:
+
+```{r logistic dataframe}
+sim_stochastic_logistic(n0 = 10, lambda = 1, mu = .5, K = 100, steps = 20, delta_t = 1)
+```
+
+# Init and plotting
+
+Given an input dataframe and a sample name, it is possible to use the `init` function to create a `biPOD` object.
+
+```{r init}
+counts <- sim_stochastic_exponential(n0 = 10, lambda = .5, mu = .3, steps = 50, delta_t = .1)
+sample_name <- "Exponential sample"
+bipod <- init(counts, sample = sample_name)
+```
+
+```{r evo plot}
+biPOD::evolution_plot(bipod)
+```
+

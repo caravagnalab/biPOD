@@ -1,0 +1,51 @@
+---
+title: "2. Inference"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(biPOD)
+bipod <- init(sim_stochastic_exponential(10, .7, .5, steps = 20, delta_t = .1), "exponential sample")
+```
+
+The `fit_exp` function can be used to fit a model over an input dataframe assuming an exponential growth.
+The function requires as input a `biPOD` object along with two main additional parameters:
+
+- `model_type` : the type of model to use among `gauss` and `exact`
+- `fix_rates` : in order to fix the birth and death rates or to let one of them vary
+
+A fit with fixed rates can be obtained as follows
+
+```{r fit exp fixed}
+bipod <- biPOD::fit_exp(bipod, model_type = "exact", prior = "invgamma", a = 1, b = 1)
+```
+
+The results of the fit can be visualized using the `fit_plot` function. 
+
+```{r}
+biPOD::fit_plot(bipod)
+```
+
+A fit with variable growth rates can be obtained as follows
+
+```{r fit exp variable}
+bipod <- biPOD::fit_exp(bipod, model_type = "exact", prior = "invgamma", a = 1, b = 1, fix_rates = 1)
+```
+And the results can be once again visually inspected:
+
+```{r}
+biPOD::fit_plot(bipod)
+```
+```{r}
+biPOD::plot_birth_and_death_rates_posteriors(bipod)
+```
+
+```{r}
+biPOD::plot_growth_rate_posteriors(bipod)
+```

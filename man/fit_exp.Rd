@@ -6,10 +6,13 @@
 \usage{
 fit_exp(
   x,
-  model_name,
+  model_type = c("gauss", "exact"),
+  prior = c("uniform", "invgamma"),
   factor_size = 1,
   fix_rates = 0,
-  prior_par = 2,
+  a = 0,
+  b = 1,
+  g = 1,
   chains = 4,
   iter = 4000,
   warmup = 2000,
@@ -19,23 +22,32 @@ fit_exp(
 \arguments{
 \item{x}{a bipod object}
 
-\item{model_name}{character string specifying the model to fit, one of "gauss", "exact", or "poisson"
+\item{model_type}{character string specifying the model to fit, one of "gauss", "exact".
 \itemize{
 \item \code{exact} Slowest model. Particularly good for low counts data.
-\item \code{gauss} Use a gaussian approximation. Works well when counts data are far from 0.
-\item \code{poisson} Fastest model. Can be applied both to high and low counts data.
+\item \code{gauss} Use a Gaussian approximation. Works well when counts data are far from 0.
+}}
+
+\item{prior}{character string specifying the prior to use, "uniform" or "invagamma".
+\itemize{
+\item \code{uniform} Uniform U(a,b), where at every iteration you sample with width w = (b-a) / g.
+\item \code{invgamma} Inverse gamma prior invGamma(a,b)
 }}
 
 \item{factor_size}{numeric factor by which to divide counts in the bipod object}
 
 \item{fix_rates}{logical indicating whether to fix rates at values specified in the bipod object
 \itemize{
-\item \code{1} Birth rates are free. Death rate is fixed
+\item \code{1} The birth rate is fixed whereas the death rates are variable.
 \item \code{0} Both birth and death rate are fixed.
-\item \code{-1} Death rates are free. Birth rate is fixed
 }}
 
-\item{prior_par}{numeric parameter for the prior distribution on rates}
+\item{a}{Minimum value for uniform prior, shape parameter for inverse gamma prior}
+
+\item{b}{Maximum value for uniform prior, scale parameter for inverse gamma prior}
+
+\item{g}{Extra parameters for uniform prior. Sample is done from a uniform centered on the previous
+sample and with width w = (b - a) / g.}
 
 \item{chains}{integer number of chains to run in the Markov Chain Monte Carlo (MCMC) algorithm}
 
