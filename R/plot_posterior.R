@@ -17,7 +17,7 @@ plot_birth_and_death_rates_posteriors = function(x, point_est = c("mean", "media
   if (point_est == "median") {
     m_func = stats::median
   } else if (point_est == "mean") {
-    m_func = stats::mean
+    m_func = base::mean
   } else {
     m_func = mode.fun
   }
