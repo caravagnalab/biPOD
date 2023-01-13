@@ -26,10 +26,8 @@
 #' @param iter integer number of iterations to run in the MCMC algorithm
 #' @param warmup integer number of warmup iterations to run in the MCMC algorithm
 #' @param cores integer number of cores to use in parallel processing
-
+#'
 #' @return the input bipod object with an added 'fit' slot containing the fitted model and an added 'fit_info' slot containing information about the fit
-
-#' @importFrom rstan sampling
 #' @export
 fit_exp <- function(x, model_type = c("gauss", "exact"), prior = c("uniform", "invgamma"),
                     factor_size = 1, fix_rates = 0, a = 0, b = 1, g = 1,
@@ -119,10 +117,8 @@ fit_exp <- function(x, model_type = c("gauss", "exact"), prior = c("uniform", "i
 #' @param iter integer number of iterations to run in the MCMC algorithm
 #' @param warmup integer number of warmup iterations to run in the MCMC algorithm
 #' @param cores integer number of cores to use in parallel processing
-
+#'
 #' @return the input bipod object with an added 'fit' slot containing the fitted model and an added 'fit_info' slot containing information about the fit
-
-#' @importFrom rstan sampling
 #' @export
 fit_log <- function(x, model_type = c("gauss"), prior = c("uniform", "invgamma"),
                     factor_size = 1, fix_rates = 1, a = 0, b = 1, g = 1, prior_K = NULL,
@@ -157,7 +153,8 @@ fit_log <- function(x, model_type = c("gauss"), prior = c("uniform", "invgamma")
     N = as.integer(Ns[2:length(Ns)] / factor_size),
     T = Ts[2:length(Ts)], # / Ts[length(Ts)],
     k = fix_rates,
-    prior_par = prior_par,
+    a = a,
+    b = b,
     prior_K = prior_K
   )
 

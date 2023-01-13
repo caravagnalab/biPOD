@@ -10,9 +10,6 @@
 #' @param prob,prob_outer Values between 0 and 1 indicating the desired probability mass to include in the inner and outer intervals. The defaults are prob=0.5 and prob_outer=0.9.
 #'
 #' @returns A plot. Represents the posterior predictive checks.
-#' @import ggplot2
-#' @importFrom rstan extract
-#' @importFrom bayesplot ppc_intervals ppc_ribbon
 #' @export
 ppc_plot = function(x, ptype, prob = 0.5, prob_outer = 0.9) {
   assertthat::assert_that(inherits(x, "bipod"), msg = "Input must be a bipod object")
@@ -23,17 +20,19 @@ ppc_plot = function(x, ptype, prob = 0.5, prob_outer = 0.9) {
   assertthat::assert_that(length(grep("N_rep", names(x$fit))) >= 1, msg = "ppc_plot not support ppc_plot does not support the type of model used")
 
   y <- x$counts$count[2:length(x$counts$count)]
-  yrep <- extract(x$fit, pars="N_rep")$N_rep
+  yrep <- rstan::extract(x$fit, pars="N_rep")$N_rep
 
   if (ptype == "intervals") {
-    p <- ppc_intervals(y, yrep, prob = prob, prob_outer = prob_outer)
+    p <- bayesplot::ppc_intervals(y, yrep, prob = prob, prob_outer = prob_outer)
   } else {
-    p <- ppc_ribbon(y, yrep, prob = prob, prob_outer = prob_outer, y_draw = "points")
+    p <- bayesplot::ppc_ribbon(y, yrep, prob = prob, prob_outer = prob_outer, y_draw = "points")
   }
 
   p <- p +
-    xlab("Time") +
-    ylab("Count") +
+    ggplot2::labs(
+      y = 'time',
+      x = "count"
+    ) +
     my_ggplot_theme()
   p
 }

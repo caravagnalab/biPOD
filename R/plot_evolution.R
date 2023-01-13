@@ -2,8 +2,8 @@
 #' Plot the evolution of the population over time
 #'
 #' @param x A biPOD object of class `bipod`.
+#'
 #' @returns A plot. Represents the evolution of the population over time.
-#' @import ggplot2
 #' @export
 evolution_plot <- function(x) {
   # Check input
@@ -11,10 +11,12 @@ evolution_plot <- function(x) {
 
   data <- data.frame(x = x$counts$time, y = x$counts$count)
 
-  pop.plot <- ggplot(data, aes(x=.data$x, y=.data$y)) +
-    geom_line(col='forestgreen') +
-    geom_point(col='forestgreen') +
-    ggtitle(x$sample) +
+  pop.plot <- ggplot2::ggplot(data, ggplot2::aes(x=.data$x, y=.data$y)) +
+    ggplot2::geom_line(col='forestgreen') +
+    ggplot2::geom_point(col='forestgreen') +
+    ggplot2::labs(
+      title = x$sample
+    )
     my_ggplot_theme()
 
   pop.plot

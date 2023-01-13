@@ -15,9 +15,9 @@ plot_birth_and_death_rates_posteriors = function(x, point_est = c("mean", "media
   # Check point_est and select corresponding function
   point_est <- match.arg(point_est)
   if (point_est == "median") {
-    m_func = median
+    m_func = stats::median
   } else if (point_est == "mean") {
-    m_func = mean
+    m_func = stats::mean
   } else {
     m_func = mode.fun
   }
@@ -35,7 +35,7 @@ plot_birth_and_death_rates_posteriors = function(x, point_est = c("mean", "media
     reshape2::melt(id.vars=NULL)
 
   d <- d_long %>%
-    dplyr::group_by(variable) %>%
+    dplyr::group_by(.data$variable) %>%
     dplyr::summarise(
       point_est = point_est,
       # l = quantile(.data$value, probs[1]),
@@ -44,17 +44,17 @@ plot_birth_and_death_rates_posteriors = function(x, point_est = c("mean", "media
     )
 
   # plot posterior density
-  p <- ggplot2::ggplot(d_long, aes(x=value)) +
+  p <- ggplot2::ggplot(d_long, aes(x=.data$value)) +
     ggplot2::geom_histogram(aes(y = after_stat(density)), binwidth = 0.01, alpha = .3) +
     ggplot2::geom_density(col = "forestgreen", size = .8) +
-    ggplot2::facet_wrap( ~ variable)
+    ggplot2::facet_wrap( ~ .data$variable)
 
   # Plot estimates, if requested
   if (point_est != "none") {
     p <- p +
       ggplot2::geom_vline(
         data = d,
-        ggplot2::aes(xintercept = m),
+        ggplot2::aes(xintercept = .data$m),
         col = "forestgreen",
         linetype = 'longdash',
         size = .5,
@@ -100,7 +100,7 @@ plot_birth_and_death_rates_posteriors = function(x, point_est = c("mean", "media
   p <- p +
     ggplot2::geom_line(
       data = prior_data,
-      ggplot2::aes(x=x, y=y),
+      ggplot2::aes(x=.data$x, y=.data$y),
       col = "indianred3",
       size = .8
     )
@@ -152,7 +152,7 @@ plot_growth_rate_posteriors = function(x, point_est = c("mean", "median", "none"
     reshape2::melt(id.vars=NULL)
 
   d <- d_long %>%
-    dplyr::group_by(variable) %>%
+    dplyr::group_by(.data$variable) %>%
     dplyr::summarise(
       point_est = point_est,
       # l = quantile(.data$value, probs[1]),
@@ -161,23 +161,21 @@ plot_growth_rate_posteriors = function(x, point_est = c("mean", "median", "none"
     )
 
   # plot posterior density
-  x_max <- max(d_long$value) + 0.1
-  x_min <- min(d_long$value) - 0.1
+  x_max <- max(d_long$value)
+  x_min <- min(d_long$value)
   bw = (x_max - x_min) / 100
 
-  d_long %>%
-    dplyr::filter(dplyr::between(value, x_min, x_max)) %>%
-    ggplot2::ggplot(aes(x=value)) +
+  p <- ggplot2::ggplot(d_long, ggplot2::aes(x=.data$value)) +
     ggplot2::geom_histogram(aes(y = after_stat(density)), binwidth = bw, alpha = .3) +
     ggplot2::geom_density(col = "forestgreen", size = .8) +
-    ggplot2::facet_wrap( ~ variable) -> p
+    ggplot2::facet_wrap( ~ .data$variable)
 
   # Plot estimates, if requested
   if (point_est != "none") {
     p <- p +
       ggplot2::geom_vline(
         data = d,
-        ggplot2::aes(xintercept = m),
+        ggplot2::aes(xintercept = .data$m),
         col = "forestgreen",
         linetype = 'longdash',
         size = .5,
@@ -193,7 +191,7 @@ plot_growth_rate_posteriors = function(x, point_est = c("mean", "median", "none"
       #   fill = 'forestgreen',
       #   alpha = .4
       # ) +
-      ggplot2::facet_wrap( ~ variable)
+      ggplot2::facet_wrap( ~ .data$variable)
   }
 
   # Create prior of ro sampling from the two priors over lambda and mu
@@ -210,10 +208,9 @@ plot_growth_rate_posteriors = function(x, point_est = c("mean", "median", "none"
     p <- p +
       ggplot2::geom_line(
         data = prior_data,
-        ggplot2::aes(x=x, y=y),
+        ggplot2::aes(x=.data$x, y=.data$y),
         col = "indianred3",
-        size = .8) +
-      xlim(x_min, x_max)
+        size = .8)
 
   } else if (x$fit_info$prior == "invgamma") {
     # plot prior, 90 % of the prior if possible, or at max twice the max of the
@@ -221,15 +218,14 @@ plot_growth_rate_posteriors = function(x, point_est = c("mean", "median", "none"
     mu_prior <- invgamma::rinvgamma(10000, x$fit_info$a, x$fit_info$b)
     prior_data <- data.frame(x = lambda_prior - mu_prior) %>%
       na.omit() %>%
-      dplyr::filter(dplyr::between(x, x_min, x_max))
+      dplyr::filter(dplyr::between(x, x_min + .1, x_max - .1))
 
     p <- p +
       ggplot2::geom_density(
         data = prior_data,
-        ggplot2::aes(x=x),
+        ggplot2::aes(x=.data$x),
         col = "indianred3",
-        size = .8) +
-      ggplot2::scale_x_continuous(limits = c(x_min, x_max), oob = scales::squish)
+        size = .8)
 
   } else {
     cli::cli_alert_danger("The prior {.var x$fit_info$prior} has not been recognized")
@@ -241,6 +237,7 @@ plot_growth_rate_posteriors = function(x, point_est = c("mean", "median", "none"
       y = 'density',
       x = "value"
     ) +
+    ggplot2::coord_cartesian(xlim=c(x_min - bw, x_max + bw)) +
     my_ggplot_theme()
 
   return(p)

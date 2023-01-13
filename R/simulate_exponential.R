@@ -12,7 +12,6 @@
 #' @param delta_t The size of the time step.
 #' @returns The final population size after the simulation.
 #'
-#' @importFrom stats runif
 #' @export
 sim_single_stochastic_exponential <- function(n0, lambda, mu, delta_t) {
   assertthat::assert_that(n0 >= 0 , msg = "n0 must be a positive integer")
@@ -38,7 +37,7 @@ sim_single_stochastic_exponential <- function(n0, lambda, mu, delta_t) {
   # Enter an infinite loop
   while (TRUE) {
     # Update the event time by the time until the next event occurs
-    event_time <- event_time - log(runif(1, 0, 1)) / (pop_size * w)
+    event_time <- event_time - log(stats::runif(1, 0, 1)) / (pop_size * w)
 
     # Update the t variable and counter while the event time is still too small
     while (event_time > t && counter <= 1) {
@@ -47,7 +46,7 @@ sim_single_stochastic_exponential <- function(n0, lambda, mu, delta_t) {
     }
 
     # Generate a random number to determine if a birth or death event occurs
-    if (runif(1, 0, 1) <= p) {
+    if (stats::runif(1, 0, 1) <= p) {
       pop_size <- pop_size + 1
     } else {
       pop_size <- pop_size - 1
@@ -74,7 +73,6 @@ sim_single_stochastic_exponential <- function(n0, lambda, mu, delta_t) {
 #' @return A tibble with the time, population size, birth rates, and death rates
 #'   at each time step.
 #'
-#' @importFrom dplyr tibble
 #' @export
 sim_stochastic_exponential <- function(n0, lambda, mu, steps, delta_t) {
   # Convert single values of lambda, mu, and delta_t to vectors of length steps
@@ -124,7 +122,7 @@ sim_stochastic_exponential <- function(n0, lambda, mu, steps, delta_t) {
   death.rates <- c(mu, 0)
 
   # Return the results as a tibble
-  d <- tibble(time, pop.size, birth.rates, death.rates)
+  d <- dplyr::tibble(time, pop.size, birth.rates, death.rates)
   return(d)
 }
 
@@ -154,8 +152,6 @@ sim_stochastic_exponential <- function(n0, lambda, mu, steps, delta_t) {
 #' @return A tibble containing columns for time, population size, birth rate, and
 #'   death rate at each step.
 #'
-#' @importFrom dplyr tibble
-#' @importFrom stats rnorm
 #' @export
 sim_noisy <- function(n0, lambda, mu, steps, delta_t, sigma, as_int = T) {
   # Convert single values of lambda, mu, and delta_t to vectors of length steps
@@ -201,7 +197,7 @@ sim_noisy <- function(n0, lambda, mu, steps, delta_t, sigma, as_int = T) {
 
   # Add noise
   stds <- pop.size * sigma
-  noise <- rnorm(length(pop.size), 0, stds)
+  noise <- stats::rnorm(length(pop.size), 0, stds)
   pop.size <- pop.size + noise
   if (as_int) {
     pop.size <- as.integer(pop.size)
@@ -211,7 +207,7 @@ sim_noisy <- function(n0, lambda, mu, steps, delta_t, sigma, as_int = T) {
   time <- cumsum(delta_t)
   birth.rates <- c(lambda, 0)
   death.rates <- c(mu, 0)
-  d <- tibble(time, pop.size, birth.rates, death.rates)
+  d <- dplyr::tibble(time, pop.size, birth.rates, death.rates)
 
   return(d)
 }

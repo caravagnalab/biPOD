@@ -14,7 +14,6 @@
 #' @param delta_t Time step.
 #' @return The final population size.
 #'
-#' @importFrom stats runif
 #' @export
 sim_single_stochastic_logistic = function(n0, lambda, mu, K, delta_t) {
   assertthat::assert_that(n0 >= 0 , msg = "n0 must be a positive integer")
@@ -49,7 +48,7 @@ sim_single_stochastic_logistic = function(n0, lambda, mu, K, delta_t) {
     rate <- (lambda - b2 * pop_size) * pop_size + (death) * pop_size
 
     # Update the time of the next event by sampling from an exponential distribution with rate parameter "rate".
-    event_time <- event_time - log(runif(1,0,1)) / rate
+    event_time <- event_time - log(stats::runif(1,0,1)) / rate
 
     # Update the time variable for the simulation loop until it exceeds the time step or the counter exceeds 1.
     while (event_time > t && counter <= 1) {
@@ -67,7 +66,7 @@ sim_single_stochastic_logistic = function(n0, lambda, mu, K, delta_t) {
     if (is.na(p)) break
 
     # If a random uniform value is less than or equal to p, increment the population size by 1. Otherwise, decrement it by 1.
-    if (runif(1, 0, 1) <= p) {
+    if (stats::runif(1, 0, 1) <= p) {
       pop_size <- pop_size + 1
     } else {
       pop_size <- pop_size - 1
@@ -95,7 +94,6 @@ sim_single_stochastic_logistic = function(n0, lambda, mu, K, delta_t) {
 #' @return A tibble with the time, population size, birth rates, and death rates
 #'   at each time step.
 #'
-#' @importFrom dplyr tibble
 #' @export
 sim_stochastic_logistic <- function(n0, lambda, mu, K, steps, delta_t) {
   # Convert single values of lambda, mu, and delta_t to vectors of length steps
@@ -146,6 +144,6 @@ sim_stochastic_logistic <- function(n0, lambda, mu, K, steps, delta_t) {
   death.rates <- c(mu, 0)
 
   # Return result as a tibble
-  d <- tibble(time, pop.size, birth.rates, death.rates)
+  d <- dplyr::tibble(time, pop.size, birth.rates, death.rates)
   return(d)
 }
