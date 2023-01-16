@@ -184,7 +184,7 @@ public:
             vals_i__ = context__.vals_i("S");
             pos__ = 0;
             S = vals_i__[pos__++];
-            check_greater_or_equal(function__, "S", S, 2);
+            check_greater_or_equal(function__, "S", S, 1);
             current_statement_begin__ = 26;
             context__.validate_dims("data initialization", "n0", "double", context__.to_vec());
             n0 = double(0);
@@ -304,7 +304,7 @@ public:
         double K(0);
         K = vals_r__[pos__++];
         try {
-            writer__.scalar_unconstrain(K);
+            writer__.scalar_lb_unconstrain(0, K);
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable K: ") + e.what()), current_statement_begin__, prog_reader__());
         }
@@ -351,9 +351,9 @@ public:
             local_scalar_t__ K;
             (void) K;  // dummy to suppress unused var warning
             if (jacobian__)
-                K = in__.scalar_constrain(lp__);
+                K = in__.scalar_lb_constrain(0, lp__);
             else
-                K = in__.scalar_constrain();
+                K = in__.scalar_lb_constrain(0);
             // transformed parameters
             current_statement_begin__ = 44;
             local_scalar_t__ ro;
@@ -443,7 +443,7 @@ public:
         vars__.push_back(lambda);
         double mu = in__.scalar_lb_constrain(0);
         vars__.push_back(mu);
-        double K = in__.scalar_constrain();
+        double K = in__.scalar_lb_constrain(0);
         vars__.push_back(K);
         double lp__ = 0.0;
         (void) lp__;  // dummy to suppress unused var warning

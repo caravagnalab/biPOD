@@ -1,0 +1,55 @@
+---
+title: "4. Uncertainty and number of points"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(biPOD)
+```
+
+The uncertainty over the parameters inferred by the model obviously depends on the number of points available to fit the model. 
+We will simulate a process lasting 1 unit of time and with 10 total time steps. We will then fit a model for a number of observation starting from 1 up to 10.
+Initially we will observe only the starting and the final population, but we will then iteratively add a random new observation to the sample.
+
+This is the full simulated process:
+
+```{r}
+n_steps <- 10
+dt <- .1
+d <- biPOD::sim_stochastic_exponential(20, 1, .25, steps = n_steps, delta_t = dt)
+bipod <- biPOD::init(d, "Full sample")
+biPOD::evolution_plot(bipod)
+```
+
+```{r, results=FALSE, message=FALSE}
+indexes <- c(1, 11)
+indexes <- c(indexes, sample(2:n_steps, n_steps - 1, replace=F))
+
+fit_plots <- list()
+posterior_plots <- list()
+
+for (i in 3:length(indexes)) {
+  idx <- sort(indexes[1:i])
+  
+  x <- biPOD::init(d[idx,], sample = paste(""))
+  x <- biPOD::fit_exp(x, model_type = "exact", prior = "uniform", a = 0, b = 2, g = 2)
+  
+  name = paste("sample", i)
+  print(name)
+  print(d[idx,])
+  
+  fit_plots[[name]] = biPOD::fit_plot(x)
+  posterior_plots[[name]] = biPOD::plot_birth_and_death_rates_posteriors(x)
+}
+```
+
+```{r}
+ggpubr::ggarrange(plotlist = fit_plots)
+ggpubr::ggarrange(plotlist = posterior_plots)
+```

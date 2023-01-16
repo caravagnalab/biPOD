@@ -91,8 +91,7 @@ sim_single_stochastic_logistic = function(n0, lambda, mu, K, delta_t) {
 #' @param steps The number of time steps to simulate.
 #' @param delta_t The size of the time step. Can be a single value or a vector
 #'   of length `steps`.
-#' @return A tibble with the time, population size, birth rates, and death rates
-#'   at each time step.
+#' @return A tibble with the time, population size.
 #'
 #' @export
 sim_stochastic_logistic <- function(n0, lambda, mu, K, steps, delta_t) {
@@ -140,10 +139,8 @@ sim_stochastic_logistic <- function(n0, lambda, mu, K, steps, delta_t) {
 
   # Calculate the time, birth rates, and death rates vectors
   time <- cumsum(delta_t)
-  birth.rates <- c(lambda, 0)
-  death.rates <- c(mu, 0)
 
   # Return result as a tibble
-  d <- dplyr::tibble(time, pop.size, birth.rates, death.rates)
+  d <- dplyr::tibble(time, count = pop.size)
   return(d)
 }

@@ -9,8 +9,8 @@ init(counts, sample)
 \arguments{
 \item{counts}{A dataframe of counts with the following fields:
 \itemize{
-\item \code{time} time step;
-\item \code{count} population count, integer. Alternatively can be named \code{pop.size};
+\item \code{time} time step.
+\item \code{count} population count, integer.
 }}
 
 \item{sample}{A string containing the sample name.}

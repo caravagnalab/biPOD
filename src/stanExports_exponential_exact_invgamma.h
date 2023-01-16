@@ -283,7 +283,7 @@ public:
             vals_i__ = context__.vals_i("S");
             pos__ = 0;
             S = vals_i__[pos__++];
-            check_greater_or_equal(function__, "S", S, 2);
+            check_greater_or_equal(function__, "S", S, 1);
             current_statement_begin__ = 72;
             context__.validate_dims("data initialization", "n0", "int", context__.to_vec());
             n0 = int(0);

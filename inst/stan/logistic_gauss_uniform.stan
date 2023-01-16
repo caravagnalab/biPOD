@@ -22,7 +22,7 @@ functions {
 }
 
 data {
-  int<lower=2> S; // Number of steps
+  int<lower=1> S; // Number of steps
   real<lower=0> n0;
   real<lower=0> t0;
 
@@ -38,7 +38,7 @@ data {
 parameters {
   real<lower=0> lambda;
   real<lower=0> mu;
-  real K; // carrying capacity
+  real<lower=0> K; // carrying capacity
 }
 
 transformed parameters {

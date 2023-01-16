@@ -23,8 +23,7 @@ of length \code{steps}.}
 of length \code{steps}.}
 }
 \value{
-A tibble with the time, population size, birth rates, and death rates
-at each time step.
+A tibble with the time, population size.
 }
 \description{
 Simulate population growth with logistic growth for multiple time steps

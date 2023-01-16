@@ -118,11 +118,9 @@ sim_stochastic_exponential <- function(n0, lambda, mu, steps, delta_t) {
 
   # Calculate the time, birth rates, and death rates vectors
   time <- cumsum(delta_t)
-  birth.rates <- c(lambda, 0)
-  death.rates <- c(mu, 0)
 
   # Return the results as a tibble
-  d <- dplyr::tibble(time, pop.size, birth.rates, death.rates)
+  d <- dplyr::tibble(time, count = pop.size)
   return(d)
 }
 
@@ -149,8 +147,7 @@ sim_stochastic_exponential <- function(n0, lambda, mu, steps, delta_t) {
 #' @param sigma Noise parameter.
 #' @param as_int Logical indicating whether to round the population size to the
 #'   nearest integer at each step.
-#' @return A tibble containing columns for time, population size, birth rate, and
-#'   death rate at each step.
+#' @return A tibble containing columns for time and population size
 #'
 #' @export
 sim_noisy <- function(n0, lambda, mu, steps, delta_t, sigma, as_int = T) {
@@ -205,9 +202,7 @@ sim_noisy <- function(n0, lambda, mu, steps, delta_t, sigma, as_int = T) {
 
   # produce final results
   time <- cumsum(delta_t)
-  birth.rates <- c(lambda, 0)
-  death.rates <- c(mu, 0)
-  d <- dplyr::tibble(time, pop.size, birth.rates, death.rates)
+  d <- dplyr::tibble(time, count = pop.size)
 
   return(d)
 }

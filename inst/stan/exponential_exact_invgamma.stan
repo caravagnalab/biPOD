@@ -68,7 +68,7 @@ functions {
 }
 
 data {
-  int<lower=2> S; // Number of steps
+  int<lower=1> S; // Number of steps
   int<lower=0> n0;
   real<lower=0> t0;
 

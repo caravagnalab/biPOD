@@ -60,17 +60,17 @@ fit_exp <- function(x, model_type = c("gauss", "exact"), prior = c("uniform", "i
       t0 = t0,
       T = current$time, # / Ts[length(Ts)],
       n0 = as.integer(n0 / factor_size),
-      N = as.integer(current$count / factor_size),
+      N = c(as.integer(current$count / factor_size)),
       k = 0,
       a = a,
       b = b,
       g = g
     )
 
+    print(data_model)
+
     # fit model
     model_name <- paste("exponential", model_type, prior, sep = "_")
-    print(model_name)
-    print(data_model)
     model <- get(model_name, stanmodels)
     fit_model <- rstan::sampling(
       model,
@@ -163,7 +163,7 @@ fit_log <- function(x, model_type = c("gauss", "exact"), prior = c("uniform", "i
       t0 = t0,
       T = current$time,
       n0 = as.integer(n0 / factor_size),
-      as.integer(current$count / factor_size),
+      N = as.integer(current$count / factor_size),
       a = a,
       b = b,
       prior_K = prior_K

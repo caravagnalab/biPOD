@@ -1,0 +1,69 @@
+---
+title: "2. Exponential Growth"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(biPOD)
+T <- 3
+time_steps <- 12
+delta_t <- T / time_steps
+d <- biPOD::sim_stochastic_exponential(1000, 1, .5, steps = time_steps, delta_t = delta_t)
+```
+
+The `fit_exp` function can be used to fit a model over an input dataframe assuming an exponential growth.
+The function requires as input a `biPOD` object along with two main additional parameters:
+
+- `model_type` : the type of model to use among `gauss` and `exact`
+- `prior`      : the type of prior to use among `uniform` and `invgamma`
+
+Additionally, one can tune many additional parameters for specific purposes:
+
+- `a`, `b`, `g` : parameters to tune the shape of the prior distribution
+- `chains`, `iter`, `warmup`, `cores` : parameters for the MCMC algorithm
+
+A fit with fixed rates can be obtained without adding any `group` column to the input dataframe.
+
+```{r fit exp fixed}
+bipod <- biPOD::init(d, "exponential sample")
+bipod <- biPOD::fit_exp(bipod, model_type = "gauss", prior = "uniform", a = 0, b = 5, g = 5)
+```
+
+The bipod object does now contains a field names `fits` which contains every fit for every group, in this case only one. 
+The results of the fit can be visually inspected using:
+
+- `plot_traces` : plot the traces of the mcmc chains, passing as `pars` a vector of desired parameter
+- `plot_birth_and_death_rates_posteriors` : to plot the prior and posteriors for the birth and death parameters
+- `plot_growth_rate_posteriors` : to plot the prior and posteriors for the growth rates
+- `fit_plot` : to plot the fitted curve against the observed data
+- 
+
+```{r}
+biPOD::plot_traces(bipod, pars = c("lambda", "mu"))
+biPOD::plot_birth_and_death_rates_posteriors(bipod)
+biPOD::plot_growth_rate_posteriors(bipod)
+biPOD::fit_plot(bipod)
+```
+
+To obtain a fit with variable growth rates one should add the `group` column. We will use three group:
+
+```{r fit exp variable}
+d$group <- floor(d$time)
+d$group[nrow(d)] <- 2
+bipod_g <- biPOD::init(d, "Grouped sample")
+bipod_g <- biPOD::fit_exp(bipod_g, model_type = "gauss", prior = "uniform", a = 0, b = 5, g = 5)
+```
+And the results can be once again visually inspected:
+
+```{r}
+biPOD::plot_traces(bipod_g, pars = c("lambda", "mu"))
+biPOD::plot_birth_and_death_rates_posteriors(bipod_g)
+biPOD::plot_growth_rate_posteriors(bipod_g)
+biPOD::fit_plot(bipod_g)
+```

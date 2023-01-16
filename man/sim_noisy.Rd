@@ -29,8 +29,7 @@ the same length as the number of steps.}
 nearest integer at each step.}
 }
 \value{
-A tibble containing columns for time, population size, birth rate, and
-death rate at each step.
+A tibble containing columns for time and population size
 }
 \description{
 This function simulates population growth over a given number of steps, with
