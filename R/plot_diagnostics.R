@@ -3,54 +3,39 @@
 #'
 #' @param x A biPOD object of class `bipod`. Must contains 'fit'
 #' @param pars A character vector of parameters to plot.
-#' @param regex_pars A character vector of regular expressions to match against the parameter names in the 'fit' object. At least one of 'pars' or 'regex_pars' should contain input.
-#' @param n_col Number of columns of plots in the final output. Default is 4.
 #'
 #' @return A ggplot object with traces of the specified parameters
 #' @export
-plot_traces = function(x, pars = c(), regex_pars = c(), n_col = 4) {
+plot_traces = function(x, pars = c()) {
   assertthat::assert_that(inherits(x, "bipod"), msg = "Input must be a bipod object")
-  assertthat::assert_that("fit" %in% names(x), msg = "Input must contain a 'fit' field")
-  assertthat::assert_that(length(pars) > 0 | length(regex_pars) > 0, msg = "Either 'pars' or 'regex_pars' should contain at least one input")
+  assertthat::assert_that("fits" %in% names(x), msg = "Input must contain a 'fits' field")
+  assertthat::assert_that(length(pars) > 0, msg = "'pars' should contain at least one input")
 
-  par_list <- c()
-  if (length(regex_pars) > 0) {
-    for (p in regex_pars) {
-      par_list <- c(par_list, names(x$fit)[grep(p, names(x$fit))])
+  plots <- lapply(names(x$fits), function(fit_name) {
+    fit <- x$fits[[fit_name]]
+    long_chains <- data.frame()
+    for (par in pars) {
+      rhat <- rstan::Rhat(as.array(fit)[,,par])
+      chains <- as.data.frame(rstan::extract(fit, pars = par, permuted = FALSE))
+      names(chains) <- paste0("chain", 1:ncol(chains))
+      chains$index <- 1:nrow(chains)
+      chains <- reshape2::melt(chains, id.vars = c("index")) %>%
+        dplyr::mutate(parameter = paste0(par, gsub("fit", "", fit_name))) %>%
+        dplyr::mutate(color = ifelse(rhat <= 1.01, "forestgreen", "indianred"))
+
+      long_chains <- dplyr::bind_rows(long_chains, chains)
     }
-  } else {
-    par_list <- c(c(pars))
-  }
-  par_list <- unique(par_list)
 
-  assertthat::assert_that(length(par_list) > 0, msg = "No parameters found with given input")
-  for (p in par_list) {
-    assertthat::assert_that(p %in% names(x$fit), msg = "Parameters passed as input are not present in the 'fit' object")
-  }
-
-  plots <- lapply(par_list, function(par) {
-    rhat <- rstan::Rhat(as.array(x$fit)[,,par])
-    chains <- as.data.frame(rstan::extract(x$fit, pars = par, permuted = FALSE))
-    names(chains) <- paste0("chain", 1:ncol(chains))
-    chains$index <- 1:nrow(chains)
-    chains <- reshape2::melt(chains, id.vars = c("index")) %>%
-      dplyr::mutate(parameter = par)
-
-    rhat_color <- if(rhat <= 1.01) "forestgreen" else "indianred"
-
-    p <- ggplot2::ggplot(chains, ggplot2::aes(x=.data$index, y=.data$value, col=.data$variable)) +
+    p <- ggplot2::ggplot(long_chains, ggplot2::aes(x=.data$index, y=.data$value, col=.data$variable)) +
       ggplot2::geom_line() +
       ggplot2::facet_wrap(~ .data$parameter) +
       ggplot2::scale_color_brewer(palette = "Greens", direction = -1) +
       my_ggplot_theme() +
-      ggplot2::theme(legend.position = "none",
-                     strip.background = ggplot2::element_rect(colour=rhat_color,
-                                                              fill=rhat_color))
+      ggplot2::theme(legend.position = "none")
+    p
   })
 
-  n_col <- if(length(par_list) > n_col) n_col else length(par_list)
-  plots <- ggpubr::ggarrange(plotlist = plots,
-                             ncol = n_col)
+  plots <- ggpubr::ggarrange(plotlist = plots, ncol=1)
   return(plots)
 }
 
@@ -67,6 +52,7 @@ plot_traces = function(x, pars = c(), regex_pars = c(), n_col = 4) {
 #' @returns A plot. Represents the posterior predictive checks.
 #' @export
 ppc_plot = function(x, ptype, prob = 0.5, prob_outer = 0.9) {
+  cli::cli_alert_danger("TODO")
   assertthat::assert_that(inherits(x, "bipod"), msg = "Input must be a bipod object")
   assertthat::assert_that("fit" %in% names(x), msg = "Input must contain a 'fit' field")
   assertthat::assert_that(ptype %in% c("intervals", "ribbon"), msg = "ptype must be one of: intervals, ribbon")

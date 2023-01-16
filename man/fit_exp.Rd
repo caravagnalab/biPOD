@@ -9,7 +9,6 @@ fit_exp(
   model_type = c("gauss", "exact"),
   prior = c("uniform", "invgamma"),
   factor_size = 1,
-  fix_rates = 0,
   a = 0,
   b = 1,
   g = 1,
@@ -35,12 +34,6 @@ fit_exp(
 }}
 
 \item{factor_size}{numeric factor by which to divide counts in the bipod object}
-
-\item{fix_rates}{logical indicating whether to fix rates at values specified in the bipod object
-\itemize{
-\item \code{1} The birth rate is fixed whereas the death rates are variable.
-\item \code{0} Both birth and death rate are fixed.
-}}
 
 \item{a}{Minimum value for uniform prior, shape parameter for inverse gamma prior}
 

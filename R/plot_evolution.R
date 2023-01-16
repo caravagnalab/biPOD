@@ -15,8 +15,10 @@ evolution_plot <- function(x) {
     ggplot2::geom_line(col='forestgreen') +
     ggplot2::geom_point(col='forestgreen') +
     ggplot2::labs(
-      title = x$sample
-    )
+      title = x$sample,
+      x = "Time",
+      y = "Count"
+    ) +
     my_ggplot_theme()
 
   pop.plot

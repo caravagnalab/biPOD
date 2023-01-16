@@ -4,16 +4,12 @@
 \alias{plot_traces}
 \title{Plot traces of specified parameters from a fitted Stan model}
 \usage{
-plot_traces(x, pars = c(), regex_pars = c(), n_col = 4)
+plot_traces(x, pars = c())
 }
 \arguments{
 \item{x}{A biPOD object of class \code{bipod}. Must contains 'fit'}
 
 \item{pars}{A character vector of parameters to plot.}
-
-\item{regex_pars}{A character vector of regular expressions to match against the parameter names in the 'fit' object. At least one of 'pars' or 'regex_pars' should contain input.}
-
-\item{n_col}{Number of columns of plots in the final output. Default is 4.}
 }
 \value{
 A ggplot object with traces of the specified parameters

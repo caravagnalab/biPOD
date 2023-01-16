@@ -5,12 +5,11 @@
 #' @param point_est Character string indicating which point estimate to use. Available options are "mean", "median", and "none". Default is "mean".
 #'
 #' @return A ggplot object containing the posterior density plots of the birth and death rates and the prior density plot
-#'
 #' @export
 #'
 plot_birth_and_death_rates_posteriors = function(x, point_est = c("mean", "median", "none")) {
   assertthat::assert_that(inherits(x, "bipod"), msg = "Input must be a bipod object")
-  assertthat::assert_that("fit" %in% names(x), msg = "Input must contain a 'fit' field")
+  assertthat::assert_that("fits" %in% names(x), msg = "Input must contain a 'fits' field")
 
   # Check point_est and select corresponding function
   point_est <- match.arg(point_est)
@@ -23,57 +22,9 @@ plot_birth_and_death_rates_posteriors = function(x, point_est = c("mean", "media
   }
 
   # Obtain list of parameters to plot
-  par_list = c()
-  for (p in c("lambda", "mu")) {
-    par_list <- c(par_list, names(x$fit)[grep(p, names(x$fit))])
-  }
-  assertthat::assert_that(length(par_list) > 0, msg = "This fit does not contain parameters named 'lambda' nor 'mu")
+  par_list = c("lambda", "mu")
 
-  # Prepare data
-  d_long <- rstan::extract(x$fit, pars = par_list) %>%
-    as.data.frame() %>%
-    reshape2::melt(id.vars=NULL)
-
-  d <- d_long %>%
-    dplyr::group_by(.data$variable) %>%
-    dplyr::summarise(
-      point_est = point_est,
-      # l = quantile(.data$value, probs[1]),
-      m  = m_func(.data$value),
-      # h = quantile(.data$value, probs[2])
-    )
-
-  # plot posterior density
-  p <- ggplot2::ggplot(d_long, aes(x=.data$value)) +
-    ggplot2::geom_histogram(aes(y = after_stat(density)), binwidth = 0.01, alpha = .3) +
-    ggplot2::geom_density(col = "forestgreen", size = .8) +
-    ggplot2::facet_wrap( ~ .data$variable)
-
-  # Plot estimates, if requested
-  if (point_est != "none") {
-    p <- p +
-      ggplot2::geom_vline(
-        data = d,
-        ggplot2::aes(xintercept = .data$m),
-        col = "forestgreen",
-        linetype = 'longdash',
-        size = .5,
-        show.legend = FALSE
-      )
-      # ggplot2::annotate(
-      #   geom = 'rect',
-      #   xmin = d$l,
-      #   xmax = d$h,
-      #   ymin = 0,
-      #   ymax = Inf,
-      #   color = NA,
-      #   fill = 'forestgreen',
-      #   alpha = .4
-      # ) +
-      # ggplot2::facet_wrap( ~ variable)
-  }
-
-  # Plot prior
+  # Prepare prior data
   if (x$fit_info$prior == "uniform") {
     xs <- seq(x$fit_info$a - 0.1, x$fit_info$b + 0.1, length=1000)
     prior_data <- data.frame(
@@ -83,9 +34,7 @@ plot_birth_and_death_rates_posteriors = function(x, point_est = c("mean", "media
       na.omit()
   } else if (x$fit_info$prior == "invgamma") {
     # plot prior, 90 % of the prior if possible, or at max twice the max of the
-    x_lim <- max(d_long$value)
-    x_lim_prior <- invgamma::qinvgamma(.9, x$fit_info$a, x$fit_info$b)
-    x_lim = if(x_lim_prior > 2 * x_lim) 2 * x_lim else x_lim_prior
+    x_lim <- invgamma::qinvgamma(.9, x$fit_info$a, x$fit_info$b)
 
     xs <- seq(0.001, x_lim, length=1000)
     prior_data <- data.frame(
@@ -97,23 +46,73 @@ plot_birth_and_death_rates_posteriors = function(x, point_est = c("mean", "media
     cli::cli_alert_danger("The prior {.var x$fit_info$prior} has not been recognized")
   }
 
-  p <- p +
-    ggplot2::geom_line(
-      data = prior_data,
-      ggplot2::aes(x=.data$x, y=.data$y),
-      col = "indianred3",
-      size = .8
-    )
+  # Plot for every fit
+  plots <- lapply(names(x$fits), function(fit_name) {
+    fit <- x$fits[[fit_name]]
+    # Prepare data
+    d_long <- rstan::extract(fit, pars = par_list) %>%
+      as.data.frame() %>%
+      dplyr::rename_at(par_list, ~paste0(par_list, gsub("fit", "", fit_name))) %>%
+      reshape2::melt(id.vars=NULL)
 
-  # Add style
-  p <- p +
-    ggplot2::labs(
-      y = 'density',
-      x = "value"
-    ) +
-    my_ggplot_theme()
+    d <- d_long %>%
+      dplyr::group_by(.data$variable) %>%
+      dplyr::summarise(
+        point_est = point_est,
+        # l = quantile(.data$value, probs[1]),
+        m  = m_func(.data$value),
+        # h = quantile(.data$value, probs[2])
+      )
 
-  return(p)
+    # plot posterior density
+    p <- ggplot2::ggplot(d_long, ggplot2::aes(x=.data$value)) +
+      ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)), binwidth = 0.01, alpha = .3) +
+      ggplot2::geom_density(col = "forestgreen", size = .8) +
+      ggplot2::facet_wrap( ~ .data$variable)
+
+    # Plot estimates, if requested
+    if (point_est != "none") {
+      p <- p +
+        ggplot2::geom_vline(
+          data = d,
+          ggplot2::aes(xintercept = .data$m),
+          col = "forestgreen",
+          linetype = 'longdash',
+          size = .5,
+          show.legend = FALSE
+        )
+      # ggplot2::annotate(
+      #   geom = 'rect',
+      #   xmin = d$l,
+      #   xmax = d$h,
+      #   ymin = 0,
+      #   ymax = Inf,
+      #   color = NA,
+      #   fill = 'forestgreen',
+      #   alpha = .4
+      # ) +
+      # ggplot2::facet_wrap( ~ variable)
+    }
+
+    p <- p +
+      ggplot2::geom_line(
+        data = prior_data,
+        ggplot2::aes(x=.data$x, y=.data$y),
+        col = "indianred3",
+        linewidth = .8
+      )
+
+    # Add style
+    p <- p +
+      ggplot2::labs(
+        y = 'density',
+        x = "value"
+      ) +
+      my_ggplot_theme()
+  })
+
+  plots <- ggpubr::ggarrange(plotlist = plots, ncol = 1)
+  plots
 }
 
 #' Plot growth rates posteriors
@@ -122,12 +121,11 @@ plot_birth_and_death_rates_posteriors = function(x, point_est = c("mean", "media
 #' @param point_est Character string indicating which point estimate to use. Available options are mean", "median", and "none". Default is "mean".
 #'
 #' @return A ggplot object containing the posterior density plots of the growth rates and the prior density plot
-#'
 #' @export
 #'
 plot_growth_rate_posteriors = function(x, point_est = c("mean", "median", "none")) {
   assertthat::assert_that(inherits(x, "bipod"), msg = "Input must be a bipod object")
-  assertthat::assert_that("fit" %in% names(x), msg = "Input must contain a 'fit' field")
+  assertthat::assert_that("fits" %in% names(x), msg = "Input must contain a 'fit' field")
 
   # Check point_est and select corresponding function
   point_est <- match.arg(point_est)
@@ -140,61 +138,20 @@ plot_growth_rate_posteriors = function(x, point_est = c("mean", "median", "none"
   }
 
   # Obtain list of parameters to plot
-  par_list = c()
-  for (p in c("ro")) {
-    par_list <- c(par_list, names(x$fit)[grep(p, names(x$fit))])
-  }
-  assertthat::assert_that(length(par_list) > 0, msg = "This fit does not contain parameters named 'ro'")
+  par_list = c("ro")
 
-  # Prepare data
-  d_long <- rstan::extract(x$fit, pars = par_list) %>%
-    as.data.frame() %>%
-    reshape2::melt(id.vars=NULL)
+  # Prepare prior data
+  limits <- lapply(x$fits, function(fit) {
+    d_long <- rstan::extract(fit, pars = par_list) %>%
+      as.data.frame() %>%
+      reshape2::melt(id.vars=NULL)
 
-  d <- d_long %>%
-    dplyr::group_by(.data$variable) %>%
-    dplyr::summarise(
-      point_est = point_est,
-      # l = quantile(.data$value, probs[1]),
-      m  = m_func(.data$value),
-      # h = quantile(.data$value, probs[2])
-    )
-
-  # plot posterior density
-  x_max <- max(d_long$value)
-  x_min <- min(d_long$value)
-  bw = (x_max - x_min) / 100
-
-  p <- ggplot2::ggplot(d_long, ggplot2::aes(x=.data$value)) +
-    ggplot2::geom_histogram(aes(y = after_stat(density)), binwidth = bw, alpha = .3) +
-    ggplot2::geom_density(col = "forestgreen", size = .8) +
-    ggplot2::facet_wrap( ~ .data$variable)
-
-  # Plot estimates, if requested
-  if (point_est != "none") {
-    p <- p +
-      ggplot2::geom_vline(
-        data = d,
-        ggplot2::aes(xintercept = .data$m),
-        col = "forestgreen",
-        linetype = 'longdash',
-        size = .5,
-        show.legend = FALSE
-      ) +
-      # ggplot2::annotate(
-      #   geom = 'rect',
-      #   xmin = d$l,
-      #   xmax = d$h,
-      #   ymin = 0,
-      #   ymax = Inf,
-      #   color = NA,
-      #   fill = 'forestgreen',
-      #   alpha = .4
-      # ) +
-      ggplot2::facet_wrap( ~ .data$variable)
-  }
-
-  # Create prior of ro sampling from the two priors over lambda and mu
+    x_max <- max(d_long$value)
+    x_min <- min(d_long$value)
+    return(c(x_min, x_max))
+  })
+  x_min <- min(unlist(limits))
+  x_max <- max(unlist(limits))
 
   if (x$fit_info$prior == "uniform") {
     xs = seq(x_min, x_max, length=1000)
@@ -205,42 +162,101 @@ plot_growth_rate_posteriors = function(x, point_est = c("mean", "median", "none"
       na.omit() %>%
       dplyr::filter(dplyr::between(x, x_min, x_max))
 
-    p <- p +
-      ggplot2::geom_line(
-        data = prior_data,
-        ggplot2::aes(x=.data$x, y=.data$y),
-        col = "indianred3",
-        size = .8)
-
   } else if (x$fit_info$prior == "invgamma") {
-    # plot prior, 90 % of the prior if possible, or at max twice the max of the
     lambda_prior <- invgamma::rinvgamma(10000, x$fit_info$a, x$fit_info$b)
     mu_prior <- invgamma::rinvgamma(10000, x$fit_info$a, x$fit_info$b)
     prior_data <- data.frame(x = lambda_prior - mu_prior) %>%
       na.omit() %>%
       dplyr::filter(dplyr::between(x, x_min + .1, x_max - .1))
 
-    p <- p +
-      ggplot2::geom_density(
-        data = prior_data,
-        ggplot2::aes(x=.data$x),
-        col = "indianred3",
-        size = .8)
-
   } else {
     cli::cli_alert_danger("The prior {.var x$fit_info$prior} has not been recognized")
   }
 
-  # Add style
-  p <- p +
-    ggplot2::labs(
-      y = 'density',
-      x = "value"
-    ) +
-    ggplot2::coord_cartesian(xlim=c(x_min - bw, x_max + bw)) +
-    my_ggplot_theme()
+  plots <- lapply(names(x$fits), function(fit_name) {
+    fit <- x$fits[[fit_name]]
+    # Prepare data
+    d_long <- rstan::extract(fit, pars = par_list) %>%
+      as.data.frame() %>%
+      dplyr::rename_at(par_list, ~paste0(par_list, gsub("fit", "", fit_name))) %>%
+      reshape2::melt(id.vars=NULL)
 
-  return(p)
+    d <- d_long %>%
+      dplyr::group_by(.data$variable) %>%
+      dplyr::summarise(
+        point_est = point_est,
+        # l = quantile(.data$value, probs[1]),
+        m  = m_func(.data$value),
+        # h = quantile(.data$value, probs[2])
+      )
+
+    # plot posterior density
+    x_max <- max(d_long$value)
+    x_min <- min(d_long$value)
+    bw = (x_max - x_min) / 100
+
+    p <- ggplot2::ggplot(d_long, ggplot2::aes(x=.data$value)) +
+      ggplot2::geom_histogram(aes(y = after_stat(density)), binwidth = bw, alpha = .3) +
+      ggplot2::geom_density(col = "forestgreen", size = .8) +
+      ggplot2::facet_wrap( ~ .data$variable)
+
+    # Plot estimates, if requested
+    if (point_est != "none") {
+      p <- p +
+        ggplot2::geom_vline(
+          data = d,
+          ggplot2::aes(xintercept = .data$m),
+          col = "forestgreen",
+          linetype = 'longdash',
+          size = .5,
+          show.legend = FALSE
+        ) +
+        # ggplot2::annotate(
+        #   geom = 'rect',
+        #   xmin = d$l,
+        #   xmax = d$h,
+        #   ymin = 0,
+        #   ymax = Inf,
+        #   color = NA,
+        #   fill = 'forestgreen',
+        #   alpha = .4
+        # ) +
+        ggplot2::facet_wrap( ~ .data$variable)
+    }
+
+    # Create prior of ro sampling from the two priors over lambda and mu
+
+    if (x$fit_info$prior == "uniform") {
+      p <- p +
+        ggplot2::geom_line(
+          data = prior_data,
+          ggplot2::aes(x=.data$x, y=.data$y),
+          col = "indianred3",
+          size = .8)
+    } else if (x$fit_info$prior == "invgamma") {
+      p <- p +
+        ggplot2::geom_density(
+          data = prior_data,
+          ggplot2::aes(x=.data$x),
+          col = "indianred3",
+          size = .8)
+
+    } else {
+      cli::cli_alert_danger("The prior {.var x$fit_info$prior} has not been recognized")
+    }
+
+    # Add style
+    p <- p +
+      ggplot2::labs(
+        y = 'density',
+        x = "value"
+      ) +
+      ggplot2::coord_cartesian(xlim=c(x_min - bw, x_max + bw)) +
+      my_ggplot_theme()
+  })
+
+  plots <- ggpubr::ggarrange(plotlist = plots, ncol = 1)
+  plots
 }
 
 # Function to compute the mode

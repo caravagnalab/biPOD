@@ -6,14 +6,13 @@
 \usage{
 fit_log(
   x,
-  model_type = c("gauss"),
+  model_type = c("gauss", "exact"),
   prior = c("uniform", "invgamma"),
   factor_size = 1,
-  fix_rates = 1,
   a = 0,
   b = 1,
   g = 1,
-  prior_K = NULL,
+  prior_k = NULL,
   chains = 4,
   iter = 4000,
   warmup = 2000,
@@ -36,20 +35,12 @@ fit_log(
 
 \item{factor_size}{numeric factor by which to divide counts in the bipod object}
 
-\item{fix_rates}{logical indicating whether to fix rates at values specified in the bipod object
-\itemize{
-\item \code{1} The birth rate is fixed whereas the death rates are variable.
-\item \code{0} Both birth and death rate are fixed.
-}}
-
 \item{a}{Minimum value for uniform prior, shape parameter for inverse gamma prior}
 
 \item{b}{Maximum value for uniform prior, scale parameter for inverse gamma prior}
 
 \item{g}{Extra parameters for uniform prior. Sample is done from a uniform centered on the previous
 sample and with width w = (b - a) / g.}
-
-\item{prior_K}{Prior mean for the carrying capacity.}
 
 \item{chains}{integer number of chains to run in the Markov Chain Monte Carlo (MCMC) algorithm}
 
@@ -58,6 +49,8 @@ sample and with width w = (b - a) / g.}
 \item{warmup}{integer number of warmup iterations to run in the MCMC algorithm}
 
 \item{cores}{integer number of cores to use in parallel processing}
+
+\item{prior_K}{Prior mean for the carrying capacity.}
 }
 \value{
 the input bipod object with an added 'fit' slot containing the fitted model and an added 'fit_info' slot containing information about the fit

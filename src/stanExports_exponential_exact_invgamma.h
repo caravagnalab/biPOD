@@ -33,7 +33,7 @@ static int current_statement_begin__;
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
     reader.add_event(0, 0, "start", "model_exponential_exact_invgamma");
-    reader.add_event(125, 123, "end", "model_exponential_exact_invgamma");
+    reader.add_event(104, 102, "end", "model_exponential_exact_invgamma");
     return reader;
 }
 template <bool propto, typename T2__, typename T3__, typename T4__>
@@ -242,9 +242,9 @@ class model_exponential_exact_invgamma
 private:
         int S;
         int n0;
+        double t0;
         std::vector<int> N;
         std::vector<double> T;
-        int k;
         double a;
         double b;
 public:
@@ -291,7 +291,14 @@ public:
             pos__ = 0;
             n0 = vals_i__[pos__++];
             check_greater_or_equal(function__, "n0", n0, 0);
-            current_statement_begin__ = 74;
+            current_statement_begin__ = 73;
+            context__.validate_dims("data initialization", "t0", "double", context__.to_vec());
+            t0 = double(0);
+            vals_r__ = context__.vals_r("t0");
+            pos__ = 0;
+            t0 = vals_r__[pos__++];
+            check_greater_or_equal(function__, "t0", t0, 0);
+            current_statement_begin__ = 75;
             validate_non_negative_index("N", "S", S);
             context__.validate_dims("data initialization", "N", "int", context__.to_vec(S));
             N = std::vector<int>(S, int(0));
@@ -301,7 +308,7 @@ public:
             for (size_t k_0__ = 0; k_0__ < N_k_0_max__; ++k_0__) {
                 N[k_0__] = vals_i__[pos__++];
             }
-            current_statement_begin__ = 75;
+            current_statement_begin__ = 76;
             validate_non_negative_index("T", "S", S);
             context__.validate_dims("data initialization", "T", "double", context__.to_vec(S));
             T = std::vector<double>(S, double(0));
@@ -311,14 +318,6 @@ public:
             for (size_t k_0__ = 0; k_0__ < T_k_0_max__; ++k_0__) {
                 T[k_0__] = vals_r__[pos__++];
             }
-            current_statement_begin__ = 77;
-            context__.validate_dims("data initialization", "k", "int", context__.to_vec());
-            k = int(0);
-            vals_i__ = context__.vals_i("k");
-            pos__ = 0;
-            k = vals_i__[pos__++];
-            check_greater_or_equal(function__, "k", k, 0);
-            check_less_or_equal(function__, "k", k, 1);
             current_statement_begin__ = 78;
             context__.validate_dims("data initialization", "a", "double", context__.to_vec());
             a = double(0);
@@ -342,8 +341,7 @@ public:
             current_statement_begin__ = 83;
             num_params_r__ += 1;
             current_statement_begin__ = 84;
-            validate_non_negative_index("mu", "(logical_eq(k, 1) ? S : 1 )", (logical_eq(k, 1) ? S : 1 ));
-            num_params_r__ += (1 * (logical_eq(k, 1) ? S : 1 ));
+            num_params_r__ += 1;
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
             // Next line prevents compiler griping about no return
@@ -379,20 +377,13 @@ public:
             stan::lang::rethrow_located(std::runtime_error(std::string("Variable mu missing")), current_statement_begin__, prog_reader__());
         vals_r__ = context__.vals_r("mu");
         pos__ = 0U;
-        validate_non_negative_index("mu", "(logical_eq(k, 1) ? S : 1 )", (logical_eq(k, 1) ? S : 1 ));
-        context__.validate_dims("parameter initialization", "mu", "double", context__.to_vec((logical_eq(k, 1) ? S : 1 )));
-        std::vector<double> mu((logical_eq(k, 1) ? S : 1 ), double(0));
-        size_t mu_k_0_max__ = (logical_eq(k, 1) ? S : 1 );
-        for (size_t k_0__ = 0; k_0__ < mu_k_0_max__; ++k_0__) {
-            mu[k_0__] = vals_r__[pos__++];
-        }
-        size_t mu_i_0_max__ = (logical_eq(k, 1) ? S : 1 );
-        for (size_t i_0__ = 0; i_0__ < mu_i_0_max__; ++i_0__) {
-            try {
-                writer__.scalar_lb_unconstrain(0, mu[i_0__]);
-            } catch (const std::exception& e) {
-                stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable mu: ") + e.what()), current_statement_begin__, prog_reader__());
-            }
+        context__.validate_dims("parameter initialization", "mu", "double", context__.to_vec());
+        double mu(0);
+        mu = vals_r__[pos__++];
+        try {
+            writer__.scalar_lb_unconstrain(0, mu);
+        } catch (const std::exception& e) {
+            stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable mu: ") + e.what()), current_statement_begin__, prog_reader__());
         }
         params_r__ = writer__.data_r();
         params_i__ = writer__.data_i();
@@ -427,84 +418,39 @@ public:
             else
                 lambda = in__.scalar_lb_constrain(0);
             current_statement_begin__ = 84;
-            std::vector<local_scalar_t__> mu;
-            size_t mu_d_0_max__ = (logical_eq(k, 1) ? S : 1 );
-            mu.reserve(mu_d_0_max__);
-            for (size_t d_0__ = 0; d_0__ < mu_d_0_max__; ++d_0__) {
-                if (jacobian__)
-                    mu.push_back(in__.scalar_lb_constrain(0, lp__));
-                else
-                    mu.push_back(in__.scalar_lb_constrain(0));
-            }
+            local_scalar_t__ mu;
+            (void) mu;  // dummy to suppress unused var warning
+            if (jacobian__)
+                mu = in__.scalar_lb_constrain(0, lp__);
+            else
+                mu = in__.scalar_lb_constrain(0);
             // transformed parameters
             current_statement_begin__ = 88;
-            validate_non_negative_index("ro", "(logical_eq(k, 0) ? 1 : S )", (logical_eq(k, 0) ? 1 : S ));
-            std::vector<local_scalar_t__> ro((logical_eq(k, 0) ? 1 : S ), local_scalar_t__(0));
+            local_scalar_t__ ro;
+            (void) ro;  // dummy to suppress unused var warning
             stan::math::initialize(ro, DUMMY_VAR__);
             stan::math::fill(ro, DUMMY_VAR__);
             // transformed parameters block statements
             current_statement_begin__ = 89;
-            if (as_bool(logical_eq(k, 0))) {
-                current_statement_begin__ = 90;
-                stan::model::assign(ro, 
-                            stan::model::cons_list(stan::model::index_uni(1), stan::model::nil_index_list()), 
-                            (lambda - get_base1(mu, 1, "mu", 1)), 
-                            "assigning variable ro");
-            } else {
-                current_statement_begin__ = 92;
-                for (int i = 1; i <= S; ++i) {
-                    current_statement_begin__ = 93;
-                    stan::model::assign(ro, 
-                                stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
-                                (lambda - get_base1(mu, i, "mu", 1)), 
-                                "assigning variable ro");
-                }
-            }
+            stan::math::assign(ro, (lambda - mu));
             // validate transformed parameters
             const char* function__ = "validate transformed params";
             (void) function__;  // dummy to suppress unused var warning
             current_statement_begin__ = 88;
-            size_t ro_k_0_max__ = (logical_eq(k, 0) ? 1 : S );
-            for (size_t k_0__ = 0; k_0__ < ro_k_0_max__; ++k_0__) {
-                if (stan::math::is_uninitialized(ro[k_0__])) {
-                    std::stringstream msg__;
-                    msg__ << "Undefined transformed parameter: ro" << "[" << k_0__ << "]";
-                    stan::lang::rethrow_located(std::runtime_error(std::string("Error initializing variable ro: ") + msg__.str()), current_statement_begin__, prog_reader__());
-                }
+            if (stan::math::is_uninitialized(ro)) {
+                std::stringstream msg__;
+                msg__ << "Undefined transformed parameter: ro";
+                stan::lang::rethrow_located(std::runtime_error(std::string("Error initializing variable ro: ") + msg__.str()), current_statement_begin__, prog_reader__());
             }
             // model body
-            current_statement_begin__ = 99;
+            current_statement_begin__ = 93;
             lp_accum__.add(inv_gamma_log<propto__>(lambda, a, b));
-            current_statement_begin__ = 100;
-            if (as_bool(logical_eq(k, 0))) {
-                current_statement_begin__ = 101;
-                lp_accum__.add(inv_gamma_log<propto__>(get_base1(mu, 1, "mu", 1), a, b));
-            } else {
-                current_statement_begin__ = 103;
-                for (int i = 1; i <= S; ++i) {
-                    current_statement_begin__ = 104;
-                    lp_accum__.add(inv_gamma_log<propto__>(get_base1(mu, i, "mu", 1), a, b));
-                }
-            }
-            current_statement_begin__ = 108;
-            if (as_bool(logical_eq(k, 0))) {
-                current_statement_begin__ = 109;
-                for (int i = 1; i <= S; ++i) {
-                    current_statement_begin__ = 110;
-                    lp_accum__.add(birthDeathLike_log<propto__>(get_base1(N, i, "N", 1), n0, get_base1(T, i, "T", 1), lambda, get_base1(mu, 1, "mu", 1), pstream__));
-                }
-            } else {
-                current_statement_begin__ = 113;
-                for (int i = 1; i <= S; ++i) {
-                    current_statement_begin__ = 114;
-                    if (as_bool(logical_eq(i, 1))) {
-                        current_statement_begin__ = 115;
-                        lp_accum__.add(birthDeathLike_log<propto__>(get_base1(N, i, "N", 1), n0, get_base1(T, i, "T", 1), lambda, get_base1(mu, i, "mu", 1), pstream__));
-                    } else {
-                        current_statement_begin__ = 117;
-                        lp_accum__.add(birthDeathLike_log<propto__>(get_base1(N, i, "N", 1), get_base1(N, (i - 1), "N", 1), (get_base1(T, i, "T", 1) - get_base1(T, (i - 1), "T", 1)), lambda, get_base1(mu, i, "mu", 1), pstream__));
-                    }
-                }
+            current_statement_begin__ = 94;
+            lp_accum__.add(inv_gamma_log<propto__>(mu, a, b));
+            current_statement_begin__ = 96;
+            for (int i = 1; i <= S; ++i) {
+                current_statement_begin__ = 97;
+                lp_accum__.add(birthDeathLike_log<propto__>(get_base1(N, i, "N", 1), n0, (get_base1(T, i, "T", 1) - t0), lambda, mu, pstream__));
             }
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
@@ -536,10 +482,8 @@ public:
         dims__.resize(0);
         dimss__.push_back(dims__);
         dims__.resize(0);
-        dims__.push_back((logical_eq(k, 1) ? S : 1 ));
         dimss__.push_back(dims__);
         dims__.resize(0);
-        dims__.push_back((logical_eq(k, 0) ? 1 : S ));
         dimss__.push_back(dims__);
     }
     template <typename RNG>
@@ -558,16 +502,8 @@ public:
         // read-transform, write parameters
         double lambda = in__.scalar_lb_constrain(0);
         vars__.push_back(lambda);
-        std::vector<double> mu;
-        size_t mu_d_0_max__ = (logical_eq(k, 1) ? S : 1 );
-        mu.reserve(mu_d_0_max__);
-        for (size_t d_0__ = 0; d_0__ < mu_d_0_max__; ++d_0__) {
-            mu.push_back(in__.scalar_lb_constrain(0));
-        }
-        size_t mu_k_0_max__ = (logical_eq(k, 1) ? S : 1 );
-        for (size_t k_0__ = 0; k_0__ < mu_k_0_max__; ++k_0__) {
-            vars__.push_back(mu[k_0__]);
-        }
+        double mu = in__.scalar_lb_constrain(0);
+        vars__.push_back(mu);
         double lp__ = 0.0;
         (void) lp__;  // dummy to suppress unused var warning
         stan::math::accumulator<double> lp_accum__;
@@ -577,38 +513,20 @@ public:
         try {
             // declare and define transformed parameters
             current_statement_begin__ = 88;
-            validate_non_negative_index("ro", "(logical_eq(k, 0) ? 1 : S )", (logical_eq(k, 0) ? 1 : S ));
-            std::vector<double> ro((logical_eq(k, 0) ? 1 : S ), double(0));
+            double ro;
+            (void) ro;  // dummy to suppress unused var warning
             stan::math::initialize(ro, DUMMY_VAR__);
             stan::math::fill(ro, DUMMY_VAR__);
             // do transformed parameters statements
             current_statement_begin__ = 89;
-            if (as_bool(logical_eq(k, 0))) {
-                current_statement_begin__ = 90;
-                stan::model::assign(ro, 
-                            stan::model::cons_list(stan::model::index_uni(1), stan::model::nil_index_list()), 
-                            (lambda - get_base1(mu, 1, "mu", 1)), 
-                            "assigning variable ro");
-            } else {
-                current_statement_begin__ = 92;
-                for (int i = 1; i <= S; ++i) {
-                    current_statement_begin__ = 93;
-                    stan::model::assign(ro, 
-                                stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
-                                (lambda - get_base1(mu, i, "mu", 1)), 
-                                "assigning variable ro");
-                }
-            }
+            stan::math::assign(ro, (lambda - mu));
             if (!include_gqs__ && !include_tparams__) return;
             // validate transformed parameters
             const char* function__ = "validate transformed params";
             (void) function__;  // dummy to suppress unused var warning
             // write transformed parameters
             if (include_tparams__) {
-                size_t ro_k_0_max__ = (logical_eq(k, 0) ? 1 : S );
-                for (size_t k_0__ = 0; k_0__ < ro_k_0_max__; ++k_0__) {
-                    vars__.push_back(ro[k_0__]);
-                }
+                vars__.push_back(ro);
             }
             if (!include_gqs__) return;
         } catch (const std::exception& e) {
@@ -644,20 +562,14 @@ public:
         param_name_stream__.str(std::string());
         param_name_stream__ << "lambda";
         param_names__.push_back(param_name_stream__.str());
-        size_t mu_k_0_max__ = (logical_eq(k, 1) ? S : 1 );
-        for (size_t k_0__ = 0; k_0__ < mu_k_0_max__; ++k_0__) {
-            param_name_stream__.str(std::string());
-            param_name_stream__ << "mu" << '.' << k_0__ + 1;
-            param_names__.push_back(param_name_stream__.str());
-        }
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "mu";
+        param_names__.push_back(param_name_stream__.str());
         if (!include_gqs__ && !include_tparams__) return;
         if (include_tparams__) {
-            size_t ro_k_0_max__ = (logical_eq(k, 0) ? 1 : S );
-            for (size_t k_0__ = 0; k_0__ < ro_k_0_max__; ++k_0__) {
-                param_name_stream__.str(std::string());
-                param_name_stream__ << "ro" << '.' << k_0__ + 1;
-                param_names__.push_back(param_name_stream__.str());
-            }
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "ro";
+            param_names__.push_back(param_name_stream__.str());
         }
         if (!include_gqs__) return;
     }
@@ -668,20 +580,14 @@ public:
         param_name_stream__.str(std::string());
         param_name_stream__ << "lambda";
         param_names__.push_back(param_name_stream__.str());
-        size_t mu_k_0_max__ = (logical_eq(k, 1) ? S : 1 );
-        for (size_t k_0__ = 0; k_0__ < mu_k_0_max__; ++k_0__) {
-            param_name_stream__.str(std::string());
-            param_name_stream__ << "mu" << '.' << k_0__ + 1;
-            param_names__.push_back(param_name_stream__.str());
-        }
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "mu";
+        param_names__.push_back(param_name_stream__.str());
         if (!include_gqs__ && !include_tparams__) return;
         if (include_tparams__) {
-            size_t ro_k_0_max__ = (logical_eq(k, 0) ? 1 : S );
-            for (size_t k_0__ = 0; k_0__ < ro_k_0_max__; ++k_0__) {
-                param_name_stream__.str(std::string());
-                param_name_stream__ << "ro" << '.' << k_0__ + 1;
-                param_names__.push_back(param_name_stream__.str());
-            }
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "ro";
+            param_names__.push_back(param_name_stream__.str());
         }
         if (!include_gqs__) return;
     }

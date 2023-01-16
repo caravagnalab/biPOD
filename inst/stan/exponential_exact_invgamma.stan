@@ -70,54 +70,33 @@ functions {
 data {
   int<lower=2> S; // Number of steps
   int<lower=0> n0;
+  real<lower=0> t0;
 
   int N[S];   // observations
   real T[S];  // observations
 
-  int<lower=0, upper=1> k; // type of model
   real<lower=0> a;
   real<lower=0> b;
 }
 
 parameters {
   real<lower=0> lambda;
-  real<lower=0> mu[k == 1 ? S : 1];
+  real<lower=0> mu;
 }
 
 transformed parameters {
-  real ro[k == 0 ? 1 : S];
-  if (k == 0) {
-    ro[1] = lambda - mu[1];
-  } else {
-    for (i in 1:S) {
-      ro[i] = lambda - mu[i];
-    }
-  }
+  real ro;
+  ro = lambda - mu;
 }
 
 model {
   lambda ~ inv_gamma(a, b);
-  if (k == 0) {
-    mu[1] ~ inv_gamma(a, b);
-  } else {
-    for (i in 1:S) {
-      mu[i] ~ inv_gamma(a, b);
-    }
+  mu ~ inv_gamma(a, b);
+
+  for (i in 1:S) {
+    N[i] ~ birthDeathLike(n0, T[i] - t0, lambda, mu);
   }
 
-  if (k == 0) {
-    for (i in 1:S) {
-      N[i] ~ birthDeathLike(n0, T[i], lambda, mu[1]);
-    }
-  } else {
-    for (i in 1:S) {
-      if (i == 1) {
-        N[i] ~ birthDeathLike(n0, T[i], lambda, mu[i]);
-      } else {
-        N[i] ~ birthDeathLike(N[i-1], T[i] - T[i-1], lambda, mu[i]);
-      }
-    }
-  }
 }
 
 generated quantities {}

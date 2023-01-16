@@ -71,11 +71,11 @@ functions {
 data {
   int<lower=2> S; // Number of steps
   int<lower=0> n0;
+  real<lower=0> t0;
 
   int N[S];   // observations
   real T[S];  // observations
 
-  int<lower=0, upper=1> k; // type of model
   real<lower=0> b;
   real<lower=0> a;
   real<lower=0> g;
@@ -83,45 +83,21 @@ data {
 
 parameters {
   real <lower=a, upper = b> lambda;
-  real <lower=a, upper = b> mu[k == 0 ? 1 : S];
+  real <lower=a, upper = b> mu;
 }
 
 transformed parameters {
-  real ro[k == 0 ? 1 : S];
-
-  if (k == 0) {
-    ro[1] = lambda - mu[1];
-  } else {
-    for (i in 1:S) {
-      ro[i] = lambda - mu[i];
-    }
-  }
+  real ro;
+  ro = lambda - mu;
 }
 
 model {
   // Use uniform priors sampled on previous centered value
   lambda ~ uniform(lambda - (b-a)/g, lambda + (b-a)/g);
+  mu ~ uniform(mu - (b-a)/g, mu + (b-a)/g);
 
-  if (k == 0) {
-    mu[1] ~ uniform(mu[1] - (b-a)/g, mu[1] + (b-a)/g);
-  } else {
-    for (i in 1:S) {
-      mu[i] ~ uniform(mu[i] - (b-a)/g, mu[i] + (b-a)/g);
-    }
-  }
-
-  if (k == 0) {
-    for (i in 1:S) {
-      N[i] ~ birthDeathLike(n0, T[i], lambda, mu[1]);
-    }
-  } else {
-    for (i in 1:S) {
-      if (i == 1) {
-        N[i] ~ birthDeathLike(n0, T[i], lambda, mu[i]);
-      } else {
-        N[i] ~ birthDeathLike(N[i-1], T[i] - T[i-1], lambda, mu[i]);
-      }
-    }
+  for (i in 1:S) {
+    N[i] ~ birthDeathLike(n0, T[i] - t0, lambda, mu);
   }
 }
 
