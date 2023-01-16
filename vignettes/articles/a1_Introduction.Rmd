@@ -64,7 +64,7 @@ biPOD::evolution_plot(bipod)
 If different groups of parameters are needed, one should add a `group` column.
 The group should be ordered in increasing order, and the first item of the `group` vector should be equal to the second one.
 
-```{r init}
+```{r}
 counts <- biPOD::sim_stochastic_exponential(n0 = 10, lambda = .5, mu = c(.4, .45, .3), steps = 3, delta_t = .1)
 groups <- c(0, 0, 1, 2)
 counts$group <- groups
