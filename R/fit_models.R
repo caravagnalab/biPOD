@@ -26,7 +26,7 @@
 #' @return the input bipod object with an added 'fit' slot containing the fitted model and an added 'fit_info' slot containing information about the fit
 #' @export
 fit_exp <- function(x, model_type = c("gauss", "exact"), prior = c("uniform", "invgamma"),
-                    factor_size = 1, a = 0, b = 1, g = 1,
+                    factor_size = 1, a = 0, b = 1, g = 1, variational = FALSE,
                     chains = 4, iter = 4000, warmup = 2000, cores = 4) {
 
   assertthat::assert_that(inherits(x, "bipod"), msg = "Input must be a bipod object")
