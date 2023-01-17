@@ -12,6 +12,7 @@ fit_exp(
   a = 0,
   b = 1,
   g = 1,
+  variational = FALSE,
   chains = 4,
   iter = 4000,
   warmup = 2000,
@@ -42,6 +43,8 @@ fit_exp(
 \item{g}{Extra parameters for uniform prior. Sample is done from a uniform centered on the previous
 sample and with width w = (b - a) / g.}
 
+\item{variational}{Boolean specifying whether using variational as opposed to mcmc sampling}
+
 \item{chains}{integer number of chains to run in the Markov Chain Monte Carlo (MCMC) algorithm}
 
 \item{iter}{integer number of iterations to run in the MCMC algorithm}
@@ -49,8 +52,6 @@ sample and with width w = (b - a) / g.}
 \item{warmup}{integer number of warmup iterations to run in the MCMC algorithm}
 
 \item{cores}{integer number of cores to use in parallel processing}
-
-\item{variational}{Boolean specifying whether using variational as opposed to mcmc sampling}
 }
 \value{
 the input bipod object with an added 'fit' slot containing the fitted model and an added 'fit_info' slot containing information about the fit

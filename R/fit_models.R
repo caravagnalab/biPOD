@@ -78,8 +78,8 @@ fit_exp <- function(x, model_type = c("gauss", "exact"), prior = c("uniform", "i
       sampling = "variational"
       out <- capture.output(
         fit_model <- rstan::vb(
-          model, data_model, iter = 100000,
-          importance_resampling = TRUE, output_samples = iter - warmup
+          model, data_model, iter = 100000,  eval_elbo = 50,
+          output_samples = iter - warmup
         )
       )
       elbo_d <- parse_variational_output(out = out)
