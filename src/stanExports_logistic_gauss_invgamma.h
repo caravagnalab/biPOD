@@ -33,7 +33,7 @@ static int current_statement_begin__;
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
     reader.add_event(0, 0, "start", "model_logistic_gauss_invgamma");
-    reader.add_event(67, 65, "end", "model_logistic_gauss_invgamma");
+    reader.add_event(69, 67, "end", "model_logistic_gauss_invgamma");
     return reader;
 }
 template <typename T0__, typename T1__, typename T2__, typename T3__, typename T4__>
@@ -111,11 +111,11 @@ sigma_t(const T0__& n0,
         stan::math::initialize(psi, DUMMY_VAR__);
         stan::math::fill(psi, DUMMY_VAR__);
         current_statement_begin__ = 16;
-        stan::math::assign(phi, ((((n0 * stan::math::exp(((lambda - mu) * dt))) + K) - n0) / (K * stan::math::exp(((lambda - mu) * dt)))));
+        stan::math::assign(psi, ((((n0 * stan::math::exp(((lambda - mu) * dt))) + K) - n0) / (K * stan::math::exp(((lambda - mu) * dt)))));
         current_statement_begin__ = 17;
-        stan::math::assign(psi, (((((K - n0) * lambda) / (K * (lambda - mu))) * (1 - stan::math::exp((-((lambda - mu)) * dt)))) + ((mu + (n0 * dt)) / K)));
+        stan::math::assign(phi, (((((K - n0) * ((mu + lambda) - mu)) * (1 - stan::math::exp((-(dt) * (lambda - mu))))) / ((lambda - mu) * K)) + (((mu * n0) * dt) / K)));
         current_statement_begin__ = 18;
-        stan::math::assign(s, ((n0 * ((phi + (2 * psi)) - 1)) / pow(phi, 2)));
+        stan::math::assign(s, ((n0 * ((psi + (2 * phi)) - 1)) / pow(psi, 2)));
         current_statement_begin__ = 20;
         return stan::math::promote_scalar<fun_return_scalar_t__>(stan::math::sqrt(s));
         }
@@ -143,7 +143,7 @@ private:
         int S;
         double n0;
         double t0;
-        std::vector<double> N;
+        std::vector<int> N;
         std::vector<double> T;
         double a;
         double b;
@@ -201,13 +201,13 @@ public:
             check_greater_or_equal(function__, "t0", t0, 0);
             current_statement_begin__ = 29;
             validate_non_negative_index("N", "S", S);
-            context__.validate_dims("data initialization", "N", "double", context__.to_vec(S));
-            N = std::vector<double>(S, double(0));
-            vals_r__ = context__.vals_r("N");
+            context__.validate_dims("data initialization", "N", "int", context__.to_vec(S));
+            N = std::vector<int>(S, int(0));
+            vals_i__ = context__.vals_i("N");
             pos__ = 0;
             size_t N_k_0_max__ = S;
             for (size_t k_0__ = 0; k_0__ < N_k_0_max__; ++k_0__) {
-                N[k_0__] = vals_r__[pos__++];
+                N[k_0__] = vals_i__[pos__++];
             }
             current_statement_begin__ = 30;
             validate_non_negative_index("T", "S", S);
@@ -304,7 +304,7 @@ public:
         double K(0);
         K = vals_r__[pos__++];
         try {
-            writer__.scalar_lb_unconstrain(0, K);
+            writer__.scalar_lb_unconstrain((prior_K * .95), K);
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable K: ") + e.what()), current_statement_begin__, prog_reader__());
         }
@@ -351,9 +351,9 @@ public:
             local_scalar_t__ K;
             (void) K;  // dummy to suppress unused var warning
             if (jacobian__)
-                K = in__.scalar_lb_constrain(0, lp__);
+                K = in__.scalar_lb_constrain((prior_K * .95), lp__);
             else
-                K = in__.scalar_lb_constrain(0);
+                K = in__.scalar_lb_constrain((prior_K * .95));
             // transformed parameters
             current_statement_begin__ = 44;
             local_scalar_t__ ro;
@@ -381,8 +381,8 @@ public:
             lp_accum__.add(inv_gamma_log<propto__>(mu, a, b));
             current_statement_begin__ = 53;
             for (int i = 1; i <= S; ++i) {
-                current_statement_begin__ = 54;
-                lp_accum__.add(normal_log<propto__>(get_base1(N, i, "N", 1), mean_t(n0, lambda, mu, K, (get_base1(T, i, "T", 1) - t0), pstream__), sigma_t(n0, lambda, mu, K, (get_base1(T, i, "T", 1) - t0), pstream__)));
+                current_statement_begin__ = 55;
+                lp_accum__.add(poisson_log<propto__>(get_base1(N, i, "N", 1), mean_t(n0, lambda, mu, K, (get_base1(T, i, "T", 1) - t0), pstream__)));
             }
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
@@ -443,7 +443,7 @@ public:
         vars__.push_back(lambda);
         double mu = in__.scalar_lb_constrain(0);
         vars__.push_back(mu);
-        double K = in__.scalar_lb_constrain(0);
+        double K = in__.scalar_lb_constrain((prior_K * .95));
         vars__.push_back(K);
         double lp__ = 0.0;
         (void) lp__;  // dummy to suppress unused var warning
@@ -471,22 +471,21 @@ public:
             }
             if (!include_gqs__) return;
             // declare and define generated quantities
-            current_statement_begin__ = 59;
+            current_statement_begin__ = 60;
             validate_non_negative_index("N_rep", "S", S);
-            std::vector<double> N_rep(S, double(0));
-            stan::math::initialize(N_rep, DUMMY_VAR__);
-            stan::math::fill(N_rep, DUMMY_VAR__);
+            std::vector<int> N_rep(S, int(0));
+            stan::math::fill(N_rep, std::numeric_limits<int>::min());
             // generated quantities statements
-            current_statement_begin__ = 61;
+            current_statement_begin__ = 62;
             for (int i = 1; i <= S; ++i) {
-                current_statement_begin__ = 62;
+                current_statement_begin__ = 64;
                 stan::model::assign(N_rep, 
                             stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
-                            normal_rng(mean_t(n0, lambda, mu, K, (get_base1(T, i, "T", 1) - t0), pstream__), sigma_t(n0, lambda, mu, K, (get_base1(T, i, "T", 1) - t0), pstream__), base_rng__), 
+                            poisson_rng(mean_t(n0, lambda, mu, K, (get_base1(T, i, "T", 1) - t0), pstream__), base_rng__), 
                             "assigning variable N_rep");
             }
             // validate, write generated quantities
-            current_statement_begin__ = 59;
+            current_statement_begin__ = 60;
             size_t N_rep_k_0_max__ = S;
             for (size_t k_0__ = 0; k_0__ < N_rep_k_0_max__; ++k_0__) {
                 vars__.push_back(N_rep[k_0__]);
