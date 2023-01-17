@@ -8,6 +8,7 @@ fit_log(
   x,
   model_type = c("gauss", "exact"),
   prior = c("uniform", "invgamma"),
+  variational = FALSE,
   factor_size = 1,
   a = 0,
   b = 1,
@@ -32,6 +33,8 @@ fit_log(
 \item \code{uniform} Uniform U(a,b), where at every iteration you sample with width w = (b-a) / g.
 \item \code{invgamma} Inverse gamma prior invGamma(a,b)
 }}
+
+\item{variational}{Boolean specifying whether using variational as opposed to mcmc sampling}
 
 \item{factor_size}{numeric factor by which to divide counts in the bipod object}
 

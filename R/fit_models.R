@@ -12,6 +12,7 @@
 #'  * `uniform` Uniform U(a,b), where at every iteration you sample with width w = (b-a) / g.
 #'  * `invgamma` Inverse gamma prior invGamma(a,b)
 #'
+#' @param variational Boolean specifying whether using variational as opposed to mcmc sampling
 #' @param factor_size numeric factor by which to divide counts in the bipod object
 #' @param a Minimum value for uniform prior, shape parameter for inverse gamma prior
 #' @param b Maximum value for uniform prior, scale parameter for inverse gamma prior
@@ -42,6 +43,7 @@ fit_exp <- function(x, model_type = c("gauss", "exact"), prior = c("uniform", "i
     assertthat::assert_that(b > 0, msg = "'b' must be greater than 0")
   }
 
+  elbo_data <- list()
   fits <- list()
   groups <- unique(x$counts$group)
   for (i in 2:length(groups)) {
@@ -67,18 +69,34 @@ fit_exp <- function(x, model_type = c("gauss", "exact"), prior = c("uniform", "i
       g = g
     )
 
-    print(data_model)
-
     # fit model
     model_name <- paste("exponential", model_type, prior, sep = "_")
     model <- get(model_name, stanmodels)
-    fit_model <- rstan::sampling(
-      model,
-      data = data_model,
-      chains = chains, iter = iter, warmup = warmup,
-      cores = cores
-    )
 
+    # MCMC or Variational
+    if (variational) {
+      sampling = "variational"
+      out <- capture.output(
+        fit_model <- rstan::vb(
+          model, data_model, iter = 100000,
+          importance_resampling = TRUE, output_samples = iter - warmup
+        )
+      )
+      elbo_d <- parse_variational_output(out = out)
+
+    } else {
+      sampling = "mcmc"
+      fit_model <- rstan::sampling(
+        model,
+        data = data_model,
+        chains = chains, iter = iter, warmup = warmup,
+        cores = cores
+      )
+    }
+
+    if (variational) {
+      elbo_data[[paste0("elbo", groups[i])]] <- elbo_d
+    }
     fits[[paste0("fit", groups[i])]] <- fit_model
   }
 
@@ -93,6 +111,7 @@ fit_exp <- function(x, model_type = c("gauss", "exact"), prior = c("uniform", "i
     g = g
   )
 
+  x$elbo_data <- elbo_data
   x$fits <- fits
   x$fit_info <- fit_info
   x
@@ -111,6 +130,7 @@ fit_exp <- function(x, model_type = c("gauss", "exact"), prior = c("uniform", "i
 #'  * `uniform` Uniform U(a,b), where at every iteration you sample with width w = (b-a) / g.
 #'  * `invgamma` Inverse gamma prior invGamma(a,b)
 #'
+#' @param variational Boolean specifying whether using variational as opposed to mcmc sampling
 #' @param factor_size numeric factor by which to divide counts in the bipod object
 #' @param a Minimum value for uniform prior, shape parameter for inverse gamma prior
 #' @param b Maximum value for uniform prior, scale parameter for inverse gamma prior
@@ -124,7 +144,7 @@ fit_exp <- function(x, model_type = c("gauss", "exact"), prior = c("uniform", "i
 #'
 #' @return the input bipod object with an added 'fit' slot containing the fitted model and an added 'fit_info' slot containing information about the fit
 #' @export
-fit_log <- function(x, model_type = c("gauss", "exact"), prior = c("uniform", "invgamma"),
+fit_log <- function(x, model_type = c("gauss", "exact"), prior = c("uniform", "invgamma"), variational = FALSE,
                     factor_size = 1, a = 0, b = 1, g = 1, prior_K = NULL,
                     chains = 4, iter = 4000, warmup = 2000, cores = 4) {
 
@@ -146,6 +166,7 @@ fit_log <- function(x, model_type = c("gauss", "exact"), prior = c("uniform", "i
     prior_K = max(x$counts$count)
   }
 
+  elbo_data <- list()
   fits <- list()
   groups <- unique(x$counts$group)
   for (i in 2:length(groups)) {
@@ -172,18 +193,37 @@ fit_log <- function(x, model_type = c("gauss", "exact"), prior = c("uniform", "i
     # fit model
     model_name <- paste("logistic", model_type, prior, sep = "_")
     model <- get(model_name, stanmodels)
-    fit_model <- rstan::sampling(
-      model,
-      data = data_model,
-      chains = chains, iter = iter, warmup = warmup,
-      cores = cores
-    )
 
+    # MCMC or Variational
+    if (variational) {
+      sampling = "variational"
+      out <- capture.output(
+        fit_model <- rstan::vb(
+          model, data_model, iter = 100000,
+          importance_resampling = TRUE, output_samples = iter - warmup
+        )
+      )
+      elbo_d <- parse_variational_output(out = out)
+
+    } else {
+      sampling = "mcmc"
+      fit_model <- rstan::sampling(
+        model,
+        data = data_model,
+        chains = chains, iter = iter, warmup = warmup,
+        cores = cores
+      )
+    }
+
+    if (variational) {
+      elbo_data[[paste0("elbo", groups[i])]] <- elbo_d
+    }
     fits[[paste0("fit", groups[i])]] <- fit_model
   }
 
   # write fit info
   fit_info <- list(
+    sampling = sampling,
     growth_type = "logistic",
     model_type = model_type,
     prior = prior,
@@ -194,7 +234,34 @@ fit_log <- function(x, model_type = c("gauss", "exact"), prior = c("uniform", "i
     prior_K = prior_K
   )
 
+  x$elbo_data <- elbo_data
   x$fits <- fits
   x$fit_info <- fit_info
   x
+}
+
+parse_variational_output = function(out) {
+  limits <- c()
+  for (i in 1:length(out)) {
+    if (length(grep("delta_ELBO_mean", out[i], value=TRUE))) limits <- c(limits, i + 1)
+    if (length(grep("Drawing a sample of size", out[i], value=TRUE))) limits <- c(limits, i - 2)
+  }
+
+  elbo_lines = out[c(limits[1]:limits[2])]
+
+  ELBO <- c()
+  delta_ELBO_mean <- c()
+  delta_ELBO_med <- c()
+  iter <- c()
+  for (elbo_line in elbo_lines) {
+    split_string <- strsplit(elbo_line, " +")[[1]]
+
+    iter <- c(iter, as.numeric(split_string[3]))
+    ELBO <- c(ELBO, as.numeric(split_string[4]))
+    delta_ELBO_mean <- c(delta_ELBO_mean, as.numeric(split_string[5]))
+    delta_ELBO_med <- c(delta_ELBO_med, as.numeric(split_string[6]))
+  }
+
+  elbo_data <- data.frame(iter=iter, ELBO=ELBO, delta_ELBO_mean=delta_ELBO_mean, delta_ELBO_med=delta_ELBO_med)
+  elbo_data
 }

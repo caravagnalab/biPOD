@@ -49,6 +49,8 @@ sample and with width w = (b - a) / g.}
 \item{warmup}{integer number of warmup iterations to run in the MCMC algorithm}
 
 \item{cores}{integer number of cores to use in parallel processing}
+
+\item{variational}{Boolean specifying whether using variational as opposed to mcmc sampling}
 }
 \value{
 the input bipod object with an added 'fit' slot containing the fitted model and an added 'fit_info' slot containing information about the fit
