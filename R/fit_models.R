@@ -102,6 +102,7 @@ fit_exp <- function(x, model_type = c("gauss", "exact"), prior = c("uniform", "i
 
   # write fit info
   fit_info <- list(
+    sampling = sampling,
     growth_type = "exponential",
     model_type = model_type,
     prior = prior,

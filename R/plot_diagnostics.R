@@ -3,40 +3,96 @@
 #'
 #' @param x A biPOD object of class `bipod`. Must contains 'fit'
 #' @param pars A character vector of parameters to plot.
+#' @param diagnose A Boolean indicating whether the plots should be colored and
+#'  contain info regarding the convergence of the MCMC sampling.
 #'
 #' @return A ggplot object with traces of the specified parameters
 #' @export
-plot_traces = function(x, pars = c()) {
+plot_traces = function(x, pars = c(), diagnose = FALSE) {
   assertthat::assert_that(inherits(x, "bipod"), msg = "Input must be a bipod object")
   assertthat::assert_that("fits" %in% names(x), msg = "Input must contain a 'fits' field")
   assertthat::assert_that(length(pars) > 0, msg = "'pars' should contain at least one input")
+  assertthat::assert_that("fit_info" %in% names(x), msg = "Input must contain a 'fit_info' field")
+  assertthat::assert_that(x$fit_info$sampling == "mcmc", msg = "'plot_traces' accepts only biPOD objects that have been fitted using MCMC")
 
   plots <- lapply(names(x$fits), function(fit_name) {
     fit <- x$fits[[fit_name]]
     long_chains <- data.frame()
-    for (par in pars) {
-      rhat <- rstan::Rhat(as.array(fit)[,,par])
-      chains <- as.data.frame(rstan::extract(fit, pars = par, permuted = FALSE))
-      names(chains) <- paste0("chain", 1:ncol(chains))
-      chains$index <- 1:nrow(chains)
-      chains <- reshape2::melt(chains, id.vars = c("index")) %>%
-        dplyr::mutate(parameter = paste0(par, gsub("fit", "", fit_name))) %>%
-        dplyr::mutate(color = ifelse(rhat <= 1.01, "forestgreen", "indianred"))
 
-      long_chains <- dplyr::bind_rows(long_chains, chains)
-    }
+    qc = "forestgreen"
+      for (par in pars) {
+        rhat <- rstan::Rhat(as.array(fit)[,,par])
+        chains <- as.data.frame(rstan::extract(fit, pars = par, permuted = FALSE))
+        names(chains) <- paste0("chain", 1:ncol(chains))
+        chains$sample <- 1:nrow(chains)
+        chains <- reshape2::melt(chains, id.vars = c("sample")) %>%
+          dplyr::mutate(parameter = paste0(par, gsub("fit", "", fit_name))) %>%
+          dplyr::mutate(color = ifelse(rhat <= 1.01, "forestgreen", "indianred"))
 
-    p <- ggplot2::ggplot(long_chains, ggplot2::aes(x=.data$index, y=.data$value, col=.data$variable)) +
+        long_chains <- dplyr::bind_rows(long_chains, chains)
+
+        if (rhat > 1.01) qc = "indianred"
+      }
+
+    if (!diagnose) qc = "gray"
+
+    p <- ggplot2::ggplot(long_chains, ggplot2::aes(x=.data$sample, y=.data$value, col=.data$variable)) +
       ggplot2::geom_line() +
       ggplot2::facet_wrap(~ .data$parameter) +
       ggplot2::scale_color_brewer(palette = "Greens", direction = -1) +
       my_ggplot_theme() +
-      ggplot2::theme(legend.position = "none")
+      ggplot2::theme(
+        legend.position = "none",
+        strip.background = ggplot2::element_rect(fill = qc)
+      )
+
+    if (diagnose) {
+      if (qc == "indianred") {
+        p <- p +
+          ggplot2::labs(subtitle ="Rhat higher than 1.01") +
+          ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0))
+      } else {
+        p <- p +
+          ggplot2::labs(subtitle ="Rhat converged") +
+          ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0))
+      }
+    }
+
     p
   })
 
   plots <- ggpubr::ggarrange(plotlist = plots, ncol=1)
   return(plots)
+}
+
+#' Plot the logarithm of the ELBO and the delta ELBO mean
+#' obtained during the variational sampling.
+#'
+#' @param x A biPOD object of class `bipod`. Must contains 'fit'
+#'
+#' @return A ggplot object with traces of the specified parameters
+#' @export
+plot_elbo = function(x) {
+  plots <- lapply(names(x$elbo_data), function(elbo_name) {
+    elbo_data <- x$elbo_data[[elbo_name]]
+
+    p <- elbo_data %>%
+      as.data.frame %>%
+      dplyr::mutate(ELBO = -log(-ELBO)) %>%
+      dplyr::select(iter, ELBO, delta_ELBO_mean) %>%
+      reshape2::melt(id.vars = c("iter")) %>%
+      ggplot2::ggplot() +
+      ggplot2::geom_line(mapping = ggplot2::aes(x=.data$iter, y=-.data$value)) +
+      ggplot2::facet_wrap(~ .data$variable, scales = "free") +
+      ggplot2::labs(
+        x = "iteration",
+        y = "value",
+        title = paste0("Group ", gsub("elbo", "", elbo_name))
+      )
+    p
+  })
+  plots <- ggpubr::ggarrange(plotlist = plots, ncol=1)
+  plots
 }
 
 #' Plot the posterior predictive checks for counts data.
@@ -50,9 +106,9 @@ plot_traces = function(x, pars = c()) {
 #' @param prob,prob_outer Values between 0 and 1 indicating the desired probability mass to include in the inner and outer intervals. The defaults are prob=0.5 and prob_outer=0.9.
 #'
 #' @returns A plot. Represents the posterior predictive checks.
-#' @export
 ppc_plot = function(x, ptype, prob = 0.5, prob_outer = 0.9) {
   cli::cli_alert_danger("TODO")
+  stop()
   assertthat::assert_that(inherits(x, "bipod"), msg = "Input must be a bipod object")
   assertthat::assert_that("fit" %in% names(x), msg = "Input must contain a 'fit' field")
   assertthat::assert_that(ptype %in% c("intervals", "ribbon"), msg = "ptype must be one of: intervals, ribbon")

@@ -4,12 +4,15 @@
 \alias{plot_traces}
 \title{Plot traces of specified parameters from a fitted Stan model}
 \usage{
-plot_traces(x, pars = c())
+plot_traces(x, pars = c(), diagnose = FALSE)
 }
 \arguments{
 \item{x}{A biPOD object of class \code{bipod}. Must contains 'fit'}
 
 \item{pars}{A character vector of parameters to plot.}
+
+\item{diagnose}{A Boolean indicating whether the plots should be colored and
+contain info regarding the convergence of the MCMC sampling.}
 }
 \value{
 A ggplot object with traces of the specified parameters
