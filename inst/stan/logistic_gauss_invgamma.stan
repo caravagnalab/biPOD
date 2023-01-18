@@ -8,15 +8,27 @@ functions {
     return m;
   }
 
-  real sigma_t (real n0, real lambda, real mu, real K, real dt) {
+  // real sigma_t (real n0, real lambda, real mu, real K, real dt) {
+  //   real s;
+  //   real phi;
+  //   real psi;
+  //
+  //   psi = (n0 * exp((lambda-mu) * dt) + K - n0) / (K * exp((lambda - mu) * dt));
+  //   phi = (K - n0) * (mu + lambda - mu) * (1 - exp(-dt * (lambda - mu))) / ((lambda - mu) * K) + mu * n0 * dt / K;
+  //   s = n0 * (psi + 2 * phi - 1) / psi^2;
+  //
+  //   return sqrt(s);
+  // }
+
+  real sigma_t (real n0, real lambda, real mu, real t) {
     real s;
-    real phi;
-    real psi;
+    real w = lambda - mu;
 
-    psi = (n0 * exp((lambda-mu) * dt) + K - n0) / (K * exp((lambda - mu) * dt));
-    phi = (K - n0) * (mu + lambda - mu) * (1 - exp(-dt * (lambda - mu))) / ((lambda - mu) * K) + mu * n0 * dt / K;
-    s = n0 * (psi + 2 * phi - 1) / psi^2;
-
+    if (lambda == mu) {
+      s = n0 * 2 * lambda * t;
+    } else {
+      s = n0 * ((lambda + mu) / w) * exp(w*t) * (exp(w*t) - 1);
+    }
     return sqrt(s);
   }
 }
@@ -26,7 +38,7 @@ data {
   real<lower=0> n0;
   real<lower=0> t0;
 
-  int N[S];   // observations
+  real N[S];   // observations
   real T[S];  // observations
 
   real<lower=0> a;
@@ -46,23 +58,20 @@ transformed parameters {
 }
 
 model {
-  K ~ normal(prior_K, prior_K * .1);
-  lambda ~ inv_gamma(a, b);
-  mu ~ inv_gamma(a, b);
+  target += normal_lpdf(K | prior_K, prior_K * .1);
+  target += inv_gamma_lpdf(lambda | a, b);
+  target += inv_gamma_lpdf(mu | a, b);
 
   for (i in 1:S) {
-    // N[i] ~ normal(mean_t(n0, lambda, mu, K, T[i] - t0), sigma_t(n0, lambda, mu, K, T[i] - t0));
-    N[i] ~ poisson(mean_t(n0, lambda, mu, K, T[i] - t0));
+    target += normal_lpdf(N[i] | mean_t(n0, lambda, mu, K, T[i] - t0), sigma_t(n0, lambda, mu, T[i] - t0));
   }
 }
 
 generated quantities {
-  int N_rep[S];
+  real N_rep[S];
 
   for (i in 1:S) {
-    // N_rep[i] = normal_rng(mean_t(n0, lambda, mu, K, T[i] - t0), sigma_t(n0, lambda, mu, K, T[i] - t0));
-    N_rep[i] = poisson_rng(mean_t(n0, lambda, mu, K, T[i] - t0));
+    N_rep[i] = normal_rng(mean_t(n0, lambda, mu, K, T[i] - t0), sigma_t(n0, lambda, mu, T[i] - t0));
+    // N_rep[i] = poisson_rng(mean_t(n0, lambda, mu, K, T[i] - t0));
   }
 }
-
-

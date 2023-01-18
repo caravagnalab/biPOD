@@ -45,11 +45,11 @@ transformed parameters {
 
 model {
   // Use uniform priors sampled on previous centered value
-  lambda ~ uniform(lambda - (b-a)/g, lambda + (b-a)/g);
-  mu ~ uniform(lambda - (b-a)/g, lambda + (b-a)/g);
+  target += uniform_lpdf(lambda | lambda - (b-a)/g, lambda + (b-a)/g);
+  target += uniform_lpdf(mu | mu - (b-a)/g, mu + (b-a)/g);
 
   for (i in 1:S) {
-    N[i] ~ normal(mean_t(n0, lambda, mu, T[i] - t0), sigma_t(n0, lambda, mu, T[i] - t0));
+    target += normal_lpdf(N[i] | mean_t(n0, lambda, mu, T[i] - t0), sigma_t(n0, lambda, mu, T[i] - t0));
   }
 }
 

@@ -42,12 +42,11 @@ transformed parameters {
 }
 
 model {
-  lambda ~ inv_gamma(a,b);
-  mu ~ inv_gamma(a,b);
-
+  target += inv_gamma_lpdf(lambda | a, b);
+  target += inv_gamma_lpdf(mu | a, b);
 
   for (i in 1:S) {
-    N[i] ~ normal(mean_t(n0, lambda, mu, T[i] - t0), sigma_t(n0, lambda, mu, T[i] - t0));
+    target += normal_lpdf(N[i] | mean_t(n0, lambda, mu, T[i] - t0), sigma_t(n0, lambda, mu, T[i] - t0));
   }
 }
 
@@ -57,5 +56,4 @@ generated quantities {
   for (i in 1:S) {
     N_rep[i] = normal_rng(mean_t(n0, lambda, mu, T[i] - t0), sigma_t(n0, lambda, mu, T[i] - t0));
   }
-
 }
