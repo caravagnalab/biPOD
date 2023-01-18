@@ -31,7 +31,7 @@ biPOD::evolution_plot(bipod)
 indexes <- c(1, 11)
 indexes <- c(indexes, sample(2:n_steps, n_steps - 1, replace=F))
 
-fit_plots <- list()
+plot_fits <- list()
 posterior_plots <- list()
 
 for (i in 3:length(indexes)) {
@@ -44,12 +44,12 @@ for (i in 3:length(indexes)) {
   print(name)
   print(d[idx,])
   
-  fit_plots[[name]] = biPOD::fit_plot(x)
+  plot_fits[[name]] = biPOD::plot_fit(x)
   posterior_plots[[name]] = biPOD::plot_birth_and_death_rates_posteriors(x)
 }
 ```
 
 ```{r}
-ggpubr::ggarrange(plotlist = fit_plots)
+ggpubr::ggarrange(plotlist = plot_fits)
 ggpubr::ggarrange(plotlist = posterior_plots)
 ```

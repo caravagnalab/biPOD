@@ -41,14 +41,14 @@ The results of the fit can be visually inspected using:
 - `plot_traces` : plot the traces of the mcmc chains, passing as `pars` a vector of desired parameter
 - `plot_birth_and_death_rates_posteriors` : to plot the prior and posteriors for the birth and death parameters
 - `plot_growth_rate_posteriors` : to plot the prior and posteriors for the growth rates
-- `fit_plot` : to plot the fitted curve against the observed data
+- `plot_fit` : to plot the fitted curve against the observed data
 - 
 
 ```{r}
 biPOD::plot_traces(bipod, pars = c("lambda", "mu"))
 biPOD::plot_birth_and_death_rates_posteriors(bipod)
 biPOD::plot_growth_rate_posteriors(bipod)
-biPOD::fit_plot(bipod)
+biPOD::plot_fit(bipod)
 ```
 
 To obtain a fit with variable growth rates one should add the `group` column. We will use three group:
@@ -65,5 +65,5 @@ And the results can be once again visually inspected:
 biPOD::plot_traces(bipod_g, pars = c("lambda", "mu"))
 biPOD::plot_birth_and_death_rates_posteriors(bipod_g)
 biPOD::plot_growth_rate_posteriors(bipod_g)
-biPOD::fit_plot(bipod_g)
+biPOD::plot_fit(bipod_g)
 ```
