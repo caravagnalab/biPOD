@@ -76,7 +76,6 @@ plot_traces = function(x, pars = c(), diagnose = FALSE) {
 plot_elbo = function(x, diagnose = FALSE) {
   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
   if (!("fits" %in% names(x))) stop("Input must contain a 'fits' field. It appears no model has been fitted yet.")
-  if (!(length(pars) > 0)) stop("'pars' should contain at least one input")
   if (!("fit_info" %in% names(x))) stop("Input must contain a 'fit_info' field")
   if (!(x$fit_info$sampling == "variational")) stop("'plot_elbo' accepts only biPOD objects that have been fitted using variational inference")
 
