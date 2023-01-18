@@ -14,10 +14,11 @@
 #'
 #' @export
 sim_single_stochastic_exponential <- function(n0, lambda, mu, delta_t) {
-  assertthat::assert_that(n0 >= 0 , msg = "n0 must be a positive integer")
-  assertthat::assert_that(lambda >= 0 , msg = "lambda must be positive")
-  assertthat::assert_that(mu >= 0 , msg = "mu must be positive")
-  assertthat::assert_that(delta_t >= 0 , msg = "delta_t must be positive")
+  # Parameters check
+  if (!(n0 >= 0)) stop("n0 must be a positive integer")
+  if (!(lambda >= 0)) stop("lambda must be positive")
+  if (!(mu >= 0)) stop("mu must be positive")
+  if (!(delta_t >= 0)) stop("delta_t must be positive")
 
   # Return n0 if n0 is zero
   if (n0 == 0) return(n0)
@@ -95,12 +96,12 @@ sim_stochastic_exponential <- function(n0, lambda, mu, steps, delta_t) {
     delta_t <- c(0, delta_t)
   }
 
-  # Check input
-  assertthat::assert_that(n0 >= 0 , msg = "n0 must be a positive integer")
-  assertthat::assert_that(all(lambda >= 0) , msg = "lambda must be positive")
-  assertthat::assert_that(all(mu >= 0) , msg = "mu must be positive")
-  assertthat::assert_that(steps >= 0 , msg = "steps must a integere greater or equal than 0")
-  assertthat::assert_that(all(delta_t >= 0) , msg = "delta_t must be positive")
+  # Parameters check
+  if (!(n0 >= 0)) stop("n0 must be a positive integer")
+  if (!(all(lambda >= 0))) stop("lambda must be positive")
+  if (!(all(mu >= 0))) stop("mu must be positive")
+  if (!(steps >= 0)) stop("steps must an integer >= 0")
+  if (!(delta_t >= 0)) stop("delta_t must be positive")
 
   # Return the initial population size if no steps are requested
   if (steps == 0) {
@@ -119,8 +120,11 @@ sim_stochastic_exponential <- function(n0, lambda, mu, steps, delta_t) {
   # Calculate the time, birth rates, and death rates vectors
   time <- cumsum(delta_t)
 
+  # Produce the groups
+  groups <- c(0, group_contiguous(lambda - mu))
+
   # Return the results as a tibble
-  d <- dplyr::tibble(time, count = pop.size)
+  d <- dplyr::tibble(time, count = pop.size, group = groups)
   return(d)
 }
 
@@ -171,12 +175,12 @@ sim_noisy <- function(n0, lambda, mu, steps, delta_t, sigma, as_int = T) {
     delta_t <- c(0, delta_t)
   }
 
-  # Check input
-  assertthat::assert_that(n0 >= 0 , msg = "n0 must be a positive integer")
-  assertthat::assert_that(all(lambda >= 0) , msg = "lambda must be positive")
-  assertthat::assert_that(all(mu >= 0) , msg = "mu must be positive")
-  assertthat::assert_that(steps >= 0 , msg = "steps must a integere greater or equal than 0")
-  assertthat::assert_that(all(delta_t >= 0) , msg = "delta_t must be positive")
+  # Parameters check
+  if (!(n0 >= 0)) stop("n0 must be a positive integer")
+  if (!(all(lambda >= 0))) stop("lambda must be positive")
+  if (!(all(mu >= 0))) stop("mu must be positive")
+  if (!(steps >= 0)) stop("steps must an integer >= 0")
+  if (!(delta_t >= 0)) stop("delta_t must be positive")
 
   # Return the initial population size if no steps are requested
   if (steps == 0) {

@@ -65,9 +65,9 @@ fit_exp <- function(x, model_type = c("gauss", "exact"), prior = c("uniform", "i
     data_model <- list(
       S = nrow(current),
       t0 = t0,
-      T = current$time, # / Ts[length(Ts)],
+      T = as.array(current$time), # / Ts[length(Ts)],
       n0 = as.integer(n0 / factor_size),
-      N = c(as.integer(current$count / factor_size)),
+      N = as.array(as.integer(current$count / factor_size)),
       k = 0,
       a = a,
       b = b,

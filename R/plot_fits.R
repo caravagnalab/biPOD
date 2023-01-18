@@ -5,10 +5,10 @@
 
 #' @returns A plot of the fit over the input data.
 #' @export
-fit_plot = function(x) {
+plot_fit = function(x) {
   # Check input
-  assertthat::assert_that(inherits(x, "bipod"), msg = "Input must be a bipod object")
-  assertthat::assert_that("fits" %in% names(x), msg = "Input must contain a 'fit' field")
+  if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
+  if (!("fits" %in% names(x))) stop("Input must contain a 'fits' field")
 
   growth_type <- x$fit_info$growth_type
 

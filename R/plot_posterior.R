@@ -8,8 +8,9 @@
 #' @export
 #'
 plot_birth_and_death_rates_posteriors = function(x, point_est = c("mean", "median", "none")) {
-  assertthat::assert_that(inherits(x, "bipod"), msg = "Input must be a bipod object")
-  assertthat::assert_that("fits" %in% names(x), msg = "Input must contain a 'fits' field")
+  # Check input
+  if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
+  if (!("fits" %in% names(x))) stop("Input must contain a 'fits' field")
 
   # Check point_est and select corresponding function
   point_est <- match.arg(point_est)
@@ -124,8 +125,9 @@ plot_birth_and_death_rates_posteriors = function(x, point_est = c("mean", "media
 #' @export
 #'
 plot_growth_rate_posteriors = function(x, point_est = c("mean", "median", "none")) {
-  assertthat::assert_that(inherits(x, "bipod"), msg = "Input must be a bipod object")
-  assertthat::assert_that("fits" %in% names(x), msg = "Input must contain a 'fit' field")
+  # Check input
+  if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
+  if (!("fits" %in% names(x))) stop("Input must contain a 'fits' field")
 
   # Check point_est and select corresponding function
   point_est <- match.arg(point_est)

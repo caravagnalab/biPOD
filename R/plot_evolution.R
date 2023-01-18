@@ -7,7 +7,7 @@
 #' @export
 evolution_plot <- function(x) {
   # Check input
-  assertthat::assert_that(inherits(x, "bipod"), msg = "Input must be a bipod object")
+  if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
 
   data <- data.frame(x = x$counts$time, y = x$counts$count)
 
@@ -22,14 +22,4 @@ evolution_plot <- function(x) {
     my_ggplot_theme()
 
   pop.plot
-}
-
-my_ggplot_theme = function(cex_opt = 1)
-{
-  ggplot2::theme_light(base_size = 10 * cex_opt) +
-    ggplot2::theme(
-      legend.position = "bottom",
-      legend.key.size = ggplot2::unit(.3 * cex_opt, "cm"),
-      panel.background = ggplot2::element_rect(fill = 'white')
-    )
 }

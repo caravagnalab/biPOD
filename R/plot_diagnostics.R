@@ -9,11 +9,11 @@
 #' @return A ggplot object with traces of the specified parameters
 #' @export
 plot_traces = function(x, pars = c(), diagnose = FALSE) {
-  assertthat::assert_that(inherits(x, "bipod"), msg = "Input must be a bipod object")
-  assertthat::assert_that("fits" %in% names(x), msg = "Input must contain a 'fits' field")
-  assertthat::assert_that(length(pars) > 0, msg = "'pars' should contain at least one input")
-  assertthat::assert_that("fit_info" %in% names(x), msg = "Input must contain a 'fit_info' field")
-  assertthat::assert_that(x$fit_info$sampling == "mcmc", msg = "'plot_traces' accepts only biPOD objects that have been fitted using MCMC")
+  if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
+  if (!("fits" %in% names(x))) stop("Input must contain a 'fits' field. It appears no model has been fitted yet.")
+  if (!(length(pars) > 0)) stop("'pars' should contain at least one input")
+  if (!("fit_info" %in% names(x))) stop("Input must contain a 'fit_info' field")
+  if (!(x$fit_info$sampling == "mcmc")) stop("'plot_traces' accepts only biPOD objects that have been fitted using MCMC")
 
   plots <- lapply(names(x$fits), function(fit_name) {
     fit <- x$fits[[fit_name]]
@@ -74,6 +74,12 @@ plot_traces = function(x, pars = c(), diagnose = FALSE) {
 #' @return A ggplot object with traces of the specified parameters
 #' @export
 plot_elbo = function(x, diagnose = FALSE) {
+  if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
+  if (!("fits" %in% names(x))) stop("Input must contain a 'fits' field. It appears no model has been fitted yet.")
+  if (!(length(pars) > 0)) stop("'pars' should contain at least one input")
+  if (!("fit_info" %in% names(x))) stop("Input must contain a 'fit_info' field")
+  if (!(x$fit_info$sampling == "variational")) stop("'plot_elbo' accepts only biPOD objects that have been fitted using variational inference")
+
   plots <- lapply(names(x$elbo_data), function(elbo_name) {
     elbo_data <- x$elbo_data[[elbo_name]]
 
@@ -141,27 +147,27 @@ plot_elbo = function(x, diagnose = FALSE) {
 ppc_plot = function(x, ptype, prob = 0.5, prob_outer = 0.9) {
   cli::cli_alert_danger("TODO")
   stop()
-  assertthat::assert_that(inherits(x, "bipod"), msg = "Input must be a bipod object")
-  assertthat::assert_that("fit" %in% names(x), msg = "Input must contain a 'fit' field")
-  assertthat::assert_that(ptype %in% c("intervals", "ribbon"), msg = "ptype must be one of: intervals, ribbon")
-  assertthat::assert_that(prob >= 0 && prob < 1, msg = "prob should be between 0 and 1 (with 1 excluded)")
-  assertthat::assert_that(prob_outer >= 0 && prob_outer <= 1, msg = "prob_outer should be between 0 and 1")
-  assertthat::assert_that(length(grep("N_rep", names(x$fit))) >= 1, msg = "ppc_plot not support ppc_plot does not support the type of model used")
-
-  y <- x$counts$count[2:length(x$counts$count)]
-  yrep <- rstan::extract(x$fit, pars="N_rep")$N_rep
-
-  if (ptype == "intervals") {
-    p <- bayesplot::ppc_intervals(y, yrep, prob = prob, prob_outer = prob_outer)
-  } else {
-    p <- bayesplot::ppc_ribbon(y, yrep, prob = prob, prob_outer = prob_outer, y_draw = "points")
-  }
-
-  p <- p +
-    ggplot2::labs(
-      y = 'time',
-      x = "count"
-    ) +
-    my_ggplot_theme()
-  p
+  # assertthat::assert_that(inherits(x, "bipod"), msg = "Input must be a bipod object")
+  # assertthat::assert_that("fit" %in% names(x), msg = "Input must contain a 'fit' field")
+  # assertthat::assert_that(ptype %in% c("intervals", "ribbon"), msg = "ptype must be one of: intervals, ribbon")
+  # assertthat::assert_that(prob >= 0 && prob < 1, msg = "prob should be between 0 and 1 (with 1 excluded)")
+  # assertthat::assert_that(prob_outer >= 0 && prob_outer <= 1, msg = "prob_outer should be between 0 and 1")
+  # assertthat::assert_that(length(grep("N_rep", names(x$fit))) >= 1, msg = "ppc_plot not support ppc_plot does not support the type of model used")
+  #
+  # y <- x$counts$count[2:length(x$counts$count)]
+  # yrep <- rstan::extract(x$fit, pars="N_rep")$N_rep
+  #
+  # if (ptype == "intervals") {
+  #   p <- bayesplot::ppc_intervals(y, yrep, prob = prob, prob_outer = prob_outer)
+  # } else {
+  #   p <- bayesplot::ppc_ribbon(y, yrep, prob = prob, prob_outer = prob_outer, y_draw = "points")
+  # }
+  #
+  # p <- p +
+  #   ggplot2::labs(
+  #     y = 'time',
+  #     x = "count"
+  #   ) +
+  #   my_ggplot_theme()
+  # p
 }
