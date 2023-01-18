@@ -30,7 +30,7 @@ Additionally, one can tune many additional parameters for specific purposes:
 
 A fit with fixed rates can be obtained without adding any `group` column to the input dataframe.
 
-```{r fit log fixed, results=FALSE, message=FALSE}
+```{r fit log mcmc, results=FALSE, message=FALSE}
 bipod <- biPOD::init(d, "logistic sample using MCMC")
 biPOD::evolution_plot(bipod)
 bipod <- biPOD::fit_log(bipod, model_type = "gauss", prior = "invgamma", a = 1, b = 1)
@@ -53,7 +53,7 @@ biPOD::plot_fit(bipod)
 
 The fit can also obtained using variational inference. In order to do so, it is necessary to pass the flag `variational = TRUE` to the `fit_log` function.
 
-```{r fit log fixed, results=FALSE, message=FALSE}
+```{r fit log variational, results=FALSE, message=FALSE}
 bipod_vb <- biPOD::init(d, "logistic sample using VB")
 bipod_vb <- biPOD::fit_log(bipod_vb, model_type = "gauss", prior = "invgamma", a = 2, b = 2, variational = TRUE)
 ```
