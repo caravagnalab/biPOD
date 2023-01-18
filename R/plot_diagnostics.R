@@ -26,8 +26,7 @@ plot_traces = function(x, pars = c(), diagnose = FALSE) {
         names(chains) <- paste0("chain", 1:ncol(chains))
         chains$sample <- 1:nrow(chains)
         chains <- reshape2::melt(chains, id.vars = c("sample")) %>%
-          dplyr::mutate(parameter = paste0(par, gsub("fit", "", fit_name))) %>%
-          dplyr::mutate(color = ifelse(rhat <= 1.01, "forestgreen", "indianred"))
+          dplyr::mutate(parameter = paste0(par, gsub("fit", "", fit_name)))
 
         long_chains <- dplyr::bind_rows(long_chains, chains)
 
@@ -69,12 +68,33 @@ plot_traces = function(x, pars = c(), diagnose = FALSE) {
 #' obtained during the variational sampling.
 #'
 #' @param x A biPOD object of class `bipod`. Must contains 'fit'
+#' @param diagnose A Boolean indicating whether the plots should be colored and
+#'  contain info regarding the convergence of the variational sampling.
 #'
 #' @return A ggplot object with traces of the specified parameters
 #' @export
-plot_elbo = function(x) {
+plot_elbo = function(x, diagnose = FALSE) {
   plots <- lapply(names(x$elbo_data), function(elbo_name) {
     elbo_data <- x$elbo_data[[elbo_name]]
+
+    elbo_converged <- all(elbo_data$convergence)
+    pareto_k <- elbo_data$pareto_k[1]
+
+    if ((pareto_k > 1) | (!elbo_converged)) {
+      qc = line_color = "indianred"
+      msg = "Pareto k higher than 1 and/or ELBO not convergent."
+    } else if (pareto_k == 0) {
+      qc = line_color = "forestgreen"
+      msg = "Pareto k lower than 0.5 and convergent ELBO."
+    } else {
+      qc = line_color = "darkorange"
+      msg = "Convergent ELBO but Pareto k between .5 and 1."
+    }
+
+    if (!diagnose) {
+      qc = "gray"
+      line_color = "black"
+    }
 
     p <- elbo_data %>%
       as.data.frame %>%
@@ -82,13 +102,25 @@ plot_elbo = function(x) {
       dplyr::select(iter, ELBO, delta_ELBO_mean) %>%
       reshape2::melt(id.vars = c("iter")) %>%
       ggplot2::ggplot() +
-      ggplot2::geom_line(mapping = ggplot2::aes(x=.data$iter, y=-.data$value)) +
+      ggplot2::geom_line(mapping = ggplot2::aes(x=.data$iter, y=-.data$value), col = line_color) +
       ggplot2::facet_wrap(~ .data$variable, scales = "free") +
       ggplot2::labs(
         x = "iteration",
         y = "value",
         title = paste0("Group ", gsub("elbo", "", elbo_name))
+      ) +
+      my_ggplot_theme() +
+      ggplot2::theme(
+        legend.position = "none",
+        strip.background = ggplot2::element_rect(fill = qc)
       )
+
+    if (diagnose) {
+      p <- p +
+        ggplot2::labs(subtitle = msg) +
+        ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0))
+    }
+
     p
   })
   plots <- ggpubr::ggarrange(plotlist = plots, ncol=1)

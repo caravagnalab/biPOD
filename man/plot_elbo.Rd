@@ -5,10 +5,13 @@
 \title{Plot the logarithm of the ELBO and the delta ELBO mean
 obtained during the variational sampling.}
 \usage{
-plot_elbo(x)
+plot_elbo(x, diagnose = FALSE)
 }
 \arguments{
 \item{x}{A biPOD object of class \code{bipod}. Must contains 'fit'}
+
+\item{diagnose}{A Boolean indicating whether the plots should be colored and
+contain info regarding the convergence of the variational sampling.}
 }
 \value{
 A ggplot object with traces of the specified parameters
