@@ -122,7 +122,7 @@ sim_stochastic_logistic <- function(n0, lambda, mu, K, steps, delta_t) {
   if (!(all(mu >= 0))) stop("mu must be positive")
   if (!(K >= 0)) stop("K must be a positive integer")
   if (!(steps >= 0)) stop("steps must an integer >= 0")
-  if (!(delta_t >= 0)) stop("delta_t must be positive")
+  if (!(all(delta_t >= 0))) stop("delta_t must be positive")
 
   # Return the initial population size if no steps are requested
   if (steps == 0) {

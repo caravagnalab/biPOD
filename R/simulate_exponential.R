@@ -101,7 +101,7 @@ sim_stochastic_exponential <- function(n0, lambda, mu, steps, delta_t) {
   if (!(all(lambda >= 0))) stop("lambda must be positive")
   if (!(all(mu >= 0))) stop("mu must be positive")
   if (!(steps >= 0)) stop("steps must an integer >= 0")
-  if (!(delta_t >= 0)) stop("delta_t must be positive")
+  if (!(all(delta_t >= 0))) stop("delta_t must be positive")
 
   # Return the initial population size if no steps are requested
   if (steps == 0) {
@@ -180,7 +180,7 @@ sim_noisy <- function(n0, lambda, mu, steps, delta_t, sigma, as_int = T) {
   if (!(all(lambda >= 0))) stop("lambda must be positive")
   if (!(all(mu >= 0))) stop("mu must be positive")
   if (!(steps >= 0)) stop("steps must an integer >= 0")
-  if (!(delta_t >= 0)) stop("delta_t must be positive")
+  if (!(all(delta_t >= 0))) stop("delta_t must be positive")
 
   # Return the initial population size if no steps are requested
   if (steps == 0) {

@@ -34,15 +34,24 @@ fit <- function(
     prior = c("uniform", "invgamma"),
     variational = FALSE,
     factor_size = 1, a = 0, b = 1, g = 1, prior_K = NULL,
-    chains = 4, iter = 4000, warmpu = 2000, cores = 4){
+    chains = 4, iter = 4000, warmup = 2000, cores = 4){
+
+  growth_type <- match.arg(growth_type)
+  model_type <- match.arg(model_type)
+  prior <- match.arg(prior)
+  sampling_type <- if(variational) "variational inference" else "MCMC sampling"
+
+  cli::cli_alert_info(paste("Fitting", growth_type, "growth with", model_type, "model and", prior, "prior using", sampling_type, "..."))
+  cat("\n")
 
   if (growth_type == "exponential") {
-
+    x <- fit_exp(x, model_type, prior, factor_size, a, b, g, variational, chains, iter, warmup, cores)
   } else if (growth_type == "logistic") {
-
+    x <- fit_log(x, model_type, prior, variational, factor_size, a, b, g, prior_K, chains, iter, warmup, cores)
   } else {
     stop("'growth_type' should be either 'exponential' or 'logistic'")
   }
+  x
 }
 
 #' Fit exponential growth model to bipod object

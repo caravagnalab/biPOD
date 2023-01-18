@@ -17,7 +17,7 @@ fit(
   prior_K = NULL,
   chains = 4,
   iter = 4000,
-  warmpu = 2000,
+  warmup = 2000,
   cores = 4
 )
 }
@@ -55,9 +55,9 @@ sample and with width w = (b - a) / g.}
 
 \item{iter}{integer number of iterations to run in the MCMC algorithm}
 
-\item{cores}{integer number of cores to use in parallel processing}
-
 \item{warmup}{integer number of warmup iterations to run in the MCMC algorithm}
+
+\item{cores}{integer number of cores to use in parallel processing}
 }
 \value{
 the input bipod object with an added 'fit' slot containing the fitted model and an added 'fit_info' slot containing information about the fit
