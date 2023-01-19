@@ -94,7 +94,7 @@ transformed parameters {
 model {
   // Use uniform priors sampled on previous centered value
   lambda ~ uniform(lambda - (b-a)/g, lambda + (b-a)/g);
-  mu ~ uniform(mu - (b-a)/g, mu + (b-a)/g);
+  mu ~ uniform(lambda - (b-a)/g, mu + (b-a)/g);
 
   for (i in 1:S) {
     N[i] ~ birthDeathLike(n0, T[i] - t0, lambda, mu);

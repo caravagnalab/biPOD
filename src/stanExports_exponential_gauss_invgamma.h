@@ -33,7 +33,7 @@ static int current_statement_begin__;
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
     reader.add_event(0, 0, "start", "model_exponential_gauss_invgamma");
-    reader.add_event(63, 61, "end", "model_exponential_gauss_invgamma");
+    reader.add_event(61, 59, "end", "model_exponential_gauss_invgamma");
     return reader;
 }
 template <typename T0__, typename T1__, typename T2__, typename T3__>
@@ -338,13 +338,13 @@ public:
             }
             // model body
             current_statement_begin__ = 45;
-            lp_accum__.add(inv_gamma_log<propto__>(lambda, a, b));
+            lp_accum__.add(inv_gamma_log(lambda, a, b));
             current_statement_begin__ = 46;
-            lp_accum__.add(inv_gamma_log<propto__>(mu, a, b));
-            current_statement_begin__ = 49;
+            lp_accum__.add(inv_gamma_log(mu, a, b));
+            current_statement_begin__ = 48;
             for (int i = 1; i <= S; ++i) {
-                current_statement_begin__ = 50;
-                lp_accum__.add(normal_log<propto__>(get_base1(N, i, "N", 1), mean_t(n0, lambda, mu, (get_base1(T, i, "T", 1) - t0), pstream__), sigma_t(n0, lambda, mu, (get_base1(T, i, "T", 1) - t0), pstream__)));
+                current_statement_begin__ = 49;
+                lp_accum__.add(normal_log(get_base1(N, i, "N", 1), mean_t(n0, lambda, mu, (get_base1(T, i, "T", 1) - t0), pstream__), sigma_t(n0, lambda, mu, (get_base1(T, i, "T", 1) - t0), pstream__)));
             }
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
@@ -428,22 +428,22 @@ public:
             }
             if (!include_gqs__) return;
             // declare and define generated quantities
-            current_statement_begin__ = 55;
+            current_statement_begin__ = 54;
             validate_non_negative_index("N_rep", "S", S);
             std::vector<double> N_rep(S, double(0));
             stan::math::initialize(N_rep, DUMMY_VAR__);
             stan::math::fill(N_rep, DUMMY_VAR__);
             // generated quantities statements
-            current_statement_begin__ = 57;
+            current_statement_begin__ = 56;
             for (int i = 1; i <= S; ++i) {
-                current_statement_begin__ = 58;
+                current_statement_begin__ = 57;
                 stan::model::assign(N_rep, 
                             stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
                             normal_rng(mean_t(n0, lambda, mu, (get_base1(T, i, "T", 1) - t0), pstream__), sigma_t(n0, lambda, mu, (get_base1(T, i, "T", 1) - t0), pstream__), base_rng__), 
                             "assigning variable N_rep");
             }
             // validate, write generated quantities
-            current_statement_begin__ = 55;
+            current_statement_begin__ = 54;
             size_t N_rep_k_0_max__ = S;
             for (size_t k_0__ = 0; k_0__ < N_rep_k_0_max__; ++k_0__) {
                 vars__.push_back(N_rep[k_0__]);

@@ -346,13 +346,13 @@ public:
             }
             // model body
             current_statement_begin__ = 48;
-            lp_accum__.add(uniform_log<propto__>(lambda, (lambda - ((b - a) / g)), (lambda + ((b - a) / g))));
+            lp_accum__.add(uniform_log(lambda, (lambda - ((b - a) / g)), (lambda + ((b - a) / g))));
             current_statement_begin__ = 49;
-            lp_accum__.add(uniform_log<propto__>(mu, (lambda - ((b - a) / g)), (lambda + ((b - a) / g))));
+            lp_accum__.add(uniform_log(lambda, (lambda - ((b - a) / g)), (lambda + ((b - a) / g))));
             current_statement_begin__ = 51;
             for (int i = 1; i <= S; ++i) {
                 current_statement_begin__ = 52;
-                lp_accum__.add(normal_log<propto__>(get_base1(N, i, "N", 1), mean_t(n0, lambda, mu, (get_base1(T, i, "T", 1) - t0), pstream__), sigma_t(n0, lambda, mu, (get_base1(T, i, "T", 1) - t0), pstream__)));
+                lp_accum__.add(normal_log(get_base1(N, i, "N", 1), mean_t(n0, lambda, mu, (get_base1(T, i, "T", 1) - t0), pstream__), sigma_t(n0, lambda, mu, (get_base1(T, i, "T", 1) - t0), pstream__)));
             }
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
