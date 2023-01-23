@@ -33,7 +33,7 @@ A fit with fixed rates can be obtained without adding any `group` column to the 
 ```{r fit log mcmc, results=FALSE, message=FALSE}
 bipod <- biPOD::init(d, "logistic sample using MCMC")
 biPOD::evolution_plot(bipod)
-bipod <- biPOD::fit_log(bipod, model_type = "gauss", prior = "invgamma", a = 1, b = 1)
+bipod <- biPOD::fit(bipod, growth_type = "logistic", model_type = "gauss", prior = "invgamma", a = 1, b = 1)
 ```
 
 The bipod object does now contains a field names `fits` which contains every fit for every group, in this case only one. 
@@ -55,7 +55,7 @@ The fit can also obtained using variational inference. In order to do so, it is 
 
 ```{r fit log variational, results=FALSE, message=FALSE}
 bipod_vb <- biPOD::init(d, "logistic sample using VB")
-bipod_vb <- biPOD::fit_log(bipod_vb, model_type = "gauss", prior = "invgamma", a = 2, b = 2, variational = TRUE)
+bipod_vb <- biPOD::fit(bipod_vb, growth_type = "logistic", model_type = "gauss", prior = "invgamma", a = 2, b = 2, variational = TRUE)
 ```
 
 The bipod object does now contain a field named `elbo_data` which contains information regarding the ELBO for every group.

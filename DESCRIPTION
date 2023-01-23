@@ -11,11 +11,13 @@ Depends:
 Imports: 
     assertthat,
     bayesplot,
+    bridgesampling,
     cli,
     dplyr,
     ggplot2,
     ggpubr,
     invgamma,
+    loo,
     magrittr,
     methods,
     Rcpp (>= 0.12.0),

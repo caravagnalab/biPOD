@@ -17,7 +17,7 @@ delta_t <- T / time_steps
 d <- biPOD::sim_stochastic_exponential(1000, 1, .5, steps = time_steps, delta_t = delta_t)
 ```
 
-The `fit_exp` function can be used to fit a model over an input dataframe assuming an exponential growth.
+The `fit` function along with the parameter `growth_type = "exponential"` can be used to fit a model over an input dataframe assuming an exponential growth.
 The function requires as input a `biPOD` object along with two main additional parameters:
 
 - `model_type` : the type of model to use among `gauss` and `exact`
@@ -32,7 +32,7 @@ A fit with fixed rates can be obtained without adding any `group` column to the 
 
 ```{r fit exp fixed}
 bipod <- biPOD::init(d, "exponential sample")
-bipod <- biPOD::fit_exp(bipod, model_type = "gauss", prior = "uniform", a = 0, b = 5, g = 5)
+bipod <- biPOD::fit(bipod, growth_type = "exponential", model_type = "gauss", prior = "uniform", a = 0, b = 5, g = 5)
 ```
 
 The bipod object does now contains a field names `fits` which contains every fit for every group, in this case only one. 
@@ -57,7 +57,7 @@ To obtain a fit with variable growth rates one should add the `group` column. We
 d$group <- floor(d$time)
 d$group[nrow(d)] <- 2
 bipod_g <- biPOD::init(d, "Grouped sample")
-bipod_g <- biPOD::fit_exp(bipod_g, model_type = "gauss", prior = "uniform", a = 0, b = 5, g = 5)
+bipod_g <- biPOD::fit(bipod_g, growth_type = "exponential", model_type = "gauss", prior = "uniform", a = 0, b = 5, g = 5)
 ```
 And the results can be once again visually inspected:
 
