@@ -1,4 +1,33 @@
 
+#' Function to diagnose chains for a bipod object
+#'
+#' @param x a bipod object
+#' @param pars a character vector of parameter names to be examined
+#'
+#' @return a logical vector indicating whether the chains for each fit passed or failed the diagnostic test
+#' @export
+diagnose_chains = function(x, pars = c(), rhat_threshold = 1.01) {
+  if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
+  if (!("fits" %in% names(x))) stop("Input must contain a 'fits' field. It appears no model has been fitted yet.")
+  if (!(length(pars) > 0)) stop("'pars' should contain at least one input")
+  if (!("fit_info" %in% names(x))) stop("Input must contain a 'fit_info' field")
+  if (!(x$fit_info$sampling == "mcmc")) stop("'plot_traces' accepts only biPOD objects that have been fitted using MCMC")
+
+  diagnostics <- sapply(names(x$fits), function(fit_name) {
+    fit <- x$fits[[fit_name]]
+
+    pass = TRUE
+    for (par in pars) {
+      rhat <- rstan::Rhat(as.array(fit)[,,par])
+      if (rhat > rhat_threshold) pass = FALSE
+    }
+
+    return(pass)
+  })
+
+  return(diagnostics)
+}
+
 #' Plot traces of specified parameters from a fitted Stan model
 #'
 #' @param x A biPOD object of class `bipod`. Must contains 'fit'

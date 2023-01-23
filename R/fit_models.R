@@ -45,13 +45,18 @@ fit <- function(
   cat("\n")
 
   if (growth_type == "exponential") {
-    x <- fit_exp(x, model_type, prior, factor_size, a, b, g, variational, chains, iter, warmup, cores)
+    res <- fit_exp(x, model_type, prior, factor_size, a, b, g, variational, chains, iter, warmup, cores)
   } else if (growth_type == "logistic") {
-    x <- fit_log(x, model_type, prior, variational, factor_size, a, b, g, prior_K, chains, iter, warmup, cores)
+    res <- fit_log(x, model_type, prior, variational, factor_size, a, b, g, prior_K, chains, iter, warmup, cores)
   } else {
     stop("'growth_type' should be either 'exponential' or 'logistic'")
   }
-  x
+
+  # Add results to bipod object
+  x$elbo_data <- res$elbo_data
+  x$fits <- res$fits
+  x$fit_info <- res$fit_info
+  return(x)
 }
 
 #' Fit exponential growth model to bipod object
@@ -168,11 +173,13 @@ fit_exp <- function(x, model_type = c("gauss", "exact"), prior = c("uniform", "i
     g = g
   )
 
-  # Add results to bipod object
-  x$elbo_data <- elbo_data
-  x$fits <- fits
-  x$fit_info <- fit_info
-  x
+  res <- list(
+    elbo_data = elbo_data,
+    fits = fits,
+    fit_info = fit_info
+  )
+
+  return(res)
 }
 
 
@@ -294,11 +301,13 @@ fit_log <- function(x, model_type = c("gauss"), prior = c("uniform", "invgamma")
     prior_K = prior_K
   )
 
-  # Add results to bipod object
-  x$elbo_data <- elbo_data
-  x$fits <- fits
-  x$fit_info <- fit_info
-  x
+  res = list(
+    elbo_data = elbo_data,
+    fits = fits,
+    fit_info = fit_info
+  )
+
+  return(res)
 }
 
 iterative_variational = function(model, data_model, iter, warmpup) {
