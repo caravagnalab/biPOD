@@ -33,7 +33,7 @@ static int current_statement_begin__;
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
     reader.add_event(0, 0, "start", "model_exponential_gauss_uniform");
-    reader.add_event(64, 62, "end", "model_exponential_gauss_uniform");
+    reader.add_event(66, 64, "end", "model_exponential_gauss_uniform");
     return reader;
 }
 template <typename T0__, typename T1__, typename T2__, typename T3__>
@@ -348,7 +348,7 @@ public:
             current_statement_begin__ = 48;
             lp_accum__.add(uniform_log(lambda, (lambda - ((b - a) / g)), (lambda + ((b - a) / g))));
             current_statement_begin__ = 49;
-            lp_accum__.add(uniform_log(lambda, (lambda - ((b - a) / g)), (lambda + ((b - a) / g))));
+            lp_accum__.add(uniform_log(mu, (mu - ((b - a) / g)), (mu + ((b - a) / g))));
             current_statement_begin__ = 51;
             for (int i = 1; i <= S; ++i) {
                 current_statement_begin__ = 52;
@@ -378,6 +378,7 @@ public:
         names__.push_back("mu");
         names__.push_back("ro");
         names__.push_back("N_rep");
+        names__.push_back("log_lik");
     }
     void get_dims(std::vector<std::vector<size_t> >& dimss__) const {
         dimss__.resize(0);
@@ -387,6 +388,9 @@ public:
         dims__.resize(0);
         dimss__.push_back(dims__);
         dims__.resize(0);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dims__.push_back(S);
         dimss__.push_back(dims__);
         dims__.resize(0);
         dims__.push_back(S);
@@ -441,10 +445,20 @@ public:
             std::vector<double> N_rep(S, double(0));
             stan::math::initialize(N_rep, DUMMY_VAR__);
             stan::math::fill(N_rep, DUMMY_VAR__);
+            current_statement_begin__ = 58;
+            validate_non_negative_index("log_lik", "S", S);
+            std::vector<double> log_lik(S, double(0));
+            stan::math::initialize(log_lik, DUMMY_VAR__);
+            stan::math::fill(log_lik, DUMMY_VAR__);
             // generated quantities statements
-            current_statement_begin__ = 59;
+            current_statement_begin__ = 60;
             for (int i = 1; i <= S; ++i) {
-                current_statement_begin__ = 60;
+                current_statement_begin__ = 61;
+                stan::model::assign(log_lik, 
+                            stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
+                            normal_log(get_base1(N, i, "N", 1), mean_t(n0, lambda, mu, (get_base1(T, i, "T", 1) - t0), pstream__), sigma_t(n0, lambda, mu, (get_base1(T, i, "T", 1) - t0), pstream__)), 
+                            "assigning variable log_lik");
+                current_statement_begin__ = 62;
                 stan::model::assign(N_rep, 
                             stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
                             normal_rng(mean_t(n0, lambda, mu, (get_base1(T, i, "T", 1) - t0), pstream__), sigma_t(n0, lambda, mu, (get_base1(T, i, "T", 1) - t0), pstream__), base_rng__), 
@@ -455,6 +469,11 @@ public:
             size_t N_rep_k_0_max__ = S;
             for (size_t k_0__ = 0; k_0__ < N_rep_k_0_max__; ++k_0__) {
                 vars__.push_back(N_rep[k_0__]);
+            }
+            current_statement_begin__ = 58;
+            size_t log_lik_k_0_max__ = S;
+            for (size_t k_0__ = 0; k_0__ < log_lik_k_0_max__; ++k_0__) {
+                vars__.push_back(log_lik[k_0__]);
             }
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
@@ -505,6 +524,12 @@ public:
             param_name_stream__ << "N_rep" << '.' << k_0__ + 1;
             param_names__.push_back(param_name_stream__.str());
         }
+        size_t log_lik_k_0_max__ = S;
+        for (size_t k_0__ = 0; k_0__ < log_lik_k_0_max__; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "log_lik" << '.' << k_0__ + 1;
+            param_names__.push_back(param_name_stream__.str());
+        }
     }
     void unconstrained_param_names(std::vector<std::string>& param_names__,
                                    bool include_tparams__ = true,
@@ -527,6 +552,12 @@ public:
         for (size_t k_0__ = 0; k_0__ < N_rep_k_0_max__; ++k_0__) {
             param_name_stream__.str(std::string());
             param_name_stream__ << "N_rep" << '.' << k_0__ + 1;
+            param_names__.push_back(param_name_stream__.str());
+        }
+        size_t log_lik_k_0_max__ = S;
+        for (size_t k_0__ = 0; k_0__ < log_lik_k_0_max__; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "log_lik" << '.' << k_0__ + 1;
             param_names__.push_back(param_name_stream__.str());
         }
     }

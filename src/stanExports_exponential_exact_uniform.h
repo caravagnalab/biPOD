@@ -454,7 +454,7 @@ public:
             current_statement_begin__ = 96;
             lp_accum__.add(uniform_log<propto__>(lambda, (lambda - ((b - a) / g)), (lambda + ((b - a) / g))));
             current_statement_begin__ = 97;
-            lp_accum__.add(uniform_log<propto__>(mu, (mu - ((b - a) / g)), (mu + ((b - a) / g))));
+            lp_accum__.add(uniform_log<propto__>(mu, (lambda - ((b - a) / g)), (mu + ((b - a) / g))));
             current_statement_begin__ = 99;
             for (int i = 1; i <= S; ++i) {
                 current_statement_begin__ = 100;

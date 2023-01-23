@@ -55,8 +55,10 @@ model {
 
 generated quantities {
   real N_rep[S];
+  real log_lik[S];
 
   for (i in 1:S) {
+    log_lik[i] = normal_lpdf(N[i] | mean_t(n0, lambda, mu, T[i] - t0), sigma_t(n0, lambda, mu, T[i] - t0));
     N_rep[i] = normal_rng(mean_t(n0, lambda, mu, T[i] - t0), sigma_t(n0, lambda, mu, T[i] - t0));
   }
 }
