@@ -38,7 +38,7 @@ for (i in 3:length(indexes)) {
   idx <- sort(indexes[1:i])
   
   x <- biPOD::init(d[idx,], sample = paste(""))
-  x <- biPOD::fit(x, growth_type = "logistic", model_type = "exact", prior = "uniform", a = 0, b = 2, g = 2)
+  x <- biPOD::fit(x, growth_type = "exponential", model_type = "exact", prior = "uniform", a = 0, b = 2, g = 2)
   
   name = paste("sample", i)
   print(name)
