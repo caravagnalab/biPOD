@@ -23,6 +23,8 @@ loo_selection = function(models) {
     loos[i] <- sum(loo[1,])
   }
 
+
+
   # Compute Bayes factor for every couple of model
   loos_differences <- outer(loos, loos, FUN = function(x,y) {
     return(x-y)
@@ -30,7 +32,7 @@ loo_selection = function(models) {
 
   loos_differences <- dplyr::as_tibble(loos_differences)
   colnames(loos_differences) <- sapply(models, function(m) {return(m$sample)})
-
+  loos_differences
 }
 
 #' Compute the pairwise Bayes Factors between models

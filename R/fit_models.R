@@ -253,9 +253,9 @@ fit_log <- function(x, model_type = c("gauss"), prior = c("uniform", "invgamma")
     data_model <- list(
       S = nrow(current),
       t0 = t0,
-      T = current$time,
+      T = as.array(current$time), # / Ts[length(Ts)],
       n0 = as.integer(n0 / factor_size),
-      N = as.integer(current$count / factor_size),
+      N = as.array(as.integer(current$count / factor_size)),
       a = a,
       b = b,
       prior_K = prior_K
