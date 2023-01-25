@@ -4,12 +4,10 @@
 \alias{plot_growth_rate_posteriors}
 \title{Plot growth rates posteriors}
 \usage{
-plot_growth_rate_posteriors(x, point_est = c("mean", "median", "none"))
+plot_growth_rate_posteriors(x)
 }
 \arguments{
 \item{x}{a bipod object with a 'fit' field}
-
-\item{point_est}{Character string indicating which point estimate to use. Available options are mean", "median", and "none". Default is "mean".}
 }
 \value{
 A ggplot object containing the posterior density plots of the growth rates and the prior density plot
