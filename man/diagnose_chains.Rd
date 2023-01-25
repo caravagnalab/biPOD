@@ -10,6 +10,8 @@ diagnose_chains(x, pars = c(), rhat_threshold = 1.01)
 \item{x}{a bipod object}
 
 \item{pars}{a character vector of parameter names to be examined}
+
+\item{rhat_threshold}{Threshold value accepted for Rhat value}
 }
 \value{
 a logical vector indicating whether the chains for each fit passed or failed the diagnostic test

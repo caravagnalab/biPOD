@@ -9,8 +9,6 @@ License: GPL (>= 3)
 Depends: 
     R (>= 3.4.0)
 Imports: 
-    assertthat,
-    bayesplot,
     bridgesampling,
     cli,
     dplyr,

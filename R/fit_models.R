@@ -318,7 +318,7 @@ iterative_variational = function(model, data_model, iter, warmpup) {
 
   N = 20
   for (i in 1:N) {
-    out <- capture.output({
+    out <- utils::capture.output({
       warnings <- NULL
       fit_model <- withCallingHandlers({
         rstan::vb(

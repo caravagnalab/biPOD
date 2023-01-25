@@ -45,10 +45,10 @@ plot_birth_and_death_rates_posteriors = function(x) {
 
     # Filter data
     prior_data <- prior_data %>%
-      filter(.data$x >= xlims[1] & .data$x <= xlims[2])
+      dplyr::filter(.data$x >= xlims[1] & .data$x <= xlims[2])
 
     d_long <- d_long %>%
-      filter(.data$value >= xlims[1] & .data$value <= xlims[2])
+      dplyr::filter(.data$value >= xlims[1] & .data$value <= xlims[2])
 
     # plot posterior density
     p <- ggplot2::ggplot(d_long, ggplot2::aes(x=.data$value)) +
@@ -71,7 +71,7 @@ plot_birth_and_death_rates_posteriors = function(x) {
         y = 'density',
         x = "value"
       ) +
-      coord_cartesian(xlim=xlims) +
+      ggplot2::coord_cartesian(xlim=xlims) +
       my_ggplot_theme()
   })
 
@@ -111,10 +111,10 @@ plot_growth_rate_posteriors = function(x) {
 
     # Filter data
     prior_data <- prior_data %>%
-      filter(.data$x >= xlims[1] & .data$x <= xlims[2])
+      dplyr::filter(.data$x >= xlims[1] & .data$x <= xlims[2])
 
     d_long <- d_long %>%
-      filter(.data$value >= xlims[1] & .data$value <= xlims[2])
+      dplyr::filter(.data$value >= xlims[1] & .data$value <= xlims[2])
 
     # plot posterior density
     p <- ggplot2::ggplot(d_long, ggplot2::aes(x=.data$value)) +
@@ -171,6 +171,7 @@ pdf_triangular <- function(z, a, b) {
 }
 
 prepare_prior_data = function(x, par) {
+  par_list = c(par)
   if (par %in% c("ro")) {
     limits <- lapply(x$fits, function(fit) {
       d_long <- rstan::extract(fit, pars = par_list) %>%

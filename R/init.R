@@ -40,7 +40,8 @@ check_input_data <- function(counts) {
   if (is.unsorted(counts$time)) {
     cli::cli_alert_danger("The input should be sorted according to time!")
     cli::cli_alert_danger("The input is being sorted according to time...")
-    counts <- dplyr::arrange(time)
+    counts <- counts %>%
+      dplyr::arrange(.data$time)
   }
 
   if ("group" %in% names(counts)) {

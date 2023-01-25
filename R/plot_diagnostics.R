@@ -3,6 +3,7 @@
 #'
 #' @param x a bipod object
 #' @param pars a character vector of parameter names to be examined
+#' @param rhat_threshold Threshold value accepted for Rhat value
 #'
 #' @return a logical vector indicating whether the chains for each fit passed or failed the diagnostic test
 #' @export
@@ -132,8 +133,8 @@ plot_elbo = function(x, diagnose = FALSE) {
 
     p <- elbo_data %>%
       as.data.frame %>%
-      dplyr::mutate(ELBO = -log(-ELBO)) %>%
-      dplyr::select(iter, ELBO, delta_ELBO_mean) %>%
+      dplyr::mutate(ELBO = -log(-.data$ELBO)) %>%
+      dplyr::select(.data$iter, .data$ELBO, .data$delta_ELBO_mean) %>%
       reshape2::melt(id.vars = c("iter")) %>%
       ggplot2::ggplot() +
       ggplot2::geom_line(mapping = ggplot2::aes(x=.data$iter, y=-.data$value), col = line_color) +
