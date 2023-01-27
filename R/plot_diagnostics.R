@@ -100,10 +100,11 @@ plot_traces = function(x, pars = c(), diagnose = FALSE) {
 #' @param x A biPOD object of class `bipod`. Must contains 'fit'
 #' @param diagnose A Boolean indicating whether the plots should be colored and
 #'  contain info regarding the convergence of the variational sampling.
+#' @param add_title Boolean, indicating whether the plot should have a title
 #'
 #' @return A ggplot object with traces of the specified parameters
 #' @export
-plot_elbo = function(x, diagnose = FALSE) {
+plot_elbo = function(x, diagnose = FALSE, add_title = FALSE) {
   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
   if (!("fits" %in% names(x))) stop("Input must contain a 'fits' field. It appears no model has been fitted yet.")
   if (!("fit_info" %in% names(x))) stop("Input must contain a 'fit_info' field")
@@ -131,6 +132,12 @@ plot_elbo = function(x, diagnose = FALSE) {
       line_color = "black"
     }
 
+    if (add_title) {
+      title = paste0("Group ", gsub("elbo", "", elbo_name))
+    } else {
+      title = ""
+    }
+
     p <- elbo_data %>%
       as.data.frame %>%
       dplyr::mutate(ELBO = -log(-.data$ELBO)) %>%
@@ -142,7 +149,7 @@ plot_elbo = function(x, diagnose = FALSE) {
       ggplot2::labs(
         x = "iteration",
         y = "value",
-        title = paste0("Group ", gsub("elbo", "", elbo_name))
+        title = title
       ) +
       my_ggplot_theme() +
       ggplot2::theme(

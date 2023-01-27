@@ -3,10 +3,11 @@
 #'
 #' @param x A biPOD object of class `bipod`. Must contains 'fit'
 #' @param final_time The final time for which the fit need to be plotted.
+#' @param add_title Boolean, indicating whether the plot should have a title
 #'
 #' @returns A plot of the fit over the input data.
 #' @export
-plot_fit = function(x, final_time = NULL) {
+plot_fit = function(x, final_time = NULL, add_title = F) {
   # Check input
   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
   if (!("fits" %in% names(x))) stop("Input must contain a 'fits' field")
@@ -14,14 +15,14 @@ plot_fit = function(x, final_time = NULL) {
   growth_type <- x$fit_info$growth_type
 
   if (growth_type == "exponential") {
-    p <- plot_exponential_fit(x, final_time)
+    p <- plot_exponential_fit(x, final_time, add_title)
   } else {
-    p <- plot_logistic_fit(x, final_time)
+    p <- plot_logistic_fit(x, final_time, add_title)
   }
   return(p)
 }
 
-plot_exponential_fit = function(x, final_time) {
+plot_exponential_fit = function(x, final_time, add_title) {
 
   p <- ggplot2::ggplot()
   data <- data.frame()
@@ -62,16 +63,25 @@ plot_exponential_fit = function(x, final_time) {
 
   p <- p +
     ggplot2::geom_point(x$counts, mapping=ggplot2::aes(x=.data$time, y=.data$count)) +
-    ggplot2::labs(
-      title = paste("Exponential fit", x$sample),
-      x = "Time",
-      y = "Count"
-    ) +
     my_ggplot_theme()
+
+  if (add_title) {
+    p <- p + ggplot2::labs(
+      title = paste("Exponential fit", x$sample),
+      x = "time",
+      y = "count"
+    )
+  } else {
+    p <- p + ggplot2::labs(
+      x = "time",
+      y = "count"
+    )
+  }
+
   p
 }
 
-plot_logistic_fit = function(x, final_time) {
+plot_logistic_fit = function(x, final_time, add_title) {
 
   p <- ggplot2::ggplot()
   data <- data.frame()
@@ -113,11 +123,20 @@ plot_logistic_fit = function(x, final_time) {
 
   p <- p +
     ggplot2::geom_point(x$counts, mapping=ggplot2::aes(x=.data$time, y=.data$count)) +
-    ggplot2::labs(
-      title = paste("Exponential fit", x$sample),
-      x = "Time",
-      y = "Count"
-    ) +
     my_ggplot_theme()
+
+  if (add_title) {
+    p <- p + ggplot2::labs(
+      title = paste("Exponential fit", x$sample),
+      x = "time",
+      y = "count"
+    )
+  } else {
+    p <- p + ggplot2::labs(
+      x = "time",
+      y = "count"
+    )
+  }
+
   p
 }

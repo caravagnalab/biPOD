@@ -4,10 +4,12 @@
 \alias{evolution_plot}
 \title{Plot the evolution of the population over time}
 \usage{
-evolution_plot(x)
+evolution_plot(x, add_title = F)
 }
 \arguments{
 \item{x}{A biPOD object of class \code{bipod}.}
+
+\item{add_title}{Boolean, indicating whether the plot should have a title}
 }
 \value{
 A plot. Represents the evolution of the population over time.

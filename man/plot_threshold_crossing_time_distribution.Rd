@@ -4,13 +4,15 @@
 \alias{plot_threshold_crossing_time_distribution}
 \title{Plot the the posterior distribution of the 'relapse' times.}
 \usage{
-plot_threshold_crossing_time_distribution(x, n_thresh)
+plot_threshold_crossing_time_distribution(x, n_thresh, add_title = F)
 }
 \arguments{
 \item{x}{A biPOD object of class \code{bipod}. Must contains 'fit'}
 
 \item{n_thresh}{A positive value indicating the threshold for which
 the posterior distribution must be computed}
+
+\item{add_title}{Boolean, indicating whether the plot should have a title}
 }
 \value{
 A posterior distribution plot.

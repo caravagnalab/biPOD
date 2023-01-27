@@ -8,7 +8,7 @@ get_relapse_time_distribution = function(x, n_thresh) {
 
   # Extract 'previous' n0
   previous_counts <- x$counts %>%
-    dplyr::filter(group == max_group - 1)
+    dplyr::filter(.data$group == max_group - 1)
   n0 <- previous_counts$count[nrow(previous_counts)]
 
   # Extract samples of the last growth rate
@@ -25,10 +25,11 @@ get_relapse_time_distribution = function(x, n_thresh) {
 #' @param x A biPOD object of class `bipod`. Must contains 'fit'
 #' @param n_thresh A positive value indicating the threshold for which
 #'  the posterior distribution must be computed
+#' @param add_title Boolean, indicating whether the plot should have a title
 #'
 #' @returns A posterior distribution plot.
 #' @export
-plot_threshold_crossing_time_distribution = function(x, n_thresh) {
+plot_threshold_crossing_time_distribution = function(x, n_thresh, add_title = F) {
   # Check input
   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
   if (!("fits" %in% names(x))) stop("Input must contain a 'fits' field")
@@ -43,5 +44,21 @@ plot_threshold_crossing_time_distribution = function(x, n_thresh) {
       y = "density") +
     my_ggplot_theme() +
     ggplot2::scale_y_continuous(breaks = scales::pretty_breaks(n = 4))
+
+  if (add_title) {
+    p <- p +
+      ggplot2::labs(
+        x = "time",
+        y = "density",
+        title = paste0("Threshold = ", n_thresh)
+    )
+  } else {
+    p <- p +
+      ggplot2::labs(
+        x = "time",
+        y = "density"
+      )
+  }
+
   p
 }
