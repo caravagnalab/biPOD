@@ -10,8 +10,8 @@
 #'
 #' @param prior character string specifying the prior to use, "uniform" or "invagamma".
 #'
-#'  * `uniform` Uniform U(a,b), where at every iteration you sample with width w = (b-a) / g.
 #'  * `invgamma` Inverse gamma prior invGamma(a,b)
+#'  * `uniform` Uniform U(a,b), where at every iteration you sample with width w = (b-a) / g.
 #'
 #' @param variational Boolean specifying whether using variational as opposed to mcmc sampling
 #' @param factor_size numeric factor by which to divide counts in the bipod object
@@ -31,9 +31,9 @@ fit <- function(
     x,
     growth_type = c("exponential", "logistic"),
     model_type = c("gauss", "exact"),
-    prior = c("uniform", "invgamma"),
+    prior = c("invgamma", "uniform"),
     variational = FALSE,
-    factor_size = 1, a = 0, b = 1, g = 1, prior_K = NULL,
+    factor_size = 1, a = 2, b = 2, g = 1, prior_K = NULL,
     chains = 4, iter = 4000, warmup = 2000, cores = 4){
 
   growth_type <- match.arg(growth_type)
