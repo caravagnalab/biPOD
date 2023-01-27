@@ -21,7 +21,8 @@ Let's first simulate an exponential growth
 T <- 3
 time_steps <- 12
 delta_t <- T / time_steps
-d <- biPOD::sim_stochastic_exponential(1000, .8, .2, steps = time_steps, delta_t = delta_t)
+n0 <- 1000
+d <- biPOD::sim_stochastic_exponential(n0, .8, .2, steps = time_steps, delta_t = delta_t)
 ```
 
 Now, we might be interested in understanding, for example, when the population will reach, for example, a size 10 times bigger than the other. Moreover, we want to look at how the prediction can become more and more accurate as the number of data points we have grows. Hence, let's first use only 25% of the points.
