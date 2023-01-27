@@ -4,10 +4,12 @@
 \alias{plot_fit}
 \title{Plot the fit over the input data.}
 \usage{
-plot_fit(x)
+plot_fit(x, final_time = NULL)
 }
 \arguments{
 \item{x}{A biPOD object of class \code{bipod}. Must contains 'fit'}
+
+\item{final_time}{The final time for which the fit need to be plotted.}
 }
 \value{
 A plot of the fit over the input data.

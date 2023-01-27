@@ -2,10 +2,11 @@
 #' Plot the fit over the input data.
 #'
 #' @param x A biPOD object of class `bipod`. Must contains 'fit'
-
+#' @param final_time The final time for which the fit need to be plotted.
+#'
 #' @returns A plot of the fit over the input data.
 #' @export
-plot_fit = function(x) {
+plot_fit = function(x, final_time = NULL) {
   # Check input
   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
   if (!("fits" %in% names(x))) stop("Input must contain a 'fits' field")
@@ -13,15 +14,14 @@ plot_fit = function(x) {
   growth_type <- x$fit_info$growth_type
 
   if (growth_type == "exponential") {
-    p <- plot_exponential_fit(x)
-
+    p <- plot_exponential_fit(x, final_time)
   } else {
-    p <- plot_logistic_fit(x)
+    p <- plot_logistic_fit(x, final_time)
   }
   return(p)
 }
 
-plot_exponential_fit = function(x) {
+plot_exponential_fit = function(x, final_time) {
 
   p <- ggplot2::ggplot()
   data <- data.frame()
@@ -37,7 +37,12 @@ plot_exponential_fit = function(x) {
     current <- x$counts %>%
       dplyr::filter(.data$group == groups[i])
 
-    final_t <- current$time[nrow(current)]
+    if (i == length(groups)) {
+      final_t <- if (is.null(final_time)) current$time[nrow(current)] else final_time
+    } else {
+      final_t <- current$time[nrow(current)]
+    }
+
     xs <- seq(0, final_t - previous_t, length = 100)
 
     # Extract fit info
@@ -66,7 +71,7 @@ plot_exponential_fit = function(x) {
   p
 }
 
-plot_logistic_fit = function(x) {
+plot_logistic_fit = function(x, final_time) {
 
   p <- ggplot2::ggplot()
   data <- data.frame()
@@ -82,7 +87,12 @@ plot_logistic_fit = function(x) {
     current <- x$counts %>%
       dplyr::filter(.data$group == groups[i])
 
-    final_t <- current$time[nrow(current)]
+    if (i == length(groups)) {
+      final_t <- if (is.null(final_time)) current$time[nrow(current)] else final_time
+    } else {
+      final_t <- current$time[nrow(current)]
+    }
+
     xs <- seq(0, final_t - previous_t, length = 100)
 
     # Extract fit info

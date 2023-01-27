@@ -59,32 +59,7 @@ fit <- function(
   return(x)
 }
 
-#' Fit exponential growth model to bipod object
-#'
-#' @param x a bipod object
-#' @param model_type character string specifying the model to fit, one of "gauss", "exact".
-#'
-#'  * `exact` Slowest model. Particularly good for low counts data.
-#'  * `gauss` Use a Gaussian approximation. Works well when counts data are far from 0.
-#'
-#' @param prior character string specifying the prior to use, "uniform" or "invagamma".
-#'
-#'  * `uniform` Uniform U(a,b), where at every iteration you sample with width w = (b-a) / g.
-#'  * `invgamma` Inverse gamma prior invGamma(a,b)
-#'
-#' @param variational Boolean specifying whether using variational as opposed to mcmc sampling
-#' @param factor_size numeric factor by which to divide counts in the bipod object
-#' @param a Minimum value for uniform prior, shape parameter for inverse gamma prior
-#' @param b Maximum value for uniform prior, scale parameter for inverse gamma prior
-#' @param g Extra parameters for uniform prior. Sample is done from a uniform centered on the previous
-#'  sample and with width w = (b - a) / g.
-#' @param chains integer number of chains to run in the Markov Chain Monte Carlo (MCMC) algorithm
-#' @param iter integer number of iterations to run in the MCMC algorithm
-#' @param warmup integer number of warmup iterations to run in the MCMC algorithm
-#' @param cores integer number of cores to use in parallel processing
-#'
-#' @return the input bipod object with an added 'fit' slot containing the fitted model and an added 'fit_info' slot containing information about the fit
-#' @export
+# Fit exponential growth model to bipod object
 fit_exp <- function(x, model_type = c("gauss", "exact"), prior = c("uniform", "invgamma"),
                     factor_size = 1, a = 0, b = 1, g = 1, variational = FALSE,
                     chains = 4, iter = 4000, warmup = 2000, cores = 4) {
@@ -183,32 +158,7 @@ fit_exp <- function(x, model_type = c("gauss", "exact"), prior = c("uniform", "i
 }
 
 
-#' Fit logistic growth model to bipod object
-#'
-#' @param x a bipod object
-#' @param model_type character string specifying the model to fit, one of "gauss".
-#'
-#'  * `gauss` Use a Gaussian approximation. Works well when counts data are far from 0.
-#'
-#' @param prior character string specifying the prior to use, "uniform" or "invagamma".
-#'
-#'  * `uniform` Uniform U(a,b), where at every iteration you sample with width w = (b-a) / g.
-#'  * `invgamma` Inverse gamma prior invGamma(a,b)
-#'
-#' @param variational Boolean specifying whether using variational as opposed to mcmc sampling
-#' @param factor_size numeric factor by which to divide counts in the bipod object
-#' @param a Minimum value for uniform prior, shape parameter for inverse gamma prior
-#' @param b Maximum value for uniform prior, scale parameter for inverse gamma prior
-#' @param g Extra parameters for uniform prior. Sample is done from a uniform centered on the previous
-#'  sample and with width w = (b - a) / g.
-#' @param prior_K Prior mean for the carrying capacity.
-#' @param chains integer number of chains to run in the Markov Chain Monte Carlo (MCMC) algorithm
-#' @param iter integer number of iterations to run in the MCMC algorithm
-#' @param warmup integer number of warmup iterations to run in the MCMC algorithm
-#' @param cores integer number of cores to use in parallel processing
-#'
-#' @return the input bipod object with an added 'fit' slot containing the fitted model and an added 'fit_info' slot containing information about the fit
-#' @export
+# Fit logistic growth model to bipod object
 fit_log <- function(x, model_type = c("gauss"), prior = c("uniform", "invgamma"), variational = FALSE,
                     factor_size = 1, a = 0, b = 1, g = 1, prior_K = NULL,
                     chains = 4, iter = 4000, warmup = 2000, cores = 4) {

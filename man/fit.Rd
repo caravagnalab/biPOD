@@ -8,11 +8,11 @@ fit(
   x,
   growth_type = c("exponential", "logistic"),
   model_type = c("gauss", "exact"),
-  prior = c("uniform", "invgamma"),
+  prior = c("invgamma", "uniform"),
   variational = FALSE,
   factor_size = 1,
-  a = 0,
-  b = 1,
+  a = 2,
+  b = 2,
   g = 1,
   prior_K = NULL,
   chains = 4,
@@ -34,8 +34,8 @@ one of "exponential", "logistic".}
 
 \item{prior}{character string specifying the prior to use, "uniform" or "invagamma".
 \itemize{
-\item \code{uniform} Uniform U(a,b), where at every iteration you sample with width w = (b-a) / g.
 \item \code{invgamma} Inverse gamma prior invGamma(a,b)
+\item \code{uniform} Uniform U(a,b), where at every iteration you sample with width w = (b-a) / g.
 }}
 
 \item{variational}{Boolean specifying whether using variational as opposed to mcmc sampling}
