@@ -15,8 +15,15 @@ get_relapse_time_distribution = function(x, n_thresh) {
   fit_name <- paste0("fit", max_group)
   ro_samples <- rstan::extract(x$fits[[fit_name]], pars=c('ro'))$ro
 
+
   # Compute the relapse times
-  times <- 1 / ro_samples * log(n_thresh / n0)
+  if (x$fit_info$growth_type == "logistic") {
+    K <- mean(rstan::extract(x$fits[[fit_name]], pars="K")$K)
+    if (K < n_thresh) stop("n_thresh is greater than the predicted carrying capacity")
+    times <- - 1 / ro_samples * log(n0 * (K - n_thresh) / (n_thresh * (K - n0)))
+  } else {
+    times <- 1 / ro_samples * log(n_thresh / n0)
+  }
   return(as.data.frame(times))
 }
 
@@ -29,7 +36,7 @@ get_relapse_time_distribution = function(x, n_thresh) {
 #'
 #' @returns A posterior distribution plot.
 #' @export
-plot_threshold_crossing_time_distribution = function(x, n_thresh, add_title = F) {
+plot_relapse_time_distribution = function(x, n_thresh, add_title = F) {
   # Check input
   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
   if (!("fits" %in% names(x))) stop("Input must contain a 'fits' field")

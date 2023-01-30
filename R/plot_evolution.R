@@ -6,7 +6,7 @@
 #'
 #' @returns A plot. Represents the evolution of the population over time.
 #' @export
-evolution_plot <- function(x, add_title = F) {
+plot_evolution <- function(x, add_title = F) {
   # Check input
   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
 
