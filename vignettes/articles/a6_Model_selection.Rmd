@@ -30,8 +30,8 @@ Hence, let's first simulate a logistic growth with the following parameters:
 
 ```{r}
 n0 = 1000
-lambda = .5
-mu = .0
+lambda = 1
+mu = .5
 K = 3000
 T = 2
 steps = 10
@@ -113,6 +113,19 @@ ggpubr::ggarrange(plotlist = plots, ncol=2)
 
 Another possibility is to use only the logistic fit with different priors for the carrying capacity K and then select the one with the highest Bayes Factor. More interestingly, this process is general and can be used also to fit an exponential growth (in this case K >> N_i where N_i are the observations).
 
-Let's simulate 
+Let's simulate an exponential growth (i.e. the carrying capacity K is infinite)
 
+```{r}
+n0 = 1000
+lambda = 1
+mu = .5
+T = 2
+steps = 10
+delta_t = T / steps
+
+# Simulate exponential
+d <- biPOD::sim_stochastic_exponential(n0, lambda, mu, steps, delta_t)
+```
+
+And 
 
