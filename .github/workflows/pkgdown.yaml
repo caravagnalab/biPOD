@@ -18,8 +18,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: Install packages (with workaround for bad mirror)
-       run: sudo gem install apt-spy2 ; sudo apt-spy2 check ; sudo apt-spy2 fix --commit ; sudo apt-get update ; sudo apt-get install libboost-all-dev ;
 
       - uses: r-lib/actions/setup-pandoc@v2
 
