@@ -178,7 +178,7 @@ fit_log <- function(x, model_type = c("gauss"), prior = c("uniform", "invgamma")
     if (!(b > 0)) stop("with an invgamma prior, 'b' must be positive")
   }
   if (is.null(prior_K)) {
-    prior_K = max(x$counts$count)
+    prior_K = max(x$counts$count) / factor_size
   } else {
     if (prior_K <= 0) stop("'prior_K' should eiter be NULL or positive")
   }
