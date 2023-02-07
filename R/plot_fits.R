@@ -109,7 +109,7 @@ plot_logistic_fit = function(x, final_time, add_title) {
     fit_name <- paste0("fit", groups[i])
     fit <- x$fits[[fit_name]]
     ros <- unname(stats::quantile(rstan::extract(fit, pars="ro")$ro, c(.05, .5, .95)))
-    K <- mean(rstan::extract(fit, pars="K")$K) * x$fit_info$factor_size
+    K <- mean(rstan::extract(fit, pars="K")$K)
 
     N_low = K * previous_n / (previous_n + (K - previous_n) * exp(-xs * ros[1]))
     N_medium = K * previous_n / (previous_n + (K - previous_n) * exp(-xs * ros[2]))
