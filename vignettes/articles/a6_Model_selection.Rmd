@@ -126,6 +126,3 @@ delta_t = T / steps
 # Simulate exponential
 d <- biPOD::sim_stochastic_exponential(n0, lambda, mu, steps, delta_t)
 ```
-
-And 
-

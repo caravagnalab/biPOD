@@ -32,7 +32,7 @@ A fit with fixed rates can be obtained without adding any `group` column to the 
 
 ```{r fit log mcmc, results=FALSE, message=FALSE}
 bipod <- biPOD::init(d, "logistic sample using MCMC")
-biPOD::evolution_plot(bipod)
+biPOD::plot_evolution(bipod)
 bipod <- biPOD::fit(bipod, growth_type = "logistic", model_type = "gauss", prior = "invgamma", a = 1, b = 1)
 ```
 

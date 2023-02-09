@@ -24,7 +24,7 @@ n_steps <- 10
 dt <- .1
 d <- biPOD::sim_stochastic_exponential(20, 1, .25, steps = n_steps, delta_t = dt)
 bipod <- biPOD::init(d, "Full sample")
-biPOD::evolution_plot(bipod)
+biPOD::plot_evolution(bipod)
 ```
 
 ```{r, results=FALSE, message=FALSE}

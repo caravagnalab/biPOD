@@ -58,7 +58,7 @@ bipod <- init(counts, sample = sample_name)
 ```
 
 ```{r evo plot}
-biPOD::evolution_plot(bipod)
+biPOD::plot_evolution(bipod)
 ```
 
 If different groups of parameters are needed, one should add a `group` column.
