@@ -42,7 +42,7 @@ fit.plot <- biPOD::plot_fit(x25, final_time = T * 1.01)
 # Add the unused points
 unused_data <- d[n_points_to_use + 1:nrow(d),] %>% na.omit()
 fit.plot <- fit.plot + ggplot2::geom_point(unused_data, mapping=ggplot2::aes(x=time, y=count), alpha = .2)
-times.plot <- biPOD::plot_threshold_crossing_time_distribution(x25, n0 * 10) + 
+times.plot <- biPOD::plot_relapse_time_distribution(x25, n0 * 10) + 
   ggplot2::scale_x_continuous(limits = c(2,6))
 plots.25 <- ggpubr::ggarrange(plotlist = list(fit.plot, times.plot))
 plots.25
@@ -63,7 +63,7 @@ fit.plot <- biPOD::plot_fit(x50, final_time = T * 1.01)
 # Add the unused points
 unused_data <- d[n_points_to_use + 1:nrow(d),] %>% na.omit()
 fit.plot <- fit.plot + ggplot2::geom_point(unused_data, mapping=ggplot2::aes(x=time, y=count), alpha = .2)
-times.plot <- biPOD::plot_threshold_crossing_time_distribution(x50, n0 * 10) +
+times.plot <- biPOD::plot_relapse_time_distribution(x50, n0 * 10) +
   ggplot2::scale_x_continuous(limits = c(2,6))
 plots.50 <- ggpubr::ggarrange(plotlist = list(fit.plot, times.plot))
 plots.50
@@ -81,7 +81,7 @@ x100 <- biPOD::fit(x100)
 
 ```{r, warning=FALSE}
 fit.plot <- biPOD::plot_fit(x100, final_time = T * 1.01)
-times.plot <- biPOD::plot_threshold_crossing_time_distribution(x100,  n0 * 10) +
+times.plot <- biPOD::plot_relapse_time_distribution(x100,  n0 * 10) +
   ggplot2::scale_x_continuous(limits = c(2,6))
 plots.100 <- ggpubr::ggarrange(plotlist = list(fit.plot, times.plot))
 plots.100
