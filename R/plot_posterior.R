@@ -2,11 +2,12 @@
 #' Plot birth and death rates posteriors
 #'
 #' @param x a bipod object with a 'fit' field.
+#' @param add_prior Boolean, indicate whether to plot also the prior distribution.
 #'
 #' @return A ggplot object containing the posterior density plots of the birth and death rates and the prior density plot
 #' @export
 #'
-plot_birth_and_death_rates_posteriors = function(x) {
+plot_birth_and_death_rates_posteriors = function(x, add_prior = T) {
   # Check input
   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
   if (!("fits" %in% names(x))) stop("Input must contain a 'fits' field")
@@ -28,14 +29,14 @@ plot_birth_and_death_rates_posteriors = function(x) {
   plots <- lapply(names(x$fits), function(fit_name) {
     fit <- x$fits[[fit_name]]
 
-    # Prepare prior data
-    prior_data <- prepare_prior_data(x, par = "lambda")
-
     # Prepare data
     d_long <- rstan::extract(fit, pars = par_list) %>%
       as.data.frame() %>%
       dplyr::rename_at(par_list, ~paste0(par_list, gsub("fit", "", fit_name))) %>%
       reshape2::melt(id.vars=NULL)
+
+    idx <- as.numeric(gsub("fit", "", fit_name))
+    d_long$variable <- factor(d_long$variable, ordered = TRUE, labels = c(bquote(lambda[.(idx)]), bquote(mu[.(idx)])))
 
     if (x$fit_info$prior == "invgamma") {
       xlims <- c(0 - 0.1, max(d_long$value) + 0.1)
@@ -44,9 +45,6 @@ plot_birth_and_death_rates_posteriors = function(x) {
     }
 
     # Filter data
-    prior_data <- prior_data %>%
-      dplyr::filter(.data$x >= xlims[1] & .data$x <= xlims[2])
-
     d_long <- d_long %>%
       dplyr::filter(.data$value >= xlims[1] & .data$value <= xlims[2])
 
@@ -54,16 +52,25 @@ plot_birth_and_death_rates_posteriors = function(x) {
     p <- ggplot2::ggplot(d_long, ggplot2::aes(x=.data$value)) +
       ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)), binwidth = .01, alpha = .3) +
       ggplot2::geom_density(col = "forestgreen", size = .8) +
-      ggplot2::facet_wrap( ~ .data$variable)
+      ggplot2::facet_wrap( ~ .data$variable, labeller = label_parsed)
 
-    # Plot prior
-    p <- p +
-      ggplot2::geom_line(
-        data = prior_data,
-        ggplot2::aes(x=.data$x, y=.data$y),
-        col = "indianred3",
-        linewidth = .8
-      )
+    if (add_prior) {
+      # Prepare prior data
+      prior_data <- prepare_prior_data(x, par = "lambda")
+
+      # Filter prior data
+      prior_data <- prior_data %>%
+        dplyr::filter(.data$x >= xlims[1] & .data$x <= xlims[2])
+
+      # Plot prior
+      p <- p +
+        ggplot2::geom_line(
+          data = prior_data,
+          ggplot2::aes(x=.data$x, y=.data$y),
+          col = "indianred3",
+          linewidth = .8
+        )
+    }
 
     # Add style
     p <- p +
@@ -82,20 +89,18 @@ plot_birth_and_death_rates_posteriors = function(x) {
 #' Plot growth rates posteriors
 #'
 #' @param x a bipod object with a 'fit' field
+#' @param add_prior Boolean, indicate whether to plot also the prior distribution.
 #'
 #' @return A ggplot object containing the posterior density plots of the growth rates and the prior density plot
 #' @export
 #'
-plot_growth_rate_posteriors = function(x) {
+plot_growth_rate_posteriors = function(x, add_prior = T) {
   # Check input
   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
   if (!("fits" %in% names(x))) stop("Input must contain a 'fits' field")
 
   # Obtain list of parameters to plot
   par_list = c("ro")
-
-  # Prepare prior data
-  prior_data <- prepare_prior_data(x, par = "ro")
 
   plots <- lapply(names(x$fits), function(fit_name) {
     fit <- x$fits[[fit_name]]
@@ -105,14 +110,14 @@ plot_growth_rate_posteriors = function(x) {
       dplyr::rename_at(par_list, ~paste0(par_list, gsub("fit", "", fit_name))) %>%
       reshape2::melt(id.vars=NULL)
 
+    idx <- as.numeric(gsub("fit", "", fit_name))
+    d_long$variable <- factor(d_long$variable, labels = c(bquote(rho[.(idx)])))
+
     # plot posterior density
     xlims <- c(min(d_long$value) * .99, max(d_long$value) * 1.01)
     bw = (xlims[2] - xlims[1]) / 100
 
     # Filter data
-    prior_data <- prior_data %>%
-      dplyr::filter(.data$x >= xlims[1] & .data$x <= xlims[2])
-
     d_long <- d_long %>%
       dplyr::filter(.data$value >= xlims[1] & .data$value <= xlims[2])
 
@@ -120,26 +125,35 @@ plot_growth_rate_posteriors = function(x) {
     p <- ggplot2::ggplot(d_long, ggplot2::aes(x=.data$value)) +
       ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)), binwidth = bw, alpha = .3) +
       ggplot2::geom_density(col = "forestgreen", size = .8) +
-      ggplot2::facet_wrap( ~ .data$variable)
+      ggplot2::facet_wrap( ~ .data$variable, labeller = label_parsed)
 
-    # Create prior of ro sampling from the two priors over lambda and mu
-    if (x$fit_info$prior == "uniform") {
-      p <- p +
-        ggplot2::geom_line(
-          data = prior_data,
-          ggplot2::aes(x=.data$x, y=.data$y),
-          col = "indianred3",
-          size = .8)
-    } else if (x$fit_info$prior == "invgamma") {
-      p <- p +
-        ggplot2::geom_density(
-          data = prior_data,
-          ggplot2::aes(x=.data$x),
-          col = "indianred3",
-          size = .8)
+    if (add_prior) {
+      # Prepare prior data
+      prior_data <- prepare_prior_data(x, par = "ro")
 
-    } else {
-      cli::cli_alert_danger("The prior {.var x$fit_info$prior} has not been recognized")
+      # Filter prior data
+      prior_data <- prior_data %>%
+        dplyr::filter(.data$x >= xlims[1] & .data$x <= xlims[2])
+
+      # Create prior of ro sampling from the two priors over lambda and mu
+      if (x$fit_info$prior == "uniform") {
+        p <- p +
+          ggplot2::geom_line(
+            data = prior_data,
+            ggplot2::aes(x=.data$x, y=.data$y),
+            col = "indianred3",
+            size = .8)
+      } else if (x$fit_info$prior == "invgamma") {
+        p <- p +
+          ggplot2::geom_density(
+            data = prior_data,
+            ggplot2::aes(x=.data$x),
+            col = "indianred3",
+            size = .8)
+
+      } else {
+        cli::cli_alert_danger("The prior {.var x$fit_info$prior} has not been recognized")
+      }
     }
 
     # Add style
@@ -172,6 +186,7 @@ pdf_triangular <- function(z, a, b) {
 
 prepare_prior_data = function(x, par) {
   par_list = c(par)
+
   if (par %in% c("ro")) {
     limits <- lapply(x$fits, function(fit) {
       d_long <- rstan::extract(fit, pars = par_list) %>%
@@ -197,9 +212,10 @@ prepare_prior_data = function(x, par) {
     } else if (x$fit_info$prior == "invgamma") {
       lambda_prior <- invgamma::rinvgamma(10000, x$fit_info$a, x$fit_info$b)
       mu_prior <- invgamma::rinvgamma(10000, x$fit_info$a, x$fit_info$b)
+
       prior_data <- data.frame(x = lambda_prior - mu_prior) %>%
         na.omit() %>%
-        dplyr::filter(dplyr::between(x, x_min + .1, x_max - .1))
+        dplyr::filter(dplyr::between(x, x_min, x_max))
 
     } else {
       cli::cli_alert_danger("The prior {.var x$fit_info$prior} has not been recognized")
@@ -229,6 +245,8 @@ prepare_prior_data = function(x, par) {
   } else {
     stop("par not recognized")
   }
+
   return(prior_data)
 }
+
 

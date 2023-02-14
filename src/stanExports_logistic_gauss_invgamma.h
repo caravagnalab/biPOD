@@ -33,7 +33,7 @@ static int current_statement_begin__;
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
     reader.add_event(0, 0, "start", "model_logistic_gauss_invgamma");
-    reader.add_event(94, 92, "end", "model_logistic_gauss_invgamma");
+    reader.add_event(76, 74, "end", "model_logistic_gauss_invgamma");
     return reader;
 }
 template <typename T0__, typename T1__, typename T2__, typename T3__, typename T4__>
@@ -95,26 +95,34 @@ sigma_t(const T0__& n0,
     int current_statement_begin__ = -1;
     try {
         {
-        current_statement_begin__ = 26;
+        current_statement_begin__ = 12;
         local_scalar_t__ s(DUMMY_VAR__);
         (void) s;  // dummy to suppress unused var warning
         stan::math::initialize(s, DUMMY_VAR__);
         stan::math::fill(s, DUMMY_VAR__);
-        current_statement_begin__ = 27;
+        current_statement_begin__ = 13;
+        local_scalar_t__ phi(DUMMY_VAR__);
+        (void) phi;  // dummy to suppress unused var warning
+        stan::math::initialize(phi, DUMMY_VAR__);
+        stan::math::fill(phi, DUMMY_VAR__);
+        current_statement_begin__ = 14;
+        local_scalar_t__ psi(DUMMY_VAR__);
+        (void) psi;  // dummy to suppress unused var warning
+        stan::math::initialize(psi, DUMMY_VAR__);
+        stan::math::fill(psi, DUMMY_VAR__);
+        current_statement_begin__ = 15;
         local_scalar_t__ w(DUMMY_VAR__);
         (void) w;  // dummy to suppress unused var warning
         stan::math::initialize(w, DUMMY_VAR__);
         stan::math::fill(w, DUMMY_VAR__);
         stan::math::assign(w,(lambda - mu));
-        current_statement_begin__ = 29;
-        if (as_bool(logical_eq(lambda, mu))) {
-            current_statement_begin__ = 30;
-            stan::math::assign(s, (((n0 * 2) * lambda) * dt));
-        } else {
-            current_statement_begin__ = 32;
-            stan::math::assign(s, (((n0 * ((lambda + mu) / w)) * stan::math::exp((w * dt))) * (stan::math::exp((w * dt)) - 1)));
-        }
-        current_statement_begin__ = 34;
+        current_statement_begin__ = 17;
+        stan::math::assign(phi, (((((K - n0) * lambda) / (K * (lambda - mu))) * (1 - stan::math::exp((-((lambda - mu)) * dt)))) + (((mu * n0) * dt) / K)));
+        current_statement_begin__ = 18;
+        stan::math::assign(psi, ((((n0 * stan::math::exp(((lambda - mu) * dt))) + K) - n0) / (K * stan::math::exp(((lambda - mu) * dt)))));
+        current_statement_begin__ = 19;
+        stan::math::assign(s, ((n0 * ((psi + (2 * phi)) - 1)) / pow(psi, 2)));
+        current_statement_begin__ = 21;
         return stan::math::promote_scalar<fun_return_scalar_t__>(stan::math::sqrt(s));
         }
     } catch (const std::exception& e) {
@@ -176,28 +184,28 @@ public:
         (void) DUMMY_VAR__;  // suppress unused var warning
         try {
             // initialize data block variables from context__
-            current_statement_begin__ = 50;
+            current_statement_begin__ = 33;
             context__.validate_dims("data initialization", "S", "int", context__.to_vec());
             S = int(0);
             vals_i__ = context__.vals_i("S");
             pos__ = 0;
             S = vals_i__[pos__++];
             check_greater_or_equal(function__, "S", S, 1);
-            current_statement_begin__ = 51;
+            current_statement_begin__ = 34;
             context__.validate_dims("data initialization", "n0", "double", context__.to_vec());
             n0 = double(0);
             vals_r__ = context__.vals_r("n0");
             pos__ = 0;
             n0 = vals_r__[pos__++];
             check_greater_or_equal(function__, "n0", n0, 0);
-            current_statement_begin__ = 52;
+            current_statement_begin__ = 35;
             context__.validate_dims("data initialization", "t0", "double", context__.to_vec());
             t0 = double(0);
             vals_r__ = context__.vals_r("t0");
             pos__ = 0;
             t0 = vals_r__[pos__++];
             check_greater_or_equal(function__, "t0", t0, 0);
-            current_statement_begin__ = 54;
+            current_statement_begin__ = 37;
             validate_non_negative_index("N", "S", S);
             context__.validate_dims("data initialization", "N", "double", context__.to_vec(S));
             N = std::vector<double>(S, double(0));
@@ -207,7 +215,7 @@ public:
             for (size_t k_0__ = 0; k_0__ < N_k_0_max__; ++k_0__) {
                 N[k_0__] = vals_r__[pos__++];
             }
-            current_statement_begin__ = 55;
+            current_statement_begin__ = 38;
             validate_non_negative_index("T", "S", S);
             context__.validate_dims("data initialization", "T", "double", context__.to_vec(S));
             T = std::vector<double>(S, double(0));
@@ -217,21 +225,21 @@ public:
             for (size_t k_0__ = 0; k_0__ < T_k_0_max__; ++k_0__) {
                 T[k_0__] = vals_r__[pos__++];
             }
-            current_statement_begin__ = 57;
+            current_statement_begin__ = 40;
             context__.validate_dims("data initialization", "a", "double", context__.to_vec());
             a = double(0);
             vals_r__ = context__.vals_r("a");
             pos__ = 0;
             a = vals_r__[pos__++];
             check_greater_or_equal(function__, "a", a, 0);
-            current_statement_begin__ = 58;
+            current_statement_begin__ = 41;
             context__.validate_dims("data initialization", "b", "double", context__.to_vec());
             b = double(0);
             vals_r__ = context__.vals_r("b");
             pos__ = 0;
             b = vals_r__[pos__++];
             check_greater_or_equal(function__, "b", b, 0);
-            current_statement_begin__ = 59;
+            current_statement_begin__ = 42;
             context__.validate_dims("data initialization", "prior_K", "double", context__.to_vec());
             prior_K = double(0);
             vals_r__ = context__.vals_r("prior_K");
@@ -244,11 +252,11 @@ public:
             // validate, set parameter ranges
             num_params_r__ = 0U;
             param_ranges_i__.clear();
-            current_statement_begin__ = 63;
+            current_statement_begin__ = 46;
             num_params_r__ += 1;
-            current_statement_begin__ = 64;
+            current_statement_begin__ = 47;
             num_params_r__ += 1;
-            current_statement_begin__ = 65;
+            current_statement_begin__ = 48;
             num_params_r__ += 1;
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
@@ -267,7 +275,7 @@ public:
         (void) pos__; // dummy call to supress warning
         std::vector<double> vals_r__;
         std::vector<int> vals_i__;
-        current_statement_begin__ = 63;
+        current_statement_begin__ = 46;
         if (!(context__.contains_r("lambda")))
             stan::lang::rethrow_located(std::runtime_error(std::string("Variable lambda missing")), current_statement_begin__, prog_reader__());
         vals_r__ = context__.vals_r("lambda");
@@ -280,7 +288,7 @@ public:
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable lambda: ") + e.what()), current_statement_begin__, prog_reader__());
         }
-        current_statement_begin__ = 64;
+        current_statement_begin__ = 47;
         if (!(context__.contains_r("mu")))
             stan::lang::rethrow_located(std::runtime_error(std::string("Variable mu missing")), current_statement_begin__, prog_reader__());
         vals_r__ = context__.vals_r("mu");
@@ -293,7 +301,7 @@ public:
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable mu: ") + e.what()), current_statement_begin__, prog_reader__());
         }
-        current_statement_begin__ = 65;
+        current_statement_begin__ = 48;
         if (!(context__.contains_r("K")))
             stan::lang::rethrow_located(std::runtime_error(std::string("Variable K missing")), current_statement_begin__, prog_reader__());
         vals_r__ = context__.vals_r("K");
@@ -331,21 +339,21 @@ public:
         try {
             stan::io::reader<local_scalar_t__> in__(params_r__, params_i__);
             // model parameters
-            current_statement_begin__ = 63;
+            current_statement_begin__ = 46;
             local_scalar_t__ lambda;
             (void) lambda;  // dummy to suppress unused var warning
             if (jacobian__)
                 lambda = in__.scalar_lb_constrain(0, lp__);
             else
                 lambda = in__.scalar_lb_constrain(0);
-            current_statement_begin__ = 64;
+            current_statement_begin__ = 47;
             local_scalar_t__ mu;
             (void) mu;  // dummy to suppress unused var warning
             if (jacobian__)
                 mu = in__.scalar_lb_constrain(0, lp__);
             else
                 mu = in__.scalar_lb_constrain(0);
-            current_statement_begin__ = 65;
+            current_statement_begin__ = 48;
             local_scalar_t__ K;
             (void) K;  // dummy to suppress unused var warning
             if (jacobian__)
@@ -353,33 +361,33 @@ public:
             else
                 K = in__.scalar_lb_constrain((prior_K * .95));
             // transformed parameters
-            current_statement_begin__ = 69;
+            current_statement_begin__ = 52;
             local_scalar_t__ ro;
             (void) ro;  // dummy to suppress unused var warning
             stan::math::initialize(ro, DUMMY_VAR__);
             stan::math::fill(ro, DUMMY_VAR__);
             // transformed parameters block statements
-            current_statement_begin__ = 70;
+            current_statement_begin__ = 53;
             stan::math::assign(ro, (lambda - mu));
             // validate transformed parameters
             const char* function__ = "validate transformed params";
             (void) function__;  // dummy to suppress unused var warning
-            current_statement_begin__ = 69;
+            current_statement_begin__ = 52;
             if (stan::math::is_uninitialized(ro)) {
                 std::stringstream msg__;
                 msg__ << "Undefined transformed parameter: ro";
                 stan::lang::rethrow_located(std::runtime_error(std::string("Error initializing variable ro: ") + msg__.str()), current_statement_begin__, prog_reader__());
             }
             // model body
-            current_statement_begin__ = 74;
+            current_statement_begin__ = 57;
             lp_accum__.add(normal_log(K, prior_K, (prior_K * .1)));
-            current_statement_begin__ = 75;
+            current_statement_begin__ = 58;
             lp_accum__.add(inv_gamma_log(lambda, a, b));
-            current_statement_begin__ = 76;
+            current_statement_begin__ = 59;
             lp_accum__.add(inv_gamma_log(mu, a, b));
-            current_statement_begin__ = 78;
+            current_statement_begin__ = 61;
             for (int i = 1; i <= S; ++i) {
-                current_statement_begin__ = 79;
+                current_statement_begin__ = 62;
                 lp_accum__.add(normal_log(get_base1(N, i, "N", 1), mean_t(n0, lambda, mu, K, (get_base1(T, i, "T", 1) - t0), pstream__), sigma_t(n0, lambda, mu, K, (get_base1(T, i, "T", 1) - t0), pstream__)));
             }
         } catch (const std::exception& e) {
@@ -455,13 +463,13 @@ public:
         if (!include_tparams__ && !include_gqs__) return;
         try {
             // declare and define transformed parameters
-            current_statement_begin__ = 69;
+            current_statement_begin__ = 52;
             double ro;
             (void) ro;  // dummy to suppress unused var warning
             stan::math::initialize(ro, DUMMY_VAR__);
             stan::math::fill(ro, DUMMY_VAR__);
             // do transformed parameters statements
-            current_statement_begin__ = 70;
+            current_statement_begin__ = 53;
             stan::math::assign(ro, (lambda - mu));
             if (!include_gqs__ && !include_tparams__) return;
             // validate transformed parameters
@@ -473,37 +481,37 @@ public:
             }
             if (!include_gqs__) return;
             // declare and define generated quantities
-            current_statement_begin__ = 84;
+            current_statement_begin__ = 67;
             validate_non_negative_index("N_rep", "S", S);
             std::vector<double> N_rep(S, double(0));
             stan::math::initialize(N_rep, DUMMY_VAR__);
             stan::math::fill(N_rep, DUMMY_VAR__);
-            current_statement_begin__ = 85;
+            current_statement_begin__ = 68;
             validate_non_negative_index("log_lik", "S", S);
             std::vector<double> log_lik(S, double(0));
             stan::math::initialize(log_lik, DUMMY_VAR__);
             stan::math::fill(log_lik, DUMMY_VAR__);
             // generated quantities statements
-            current_statement_begin__ = 87;
+            current_statement_begin__ = 70;
             for (int i = 1; i <= S; ++i) {
-                current_statement_begin__ = 88;
+                current_statement_begin__ = 71;
                 stan::model::assign(log_lik, 
                             stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
                             normal_log(get_base1(N, i, "N", 1), mean_t(n0, lambda, mu, K, (get_base1(T, i, "T", 1) - t0), pstream__), sigma_t(n0, lambda, mu, K, (get_base1(T, i, "T", 1) - t0), pstream__)), 
                             "assigning variable log_lik");
-                current_statement_begin__ = 89;
+                current_statement_begin__ = 72;
                 stan::model::assign(N_rep, 
                             stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
                             normal_rng(mean_t(n0, lambda, mu, K, (get_base1(T, i, "T", 1) - t0), pstream__), sigma_t(n0, lambda, mu, K, (get_base1(T, i, "T", 1) - t0), pstream__), base_rng__), 
                             "assigning variable N_rep");
             }
             // validate, write generated quantities
-            current_statement_begin__ = 84;
+            current_statement_begin__ = 67;
             size_t N_rep_k_0_max__ = S;
             for (size_t k_0__ = 0; k_0__ < N_rep_k_0_max__; ++k_0__) {
                 vars__.push_back(N_rep[k_0__]);
             }
-            current_statement_begin__ = 85;
+            current_statement_begin__ = 68;
             size_t log_lik_k_0_max__ = S;
             for (size_t k_0__ = 0; k_0__ < log_lik_k_0_max__; ++k_0__) {
                 vars__.push_back(log_lik[k_0__]);

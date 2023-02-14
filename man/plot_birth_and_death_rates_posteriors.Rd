@@ -4,10 +4,12 @@
 \alias{plot_birth_and_death_rates_posteriors}
 \title{Plot birth and death rates posteriors}
 \usage{
-plot_birth_and_death_rates_posteriors(x)
+plot_birth_and_death_rates_posteriors(x, add_prior = T)
 }
 \arguments{
 \item{x}{a bipod object with a 'fit' field.}
+
+\item{add_prior}{Boolean, indicate whether to plot also the prior distribution.}
 }
 \value{
 A ggplot object containing the posterior density plots of the birth and death rates and the prior density plot
