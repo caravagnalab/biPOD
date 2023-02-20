@@ -52,7 +52,7 @@ plot_birth_and_death_rates_posteriors = function(x, add_prior = T) {
     p <- ggplot2::ggplot(d_long, ggplot2::aes(x=.data$value)) +
       ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)), binwidth = .01, alpha = .3) +
       ggplot2::geom_density(col = "forestgreen", size = .8) +
-      ggplot2::facet_wrap( ~ .data$variable, labeller = label_parsed)
+      ggplot2::facet_wrap( ~ .data$variable, labeller = ggplot2::label_parsed)
 
     if (add_prior) {
       # Prepare prior data
@@ -90,11 +90,12 @@ plot_birth_and_death_rates_posteriors = function(x, add_prior = T) {
 #'
 #' @param x a bipod object with a 'fit' field
 #' @param add_prior Boolean, indicate whether to plot also the prior distribution.
+#' @param same_scale Boolean, indicate whether to plot all distribution with the same scale.
 #'
 #' @return A ggplot object containing the posterior density plots of the growth rates and the prior density plot
 #' @export
 #'
-plot_growth_rate_posteriors = function(x, add_prior = T) {
+plot_growth_rate_posteriors = function(x, add_prior = F, same_scale = F) {
   # Check input
   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
   if (!("fits" %in% names(x))) stop("Input must contain a 'fits' field")
@@ -125,7 +126,7 @@ plot_growth_rate_posteriors = function(x, add_prior = T) {
     p <- ggplot2::ggplot(d_long, ggplot2::aes(x=.data$value)) +
       ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)), binwidth = bw, alpha = .3) +
       ggplot2::geom_density(col = "forestgreen", size = .8) +
-      ggplot2::facet_wrap( ~ .data$variable, labeller = label_parsed)
+      ggplot2::facet_wrap( ~ .data$variable, labeller = ggplot2::label_parsed)
 
     if (add_prior) {
       # Prepare prior data
@@ -165,6 +166,29 @@ plot_growth_rate_posteriors = function(x, add_prior = T) {
       ggplot2::coord_cartesian(xlim=xlims) +
       my_ggplot_theme()
   })
+
+  if (same_scale) {
+
+    limits <- lapply(names(x$fits), function(fit_name) {
+      fit <- x$fits[[fit_name]]
+      # Prepare data
+      d_long <- rstan::extract(fit, pars = par_list) %>%
+        as.data.frame() %>%
+        dplyr::rename_at(par_list, ~paste0(par_list, gsub("fit", "", fit_name))) %>%
+        reshape2::melt(id.vars=NULL)
+
+      xlims <- c(min(d_long$value) * .99, max(d_long$value) * 1.01)
+      return(xlims)
+    })
+
+    min_x <- min(unlist(limits))
+    max_x <- max(unlist(limits))
+
+    plots <- lapply(plots, function(p) {
+      p <- p +
+        ggplot2::coord_cartesian(xlim=c(min_x, max_x))
+    })
+  }
 
   plots <- ggpubr::ggarrange(plotlist = plots, ncol = 1)
   plots

@@ -4,7 +4,7 @@
 \alias{plot_input}
 \title{Plot the input data of the population over time}
 \usage{
-plot_input(x, add_title = F, log_scale = F)
+plot_input(x, add_title = F, log_scale = F, add_highlights = F)
 }
 \arguments{
 \item{x}{A biPOD object of class \code{bipod}.}
@@ -12,6 +12,8 @@ plot_input(x, add_title = F, log_scale = F)
 \item{add_title}{Boolean, indicating whether the plot should have a title}
 
 \item{log_scale}{Boolean, indicating whether the plot should have a title}
+
+\item{add_highlights}{Boolean, indicating whether the groups should be highlighted}
 }
 \value{
 A plot. Represents the evolution of the population over time.

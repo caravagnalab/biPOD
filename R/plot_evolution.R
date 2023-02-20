@@ -4,10 +4,11 @@
 #' @param x A biPOD object of class `bipod`.
 #' @param add_title Boolean, indicating whether the plot should have a title
 #' @param log_scale Boolean, indicating whether the plot should have a title
+#' @param add_highlights Boolean, indicating whether the groups should be highlighted
 #'
 #' @returns A plot. Represents the evolution of the population over time.
 #' @export
-plot_input <- function(x, add_title = F, log_scale = F) {
+plot_input <- function(x, add_title = F, log_scale = F, add_highlights = F) {
   # Check input
   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
 
@@ -16,24 +17,28 @@ plot_input <- function(x, add_title = F, log_scale = F) {
 
   data <- data.frame(x = x$counts$time, y = x$counts$count)
 
-  pop.plot <- ggplot2::ggplot(data, ggplot2::aes(x=.data$x, y=.data$y)) +
-    ggplot2::geom_line(col='forestgreen') +
-    ggplot2::geom_point(col='forestgreen') +
+  p <- ggplot2::ggplot() +
+    ggplot2::geom_line(data, mapping=ggplot2::aes(x=.data$x, y=.data$y), col='black') +
+    ggplot2::geom_point(data, mapping=ggplot2::aes(x=.data$x, y=.data$y), col='black') +
     ggplot2::scale_y_continuous(trans = trans) +
     my_ggplot_theme()
 
+  if (add_highlights) {
+    p <- biPOD:::add_shadow_to_plot(x, base_plot = p)
+  }
+
   if (add_title) {
-    pop.plot <- pop.plot + ggplot2::labs(
-      title = x$sample,
+    p <- p + ggplot2::labs(
+      title = paste("Sample:", x$sample),
       x = "time",
       y = "count"
     )
   } else {
-    pop.plot <- pop.plot + ggplot2::labs(
+    p <- p + ggplot2::labs(
       x = "time",
       y = "count"
     )
   }
 
-  pop.plot
+  p
 }

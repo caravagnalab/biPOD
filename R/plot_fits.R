@@ -4,10 +4,11 @@
 #' @param x A biPOD object of class `bipod`. Must contains 'fit'
 #' @param final_time The final time for which the fit need to be plotted.
 #' @param add_title Boolean, indicating whether the plot should have a title
+#' @param add_highlights Boolean, indicating whether the groups should be highlighted
 #'
 #' @returns A plot of the fit over the input data.
 #' @export
-plot_fit = function(x, final_time = NULL, add_title = F) {
+plot_fit = function(x, final_time = NULL, add_title = F, add_highlights = F) {
   # Check input
   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
   if (!("fits" %in% names(x))) stop("Input must contain a 'fits' field")
@@ -19,6 +20,11 @@ plot_fit = function(x, final_time = NULL, add_title = F) {
   } else {
     p <- plot_logistic_fit(x, final_time, add_title)
   }
+
+  if (add_highlights) {
+    p <- biPOD:::add_shadow_to_plot(x, base_plot = p)
+  }
+
   return(p)
 }
 

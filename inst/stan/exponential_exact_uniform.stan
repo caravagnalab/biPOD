@@ -1,5 +1,4 @@
 
-
 functions {
   real birthDeathLike_log (int m, int n, real delta_t, real lambda, real mu) {
     real prob;
