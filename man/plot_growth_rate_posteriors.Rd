@@ -4,14 +4,12 @@
 \alias{plot_growth_rate_posteriors}
 \title{Plot growth rates posteriors}
 \usage{
-plot_growth_rate_posteriors(x, add_prior = F, same_scale = F)
+plot_growth_rate_posteriors(x, add_prior = F)
 }
 \arguments{
 \item{x}{a bipod object with a 'fit' field}
 
-\item{add_prior}{Boolean, indicate whether to plot also the prior distribution.}
-
-\item{same_scale}{Boolean, indicate whether to plot all distribution with the same scale.}
+\item{add_prior}{Boolean, indicate whether to plot also the prior distribution}
 }
 \value{
 A ggplot object containing the posterior density plots of the growth rates and the prior density plot

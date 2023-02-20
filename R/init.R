@@ -53,7 +53,6 @@ check_input_data <- function(counts) {
     counts$group <- rep(0, nrow(counts))
   }
   cat("\n")
-  counts$group[1] <- -1
 
   counts <- counts %>% dplyr::select(.data$time, .data$count, .data$group)
   counts

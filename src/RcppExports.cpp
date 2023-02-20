@@ -45,22 +45,14 @@ BEGIN_RCPP
 END_RCPP
 }
 
-RcppExport SEXP _rcpp_module_boot_stan_fit4exponential_exact_invgamma_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4exponential_exact_uniform_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4exponential_gauss_invgamma_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4exponential_gauss_uniform_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4logistic_gauss_invgamma_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4logistic_gauss_uniform_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4exponential_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4logistic_mod();
 
 static const R_CallMethodDef CallEntries[] = {
     {"_biPOD_birthDeathLike_log", (DL_FUNC) &_biPOD_birthDeathLike_log, 6},
     {"_biPOD_birthDeathLike_rng", (DL_FUNC) &_biPOD_birthDeathLike_rng, 6},
-    {"_rcpp_module_boot_stan_fit4exponential_exact_invgamma_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4exponential_exact_invgamma_mod, 0},
-    {"_rcpp_module_boot_stan_fit4exponential_exact_uniform_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4exponential_exact_uniform_mod, 0},
-    {"_rcpp_module_boot_stan_fit4exponential_gauss_invgamma_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4exponential_gauss_invgamma_mod, 0},
-    {"_rcpp_module_boot_stan_fit4exponential_gauss_uniform_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4exponential_gauss_uniform_mod, 0},
-    {"_rcpp_module_boot_stan_fit4logistic_gauss_invgamma_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4logistic_gauss_invgamma_mod, 0},
-    {"_rcpp_module_boot_stan_fit4logistic_gauss_uniform_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4logistic_gauss_uniform_mod, 0},
+    {"_rcpp_module_boot_stan_fit4exponential_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4exponential_mod, 0},
+    {"_rcpp_module_boot_stan_fit4logistic_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4logistic_mod, 0},
     {NULL, NULL, 0}
 };
 

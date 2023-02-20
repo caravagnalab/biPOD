@@ -4,21 +4,10 @@
 #' @param x a bipod object
 #' @param growth_type character string specifying the type of growth assumed,
 #'  one of "exponential", "logistic".
-#' @param model_type character string specifying the model to fit, one of "gauss", "exact".
-#'
-#'  * `gauss` Use a Gaussian approximation. Works well when counts data are far from 0.
-#'
-#' @param prior character string specifying the prior to use, "uniform" or "invagamma".
-#'
-#'  * `invgamma` Inverse gamma prior invGamma(a,b)
-#'  * `uniform` Uniform U(a,b), where at every iteration you sample with width w = (b-a) / g.
 #'
 #' @param variational Boolean specifying whether using variational as opposed to mcmc sampling
 #' @param factor_size numeric factor by which to divide counts in the bipod object
-#' @param a Minimum value for uniform prior, shape parameter for inverse gamma prior
-#' @param b Maximum value for uniform prior, scale parameter for inverse gamma prior
-#' @param g Extra parameters for uniform prior. Sample is done from a uniform centered on the previous
-#'  sample and with width w = (b - a) / g.
+#' @param t0_lower_bound lower bound of t0, which is the instant of time in which the population is born
 #' @param prior_K Prior mean for the carrying capacity.
 #' @param chains integer number of chains to run in the Markov Chain Monte Carlo (MCMC) algorithm
 #' @param iter integer number of iterations to run in the MCMC algorithm
@@ -30,127 +19,100 @@
 fit <- function(
     x,
     growth_type = c("exponential", "logistic"),
-    model_type = c("gauss", "exact"),
-    prior = c("invgamma", "uniform"),
     variational = FALSE,
-    factor_size = 1, a = 2, b = 2, g = 1, prior_K = NULL,
+    t0_lower_bound = -10,
+    factor_size = 1, prior_K = NULL,
     chains = 4, iter = 4000, warmup = 2000, cores = 4){
 
   growth_type <- match.arg(growth_type)
-  model_type <- match.arg(model_type)
-  prior <- match.arg(prior)
   sampling_type <- if(variational) "variational inference" else "MCMC sampling"
 
-  cli::cli_alert_info(paste("Fitting", growth_type, "growth with", model_type, "model and", prior, "prior using", sampling_type, "..."))
+  cli::cli_alert_info(paste("Fitting", growth_type, "growth using", sampling_type, "..."))
   cat("\n")
 
   if (growth_type == "exponential") {
-    res <- fit_exp(x, model_type, prior, factor_size, a, b, g, variational, chains, iter, warmup, cores)
+    res <- fit_exp(x, factor_size, variational, t0_lower_bound, chains, iter, warmup, cores)
   } else if (growth_type == "logistic") {
-    res <- fit_log(x, model_type, prior, variational, factor_size, a, b, g, prior_K, chains, iter, warmup, cores)
+    res <- fit_log(x, factor_size, variational, t0_lower_bound, prior_K, chains, iter, warmup, cores)
   } else {
     stop("'growth_type' should be either 'exponential' or 'logistic'")
   }
 
   # Add results to bipod object
   x$elbo_data <- res$elbo_data
-  x$fits <- res$fits
+  x$fit <- res$fit
   x$fit_info <- res$fit_info
   return(x)
 }
 
 # Fit exponential growth model to bipod object
-fit_exp <- function(x, model_type = c("gauss", "exact"), prior = c("uniform", "invgamma"),
-                    factor_size = 1, a = 0, b = 1, g = 1, variational = FALSE,
+fit_exp <- function(x,
+                    factor_size = 1,
+                    variational = FALSE,
+                    t0_lower_bound = -10,
                     chains = 4, iter = 4000, warmup = 2000, cores = 4) {
 
   # Parameters check
   if (!inherits(x, "bipod")) stop("Input must be a bipod object")
-  model_type <- match.arg(model_type)
-  prior <- match.arg(prior)
   if (!(factor_size > 0)) stop("'factor_size' must be positive")
-  if (prior == "uniform") {
-    if (!(a >= 0)) stop("with an uniform prior, 'a' must be >= 0")
-    if (!(b > 0)) stop("with an uniform prior, 'b' must be > 0")
-    if (!(b > a)) stop("with an uniform prior, 'b' must be greater than 'a'")
-    if (!(g >= 1)) stop("with an uniform prior, 'g' must be >= 1")
+
+  # Prepare data
+  G <- length(unique(x$counts$group))
+
+  if (G == 1) {
+    t_array = array(0, dim=c(0))
   } else {
-    if (!(a > 0)) stop("with an invgamma prior, 'a' must be positive")
-    if (!(b > 0)) stop("with an invgamma prior, 'b' must be positive")
+    n <- G - 1
+    t_array <- (x$counts %>% dplyr::group_by(.data$group) %>% dplyr::slice_tail(n=1) %>% dplyr::select(.data$time))$time
+    t_array <- t_array[1:n]
   }
 
-  # Initialize list of fits and ELBO results
-  elbo_data <- list()
-  fits <- list()
-  groups <- unique(x$counts$group)
+  # Prepare input data list
+  input_data <- list(
+    S = nrow(x$counts),
+    G = length(as.array(t_array)) + 1,
+    N = as.array(as.integer(x$counts$count / factor_size)),
+    T = as.array(x$counts$time),
+    t_array = as.array(t_array),
+    t0_lower_bound = t0_lower_bound
+  )
 
-  for (i in 2:length(groups)) {
-    # Obtain info of previous group
-    previous <- x$counts %>%
-      dplyr::filter(.data$group == groups[i-1])
+  # Get the model
+  model_name <- 'exponential'
+  model <- get(model_name, stanmodels)
 
-    t0 <- previous$time[nrow(previous)]
-    n0 <- previous$count[nrow(previous)]
+  # Fit with either MCMC or Variational
+  if (variational) {
+    sampling = "variational"
+    res <- suppressWarnings(suppressMessages(iterative_variational(model, input_data, iter, warmup)))
+    fit_model <- res$fit_model
+    elbo_d <- res$elbo_d
 
-    # Obtain info of current group
-    current <- x$counts %>%
-      dplyr::filter(.data$group == groups[i])
-
-    # Prepare the data
-    data_model <- list(
-      S = nrow(current),
-      t0 = t0,
-      T = as.array(current$time), # / Ts[length(Ts)],
-      n0 = as.integer(n0 / factor_size),
-      N = as.array(as.integer(current$count / factor_size)),
-      k = 0,
-      a = a,
-      b = b,
-      g = g
+  } else {
+    sampling = "mcmc"
+    fit_model <- rstan::sampling(
+      model,
+      data = input_data,
+      chains = chains, iter = iter, warmup = warmup,
+      cores = cores
     )
-
-    # Get the model
-    model_name <- paste("exponential", model_type, prior, sep = "_")
-    model <- get(model_name, stanmodels)
-
-    # FIt with either MCMC or Variational
-    if (variational) {
-      sampling = "variational"
-      res <- suppressWarnings(suppressMessages(iterative_variational(model, data_model, iter, warmup)))
-      fit_model <- res$fit_model
-      elbo_d <- res$elbo_d
-
-    } else {
-      sampling = "mcmc"
-      fit_model <- rstan::sampling(
-        model,
-        data = data_model,
-        chains = chains, iter = iter, warmup = warmup,
-        cores = cores
-      )
-    }
-
-    if (variational) {
-      elbo_data[[paste0("elbo", groups[i])]] <- elbo_d
-    }
-    fits[[paste0("fit", groups[i])]] <- fit_model
   }
+
+  elbo_data <- c()
+  if (variational)elbo_data <- elbo_d
+  fit <- fit_model
 
   # Write fit info
   fit_info <- list(
     sampling = sampling,
     growth_type = "exponential",
-    model_type = model_type,
-    prior = prior,
     factor_size = factor_size,
-    a = a,
-    b = b,
-    g = g
+    t0_lower_bound = t0_lower_bound
   )
 
   res <- list(
     elbo_data = elbo_data,
-    fits = fits,
+    fit = fit,
     fit_info = fit_info
   )
 
@@ -159,101 +121,83 @@ fit_exp <- function(x, model_type = c("gauss", "exact"), prior = c("uniform", "i
 
 
 # Fit logistic growth model to bipod object
-fit_log <- function(x, model_type = c("gauss"), prior = c("uniform", "invgamma"), variational = FALSE,
-                    factor_size = 1, a = 0, b = 1, g = 1, prior_K = NULL,
+fit_log <- function(x,
+                    factor_size = 1,
+                    variational = FALSE,
+                    t0_lower_bound = -10,
+                    prior_K = NULL,
                     chains = 4, iter = 4000, warmup = 2000, cores = 4) {
 
   # Parameters check
   if (!inherits(x, "bipod")) stop("Input must be a bipod object")
-  model_type <- match.arg(model_type)
-  prior <- match.arg(prior)
   if (!(factor_size > 0)) stop("'factor_size' must be positive")
-  if (prior == "uniform") {
-    if (!(a >= 0)) stop("with an uniform prior, 'a' must be >= 0")
-    if (!(b > 0)) stop("with an uniform prior, 'b' must be > 0")
-    if (!(b > a)) stop("with an uniform prior, 'b' must be greater than 'a'")
-    if (!(g >= 1)) stop("with an uniform prior, 'g' must be >= 1")
-  } else {
-    if (!(a > 0)) stop("with an invgamma prior, 'a' must be positive")
-    if (!(b > 0)) stop("with an invgamma prior, 'b' must be positive")
-  }
   if (is.null(prior_K)) {
     prior_K = max(x$counts$count) / factor_size
   } else {
+    prior_K = prior_K / factor_size
     if (prior_K <= 0) stop("'prior_K' should eiter be NULL or positive")
   }
 
-  # Initialize list of fits and ELBO results
-  elbo_data <- list()
-  fits <- list()
-  groups <- unique(x$counts$group)
-  for (i in 2:length(groups)) {
-    # Obtain info of previous group
-    previous <- x$counts %>%
-      dplyr::filter(.data$group == groups[i-1])
+  # Prepare data
+  G <- length(unique(x$counts$group))
 
-    t0 <- previous$time[nrow(previous)]
-    n0 <- previous$count[nrow(previous)]
-
-    # Obtain info of current group
-    current <- x$counts %>%
-      dplyr::filter(.data$group == groups[i])
-
-    # Prepare the data
-    data_model <- list(
-      S = nrow(current),
-      t0 = t0,
-      T = as.array(current$time), # / Ts[length(Ts)],
-      n0 = as.integer(n0 / factor_size),
-      N = as.array(as.integer(current$count / factor_size)),
-      a = a,
-      b = b,
-      prior_K = prior_K
-    )
-
-    # Get the model
-    model_name <- paste("logistic", model_type, prior, sep = "_")
-    model <- get(model_name, stanmodels)
-
-    # Fit the model with either MCMC or Variational
-    if (variational) {
-      sampling = "variational"
-      res <- suppressWarnings(suppressMessages(iterative_variational(model, data_model, iter, warmup)))
-      fit_model <- res$fit_model
-      elbo_d <- res$elbo_d
-
-    } else {
-      sampling = "mcmc"
-      fit_model <- rstan::sampling(
-        model,
-        data = data_model,
-        chains = chains, iter = iter, warmup = warmup,
-        cores = cores
-      )
-    }
-
-    if (variational) {
-      elbo_data[[paste0("elbo", groups[i])]] <- elbo_d
-    }
-    fits[[paste0("fit", groups[i])]] <- fit_model
+  if (G == 1) {
+    t_array = array(0, dim=c(0))
+  } else {
+    n <- G - 1
+    t_array <- (x$counts %>% dplyr::group_by(.data$group) %>% dplyr::slice_tail(n=1) %>% dplyr::select(.data$time))$time
+    t_array <- t_array[1:n]
   }
+
+  # Prepare input data list
+  input_data <- list(
+    S = nrow(x$counts),
+    G = length(as.array(t_array)) + 1,
+    N = as.array(as.integer(x$counts$count / factor_size)),
+    T = as.array(x$counts$time),
+    t_array = as.array(t_array),
+    t0_lower_bound = t0_lower_bound,
+    prior_K = prior_K
+  )
+
+  # Get the model
+  model_name <- 'logistic'
+  model <- get(model_name, stanmodels)
+
+  # Fit the model with either MCMC or Variational
+  if (variational) {
+    sampling = "variational"
+    res <- suppressWarnings(suppressMessages(iterative_variational(model, input_data, iter, warmup)))
+    fit_model <- res$fit_model
+    elbo_d <- res$elbo_d
+
+  } else {
+    sampling = "mcmc"
+    fit_model <- rstan::sampling(
+      model,
+      data = input_data,
+      chains = chains, iter = iter, warmup = warmup,
+      cores = cores
+    )
+  }
+
+  elbo_data <- c()
+  if (variational) elbo_data <- elbo_d
+  fit <- fit_model
+
 
   # Write fit info
   fit_info <- list(
     sampling = sampling,
     growth_type = "logistic",
-    model_type = model_type,
-    prior = prior,
     factor_size = factor_size,
-    a = a,
-    b = b,
-    g = g,
-    prior_K = prior_K
+    prior_K = prior_K,
+    t0_lower_bound = t0_lower_bound
   )
 
   res = list(
     elbo_data = elbo_data,
-    fits = fits,
+    fit = fit,
     fit_info = fit_info
   )
 
@@ -334,3 +278,4 @@ parse_pareto_warning = function(w) {
   pareto_k <- as.numeric(w[6])
   pareto_k
 }
+

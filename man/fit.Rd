@@ -7,13 +7,9 @@
 fit(
   x,
   growth_type = c("exponential", "logistic"),
-  model_type = c("gauss", "exact"),
-  prior = c("invgamma", "uniform"),
   variational = FALSE,
+  t0_lower_bound = -10,
   factor_size = 1,
-  a = 2,
-  b = 2,
-  g = 1,
   prior_K = NULL,
   chains = 4,
   iter = 4000,
@@ -27,27 +23,11 @@ fit(
 \item{growth_type}{character string specifying the type of growth assumed,
 one of "exponential", "logistic".}
 
-\item{model_type}{character string specifying the model to fit, one of "gauss", "exact".
-\itemize{
-\item \code{gauss} Use a Gaussian approximation. Works well when counts data are far from 0.
-}}
-
-\item{prior}{character string specifying the prior to use, "uniform" or "invagamma".
-\itemize{
-\item \code{invgamma} Inverse gamma prior invGamma(a,b)
-\item \code{uniform} Uniform U(a,b), where at every iteration you sample with width w = (b-a) / g.
-}}
-
 \item{variational}{Boolean specifying whether using variational as opposed to mcmc sampling}
 
+\item{t0_lower_bound}{lower bound of t0, which is the instant of time in which the population is born}
+
 \item{factor_size}{numeric factor by which to divide counts in the bipod object}
-
-\item{a}{Minimum value for uniform prior, shape parameter for inverse gamma prior}
-
-\item{b}{Maximum value for uniform prior, scale parameter for inverse gamma prior}
-
-\item{g}{Extra parameters for uniform prior. Sample is done from a uniform centered on the previous
-sample and with width w = (b - a) / g.}
 
 \item{prior_K}{Prior mean for the carrying capacity.}
 

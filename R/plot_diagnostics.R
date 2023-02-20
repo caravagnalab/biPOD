@@ -9,24 +9,22 @@
 #' @export
 diagnose_chains = function(x, pars = c(), rhat_threshold = 1.01) {
   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
-  if (!("fits" %in% names(x))) stop("Input must contain a 'fits' field. It appears no model has been fitted yet.")
+  if (!("fit" %in% names(x))) stop("Input must contain a 'fits' field. It appears no model has been fitted yet.")
   if (!(length(pars) > 0)) stop("'pars' should contain at least one input")
   if (!("fit_info" %in% names(x))) stop("Input must contain a 'fit_info' field")
   if (!(x$fit_info$sampling == "mcmc")) stop("'plot_traces' accepts only biPOD objects that have been fitted using MCMC")
 
-  diagnostics <- sapply(names(x$fits), function(fit_name) {
-    fit <- x$fits[[fit_name]]
+  available_parameters <- x$fit %>% as.data.frame() %>% colnames()
+  print(available_parameters)
 
-    pass = TRUE
-    for (par in pars) {
-      rhat <- rstan::Rhat(as.array(fit)[,,par])
-      if (rhat > rhat_threshold) pass = FALSE
-    }
+  pass = TRUE
+  for (par in pars) {
+    if (!(par %in% available_parameters)) stop(paste("Parameter ", par, " is not present in the fit. The available parameters are: ", paste(available_parameters, collapse = ", ")))
+    rhat <- rstan::Rhat(as.array(x$fit)[,,par])
+    if (rhat > rhat_threshold) pass = FALSE
+  }
 
-    return(pass)
-  })
-
-  return(diagnostics)
+  return(pass)
 }
 
 #' Plot traces of specified parameters from a fitted Stan model
@@ -40,32 +38,27 @@ diagnose_chains = function(x, pars = c(), rhat_threshold = 1.01) {
 #' @export
 plot_traces = function(x, pars = c(), diagnose = FALSE) {
   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
-  if (!("fits" %in% names(x))) stop("Input must contain a 'fits' field. It appears no model has been fitted yet.")
+  if (!("fit" %in% names(x))) stop("Input must contain a 'fits' field. It appears no model has been fitted yet.")
   if (!(length(pars) > 0)) stop("'pars' should contain at least one input")
   if (!("fit_info" %in% names(x))) stop("Input must contain a 'fit_info' field")
   if (!(x$fit_info$sampling == "mcmc")) stop("'plot_traces' accepts only biPOD objects that have been fitted using MCMC")
 
-  plots <- lapply(names(x$fits), function(fit_name) {
-    fit <- x$fits[[fit_name]]
-    long_chains <- data.frame()
-
+  plots <- lapply(pars, function(par) {
     qc = "forestgreen"
-      for (par in pars) {
-        rhat <- rstan::Rhat(as.array(fit)[,,par])
-        chains <- as.data.frame(rstan::extract(fit, pars = par, permuted = FALSE))
-        names(chains) <- paste0("chain", 1:ncol(chains))
-        chains$sample <- 1:nrow(chains)
-        chains <- reshape2::melt(chains, id.vars = c("sample")) %>%
-          dplyr::mutate(parameter = paste0(par, gsub("fit", "", fit_name)))
 
-        long_chains <- dplyr::bind_rows(long_chains, chains)
+    rhat <- rstan::Rhat(as.array(x$fit)[,,par])
+    chains <- as.data.frame(rstan::extract(x$fit, pars = par, permuted = FALSE))
+    names(chains) <- paste0("chain", 1:ncol(chains))
+    chains$sample <- 1:nrow(chains)
+    chains <- reshape2::melt(chains, id.vars = c("sample")) %>%
+      dplyr::mutate(parameter = par)
+    #%>%
+    #  dplyr::mutate(parameter = paste0(par, gsub("fit", "", fit_name)))
 
-        if (rhat > 1.01) qc = "indianred"
-      }
-
+    if (rhat > 1.01) qc = "indianred"
     if (!diagnose) qc = "gray"
 
-    p <- ggplot2::ggplot(long_chains, ggplot2::aes(x=.data$sample, y=.data$value, col=.data$variable)) +
+    p <- ggplot2::ggplot(chains, ggplot2::aes(x=.data$sample, y=.data$value, col=.data$variable)) +
       ggplot2::geom_line() +
       ggplot2::facet_wrap(~ .data$parameter) +
       ggplot2::scale_color_brewer(palette = "Greens", direction = -1) +
@@ -90,7 +83,7 @@ plot_traces = function(x, pars = c(), diagnose = FALSE) {
     p
   })
 
-  plots <- ggpubr::ggarrange(plotlist = plots, ncol=1)
+  plots <- ggpubr::ggarrange(plotlist = plots)
   return(plots)
 }
 
@@ -100,73 +93,122 @@ plot_traces = function(x, pars = c(), diagnose = FALSE) {
 #' @param x A biPOD object of class `bipod`. Must contains 'fit'
 #' @param diagnose A Boolean indicating whether the plots should be colored and
 #'  contain info regarding the convergence of the variational sampling.
-#' @param add_title Boolean, indicating whether the plot should have a title
 #'
 #' @return A ggplot object with traces of the specified parameters
 #' @export
-plot_elbo = function(x, diagnose = FALSE, add_title = FALSE) {
+plot_elbo = function(x, diagnose = TRUE) {
   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
-  if (!("fits" %in% names(x))) stop("Input must contain a 'fits' field. It appears no model has been fitted yet.")
+  if (!("fit" %in% names(x))) stop("Input must contain a 'fits' field. It appears no model has been fitted yet.")
   if (!("fit_info" %in% names(x))) stop("Input must contain a 'fit_info' field")
   if (!(x$fit_info$sampling == "variational")) stop("'plot_elbo' accepts only biPOD objects that have been fitted using variational inference")
 
-  plots <- lapply(names(x$elbo_data), function(elbo_name) {
-    elbo_data <- x$elbo_data[[elbo_name]]
+  elbo_data <- x$elbo_data
 
-    elbo_converged <- all(elbo_data$convergence)
-    pareto_k <- elbo_data$pareto_k[1]
+  elbo_converged <- all(elbo_data$convergence)
+  pareto_k <- elbo_data$pareto_k[1]
 
-    if ((pareto_k > 1) | (!elbo_converged)) {
-      qc = line_color = "indianred"
+  if ((pareto_k > 1) | (!elbo_converged)) {
+    qc = line_color = "indianred"
       msg = "Pareto k higher than 1 and/or ELBO not convergent."
-    } else if (pareto_k == 0) {
-      qc = line_color = "forestgreen"
+  } else if (pareto_k == 0) {
+    qc = line_color = "forestgreen"
       msg = "Pareto k lower than 0.5 and convergent ELBO."
-    } else {
-      qc = line_color = "darkorange"
+  } else {
+    qc = line_color = "darkorange"
       msg = "Convergent ELBO but Pareto k between .5 and 1."
-    }
+  }
 
-    if (!diagnose) {
-      qc = "gray"
+  if (!diagnose) {
+    qc = "gray"
       line_color = "black"
-    }
+  }
 
-    if (add_title) {
-      title = paste0("Group ", gsub("elbo", "", elbo_name))
-    } else {
-      title = ""
-    }
+  p <- elbo_data %>%
+    as.data.frame %>%
+    dplyr::mutate(ELBO = -log(-.data$ELBO)) %>%
+    dplyr::select(.data$iter, .data$ELBO, .data$delta_ELBO_mean) %>%
+    reshape2::melt(id.vars = c("iter")) %>%
+    ggplot2::ggplot() +
+    ggplot2::geom_line(mapping = ggplot2::aes(x=.data$iter, y=-.data$value), col = line_color) +
+    ggplot2::facet_wrap(~ .data$variable, scales = "free") +
+    ggplot2::labs(
+      x = "iteration",
+      y = "value",
+      title = "ELBO"
+    ) +
+    my_ggplot_theme() +
+    ggplot2::theme(
+      legend.position = "none",
+      strip.background = ggplot2::element_rect(fill = qc)
+    )
 
-    p <- elbo_data %>%
-      as.data.frame %>%
-      dplyr::mutate(ELBO = -log(-.data$ELBO)) %>%
-      dplyr::select(.data$iter, .data$ELBO, .data$delta_ELBO_mean) %>%
-      reshape2::melt(id.vars = c("iter")) %>%
-      ggplot2::ggplot() +
-      ggplot2::geom_line(mapping = ggplot2::aes(x=.data$iter, y=-.data$value), col = line_color) +
-      ggplot2::facet_wrap(~ .data$variable, scales = "free") +
-      ggplot2::labs(
-        x = "iteration",
-        y = "value",
-        title = title
-      ) +
-      my_ggplot_theme() +
-      ggplot2::theme(
-        legend.position = "none",
-        strip.background = ggplot2::element_rect(fill = qc)
-      )
+  if (diagnose) {
+    p <- p +
+      ggplot2::labs(subtitle = msg) +
+      ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0))
+  }
 
-    if (diagnose) {
-      p <- p +
-        ggplot2::labs(subtitle = msg) +
-        ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0))
-    }
+  return(p)
 
-    p
-  })
-  plots <- ggpubr::ggarrange(plotlist = plots, ncol=1)
-  plots
+  #######
+
+  # plots <- lapply(names(x$elbo_data), function(elbo_name) {
+  #   elbo_data <- x$elbo_data[[elbo_name]]
+  #
+  #   elbo_converged <- all(elbo_data$convergence)
+  #   pareto_k <- elbo_data$pareto_k[1]
+  #
+  #   if ((pareto_k > 1) | (!elbo_converged)) {
+  #     qc = line_color = "indianred"
+  #     msg = "Pareto k higher than 1 and/or ELBO not convergent."
+  #   } else if (pareto_k == 0) {
+  #     qc = line_color = "forestgreen"
+  #     msg = "Pareto k lower than 0.5 and convergent ELBO."
+  #   } else {
+  #     qc = line_color = "darkorange"
+  #     msg = "Convergent ELBO but Pareto k between .5 and 1."
+  #   }
+  #
+  #   if (!diagnose) {
+  #     qc = "gray"
+  #     line_color = "black"
+  #   }
+  #
+  #   if (add_title) {
+  #     title = paste0("Group ", gsub("elbo", "", elbo_name))
+  #   } else {
+  #     title = ""
+  #   }
+  #
+  #   p <- elbo_data %>%
+  #     as.data.frame %>%
+  #     dplyr::mutate(ELBO = -log(-.data$ELBO)) %>%
+  #     dplyr::select(.data$iter, .data$ELBO, .data$delta_ELBO_mean) %>%
+  #     reshape2::melt(id.vars = c("iter")) %>%
+  #     ggplot2::ggplot() +
+  #     ggplot2::geom_line(mapping = ggplot2::aes(x=.data$iter, y=-.data$value), col = line_color) +
+  #     ggplot2::facet_wrap(~ .data$variable, scales = "free") +
+  #     ggplot2::labs(
+  #       x = "iteration",
+  #       y = "value",
+  #       title = title
+  #     ) +
+  #     my_ggplot_theme() +
+  #     ggplot2::theme(
+  #       legend.position = "none",
+  #       strip.background = ggplot2::element_rect(fill = qc)
+  #     )
+  #
+  #   if (diagnose) {
+  #     p <- p +
+  #       ggplot2::labs(subtitle = msg) +
+  #       ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0))
+  #   }
+  #
+  #   p
+  # })
+  # plots <- ggpubr::ggarrange(plotlist = plots, ncol=1)
+  # plots
 }
 
 #' Plot the posterior predictive checks for counts data.

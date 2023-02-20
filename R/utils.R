@@ -29,6 +29,7 @@ get_group_colors = function()
 
 add_shadow_to_plot = function(x, base_plot) {
   times <- (x$counts %>% dplyr::group_by(.data$group) %>% dplyr::summarise(times = max(.data$time)))$times
+  times <- c(min(x$counts$time), times)
 
   ngroup <- length(times)
   n_lower <- ngroup - 1
@@ -44,11 +45,11 @@ add_shadow_to_plot = function(x, base_plot) {
     ggplot2::geom_rect(
       data = highlights,
       ggplot2::aes(
-        xmin = from,
-        xmax = to,
-        ymin = -Inf,
+        xmin = .data$from,
+        xmax = .data$to,
+        ymin = 0,
         ymax = Inf,
-        fill = factor(group, levels = g)
+        fill = factor(.data$group, levels = g)
       ),
       alpha = .2
     ) +

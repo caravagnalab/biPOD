@@ -4,7 +4,7 @@
 \alias{plot_fit}
 \title{Plot the fit over the input data.}
 \usage{
-plot_fit(x, final_time = NULL, add_title = F, add_highlights = F)
+plot_fit(x, final_time = NULL, add_title = F, add_highlights = F, plot_t0 = F)
 }
 \arguments{
 \item{x}{A biPOD object of class \code{bipod}. Must contains 'fit'}
@@ -14,6 +14,8 @@ plot_fit(x, final_time = NULL, add_title = F, add_highlights = F)
 \item{add_title}{Boolean, indicating whether the plot should have a title}
 
 \item{add_highlights}{Boolean, indicating whether the groups should be highlighted}
+
+\item{plot_t0}{Boolean, indicating whether to plot t0 histogram and whole evolution plot}
 }
 \value{
 A plot of the fit over the input data.

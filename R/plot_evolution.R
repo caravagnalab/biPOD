@@ -14,6 +14,7 @@ plot_input <- function(x, add_title = F, log_scale = F, add_highlights = F) {
 
   # If log, transform y scale
   trans <- if(log_scale) "log" else "identity"
+  y_label <- if(log_scale) "log count" else "count"
 
   data <- data.frame(x = x$counts$time, y = x$counts$count)
 
@@ -31,12 +32,12 @@ plot_input <- function(x, add_title = F, log_scale = F, add_highlights = F) {
     p <- p + ggplot2::labs(
       title = paste("Sample:", x$sample),
       x = "time",
-      y = "count"
+      y = y_label
     )
   } else {
     p <- p + ggplot2::labs(
       x = "time",
-      y = "count"
+      y = y_label
     )
   }
 
