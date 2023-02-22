@@ -259,6 +259,8 @@ plot_logistic_fit_old = function(x, final_time, add_title) {
 
 exp_growth = function(t, t0, t_array, rho_array) {
 
+  if (length(t_array) == 0) return(exp(rho_array[1] * (t - t0)))
+
   if (t <= t_array[1]) {
     return(exp(rho_array[1] * (t - t0)))
   }
@@ -290,6 +292,8 @@ log_growth = function(t, n0, rho, K) {
 log_growth_multiple = function(t, t0, t_array, rho_array, K) {
 
   current_n0 = 1
+  if (length(t_array) == 0) return(log_growth(t - t0, current_n0, rho_array[1], K))
+
   if (t <= t_array[1]) {
     return(log_growth(t - t0, current_n0, rho_array[1], K))
   }

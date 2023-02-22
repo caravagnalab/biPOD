@@ -83,14 +83,17 @@
 #'
 #' @param x a bipod object with a 'fit' field
 #' @param add_prior Boolean, indicate whether to plot also the prior distribution
+#' @param same_scale Boolean, indicate whether to plot the distribution on the same x scale.
 #'
 #' @return A ggplot object containing the posterior density plots of the growth rates and the prior density plot
 #' @export
 #'
-plot_growth_rate_posteriors = function(x, add_prior = F) {
+plot_growth_rate_posteriors = function(x, add_prior = F, same_scale = F) {
   # Check input
   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
   if (!("fit" %in% names(x))) stop("Input must contain a 'fits' field")
+
+  facet_scale <- if (same_scale) "free_y" else "free"
 
   # POSTERIOR
   # Obtain list of parameters to plot
@@ -114,9 +117,9 @@ plot_growth_rate_posteriors = function(x, add_prior = F) {
 
   # plot posterior density
   p <- ggplot2::ggplot(d_long, ggplot2::aes(x=.data$value)) +
-    ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)), binwidth = bw, alpha = .3) +
+    ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)), alpha = .3) +
     ggplot2::geom_density(col = "forestgreen", linewidth = .8) +
-    ggplot2::facet_wrap( ~ .data$variable, labeller = ggplot2::label_parsed)
+    ggplot2::facet_wrap( ~ .data$variable, labeller = ggplot2::label_parsed, scales = facet_scale)
 
   if (add_prior) {
     xs <- seq(xlims[1], xlims[2], length=500)
@@ -135,7 +138,7 @@ plot_growth_rate_posteriors = function(x, add_prior = F) {
       y = 'density',
       x = "value"
     ) +
-    ggplot2::coord_cartesian(xlim=xlims) +
+    # ggplot2::coord_cartesian(xlim=xlims) +
     my_ggplot_theme()
 
   p
