@@ -25,7 +25,7 @@ plot_input <- function(x, add_title = F, log_scale = F, add_highlights = F) {
     my_ggplot_theme()
 
   if (add_highlights) {
-    p <- biPOD:::add_shadow_to_plot(x, base_plot = p)
+    p <- add_shadow_to_plot(x, base_plot = p)
   }
 
   if (add_title) {

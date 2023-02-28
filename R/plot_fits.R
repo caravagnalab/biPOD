@@ -3,13 +3,21 @@
 #'
 #' @param x A biPOD object of class `bipod`. Must contains 'fit'
 #' @param final_time The final time for which the fit need to be plotted.
-#' @param add_title Boolean, indicating whether the plot should have a title
-#' @param add_highlights Boolean, indicating whether the groups should be highlighted
-#' @param plot_t0 Boolean, indicating whether to plot t0 histogram and whole evolution plot
+#' @param legend_labels Vector containing a name for each unique group in x$counts$group
+#' @param legend_title Title for the legend. Default is "group"
+#' @param zoom_limits Limits of the x-axis for the zoom of the plot
+#' @param sec_axis_breaks Vector containing values in which secondary x axis' breaks will be
+#' @param sec_axis_labels Vector containing labels for the secondary x axis
 #'
 #' @returns A plot of the fit over the input data.
 #' @export
-plot_fit = function(x, final_time = NULL, add_title = F, add_highlights = F, plot_t0 = F) {
+plot_fit = function(x,
+                    final_time = NULL,
+                    legend_labels = NULL,
+                    legend_title = "group",
+                    zoom_limits = NULL,
+                    sec_axis_breaks = NULL,
+                    sec_axis_labels = NULL) {
   # Check input
   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
   if (!("fit" %in% names(x))) stop("Input must contain a 'fits' field")
@@ -17,19 +25,103 @@ plot_fit = function(x, final_time = NULL, add_title = F, add_highlights = F, plo
   growth_type <- x$fit_info$growth_type
 
   if (growth_type == "exponential") {
-    p <- plot_exponential_fit(x, final_time, add_title, plot_t0)
+    fitted_data <- get_exponential_data(x)
   } else {
-    p <- plot_logistic_fit(x, final_time, add_title, plot_t0)
+    fitted_data <- get_logistic_data(x)
   }
 
-  if (add_highlights) {
-    p <- biPOD:::add_shadow_to_plot(x, base_plot = p)
+  # Plot data
+  p <- ggplot2::ggplot() +
+    ggplot2::geom_point(x$counts, mapping = aes(x=.data$time, y=.data$count)) + #original points
+    ggplot2::geom_line(fitted_data, mapping=aes(x=.data$x, y=.data$y), col="black") +
+    ggplot2::geom_ribbon(fitted_data, mapping=aes(x=.data$x, y=.data$y, ymin=.data$ylow, ymax=.data$yhigh), fill="black", alpha=.3) +
+    my_ggplot_theme()
+
+  # add highlights
+  p <- add_shadow_to_plot(x, base_plot = p)
+
+  # add t0 posterior
+  p <- add_t0_posterior(base_plot = p, x = x)
+
+  # change legend
+  if (!(is.null(legend_labels))) {
+    if (!(length(legend_labels) == length(unique(x$counts$group)))) stop("The number of labels for the legend must be equal to the number of groups")
+    p <- p + ggplot2::scale_fill_manual(values = get_group_colors(), labels=legend_labels)
+  }
+  p <- p + ggplot2::guides(fill=ggplot2::guide_legend(title=legend_title, override.aes = list(alpha = 1)))
+
+  # Add zoom
+  zoom_limits <- if (is.null(zoom_limits)) c(min(x$counts$time), max(x$counts$time)) else zoom_limits
+  p <- p + ggforce::facet_zoom(xlim = zoom_limits)
+
+  # Add secondary axis
+  if (xor(is.null(sec_axis_breaks), is.null(sec_axis_labels))) stop("To plot secondary x axis both sec_axis_breaks and sex_axis_labels are needed")
+  if (!(is.null(sec_axis_breaks))) {
+    p <- p +
+      ggplot2::scale_x_continuous(sec.axis = ggplot2::sec_axis(~ ., breaks = sec_axis_breaks, labels = sec_axis_labels)) +
+      ggplot2::theme(axis.text.x.top = ggplot2::element_text(angle = 90, vjust = 0.5))
   }
 
   return(p)
 }
 
-plot_exponential_fit = function(x, final_time, add_title, plot_t0) {
+
+#' Plot a simple fit over the input data.
+#'
+#' @param x A biPOD object of class `bipod`. Must contains 'fit'
+#' @param legend_labels Vector containing a name for each unique group in x$counts$group
+#' @param legend_title Title for the legend. Default is "group"
+#' @param full_process Boolean, indicating whether to plot the process starting from t0 or not.
+#'
+#' @returns A plot of the fit over the input data.
+#' @export
+plot_simple_fit = function(x,
+                           full_process = F,
+                           legend_labels = NULL,
+                           legend_title = "group") {
+  # Check input
+  if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
+  if (!("fit" %in% names(x))) stop("Input must contain a 'fits' field")
+
+  growth_type <- x$fit_info$growth_type
+
+  if (growth_type == "exponential") {
+    fitted_data <- get_exponential_data(x)
+  } else {
+    fitted_data <- get_logistic_data(x)
+  }
+
+  xmin <- min(x$counts$time)
+  xmax <- max(x$counts$time)
+  if (!(full_process)) fitted_data <- fitted_data %>% dplyr::filter(.data$x <= xmax) %>% dplyr::filter(.data$x >= xmin)
+
+  # Plot data
+  p <- ggplot2::ggplot() +
+    ggplot2::geom_point(x$counts, mapping = aes(x=.data$time, y=.data$count)) + #original points
+    ggplot2::geom_line(fitted_data, mapping=aes(x=.data$x, y=.data$y), col="black") +
+    ggplot2::geom_ribbon(fitted_data, mapping=aes(x=.data$x, y=.data$y, ymin=.data$ylow, ymax=.data$yhigh), fill="black", alpha=.3) +
+    my_ggplot_theme()
+
+  # add highlights
+  p <- add_shadow_to_plot(x, base_plot = p)
+
+  # add t0 posterior
+  if (full_process) p <- add_t0_posterior(base_plot = p, x = x)
+
+  # change legend
+  if (!(is.null(legend_labels))) {
+    if (!(length(legend_labels) == length(unique(x$counts$group)))) stop("The number of labels for the legend must be equal to the number of groups")
+    p <- p + ggplot2::scale_fill_manual(values = get_group_colors(), labels=legend_labels)
+  }
+  p <- p + ggplot2::guides(fill=ggplot2::guide_legend(title=legend_title, override.aes = list(alpha = 1)))
+
+  # Remove everyithing except process eventually
+  if (!(full_process)) p <- p + ggplot2::scale_x_continuous(limits = c(xmin, xmax))
+
+  return(p)
+}
+
+get_exponential_data = function(x, final_time = NULL) {
   fit <- x$fit
 
   # Get fit info
@@ -67,21 +159,22 @@ plot_exponential_fit = function(x, final_time, add_title, plot_t0) {
     yhigh = factor_size * yhigh
   )
 
+  return(fitted_data)
 
   # Plot them
   p <- ggplot2::ggplot() +
     ggplot2::geom_point(x$counts, mapping = aes(x=.data$time, y=.data$count)) + #original points
-    ggplot2::geom_line(fitted_data, mapping=aes(x=.data$x, y=.data$y), col="darkgreen") +
-    ggplot2::geom_ribbon(fitted_data, mapping=aes(x=.data$x, y=.data$y, ymin=.data$ylow, ymax=.data$yhigh), fill="darkgreen", alpha=.3) +
+    ggplot2::geom_line(fitted_data, mapping=aes(x=.data$x, y=.data$y), col="black") +
+    ggplot2::geom_ribbon(fitted_data, mapping=aes(x=.data$x, y=.data$y, ymin=.data$ylow, ymax=.data$yhigh), fill="black", alpha=.3) +
     my_ggplot_theme()
 
-  if (plot_t0) p <- p + ggplot2::geom_histogram(data.frame(x=t0), mapping=aes(x=.data$x), binwidth = .2, fill="darkorange", alpha=.5)
-  if (!plot_t0) p <- p + ggplot2::scale_x_continuous(limits = c(min(x$counts$time), final_time))
+  # Add t0 posterior
+  #p <- p + ggplot2::geom_histogram(data.frame(x=t0), mapping=aes(x=.data$x), binwidth = .2, fill="darkorange", alpha=.5)
 
   p
 }
 
-plot_logistic_fit = function(x, final_time, add_title, plot_t0) {
+get_logistic_data = function(x, final_time = NULL) {
   fit <- x$fit
   # Get fit info
   G <- length(unique(x$counts$group))
@@ -121,197 +214,41 @@ plot_logistic_fit = function(x, final_time, add_title, plot_t0) {
     yhigh = factor_size * yhigh
   )
 
+  return(fitted_data)
+
   # Plot them
   p <- ggplot2::ggplot() +
     ggplot2::geom_point(x$counts, mapping = aes(x=.data$time, y=.data$count)) + #original points
     #geom_line(N_rep_quantiles, mapping=aes(x=time, y=mid), col="steelblue") +
     #geom_ribbon(N_rep_quantiles, mapping=aes(x=time, y=mid, ymin=low, ymax=high), fill="steelblue", alpha=.3) +
-    ggplot2::geom_histogram(data.frame(x=t0), mapping=aes(x=.data$x), binwidth = .2, fill="darkorange", alpha=.5) +
-    ggplot2::geom_line(fitted_data, mapping=aes(x=.data$x, y=.data$y), col="darkgreen") +
-    ggplot2::geom_ribbon(fitted_data, mapping=aes(x=.data$x, y=.data$y, ymin=.data$ylow, ymax=.data$yhigh), fill="darkgreen", alpha=.3) +
+    ggplot2::geom_line(fitted_data, mapping=aes(x=.data$x, y=.data$y), col="black") +
+    ggplot2::geom_ribbon(fitted_data, mapping=aes(x=.data$x, y=.data$y, ymin=.data$ylow, ymax=.data$yhigh), fill="black", alpha=.3) +
     my_ggplot_theme()
-
-  if (plot_t0) p <- p + ggplot2::geom_histogram(data.frame(x=t0), mapping=aes(x=.data$x), binwidth = .2, fill="darkorange", alpha=.5)
-  if (!plot_t0) p <- p + ggplot2::scale_x_continuous(limits = c(min(x$counts$time), final_time))
 
   p
 
 }
 
-# plot_exponential_fit_old = function(x, final_time, add_title) {
-#
-#   p <- ggplot2::ggplot()
-#   data <- data.frame()
-#   groups <- unique(x$counts$group)
-#
-#   for (i in 2:length(groups)) {
-#     previous <- x$counts %>%
-#       dplyr::filter(.data$group == groups[i-1])
-#
-#     previous_t <- previous$time[nrow(previous)]
-#     previous_n <- previous$count[nrow(previous)]
-#
-#     current <- x$counts %>%
-#       dplyr::filter(.data$group == groups[i])
-#
-#     if (i == length(groups)) {
-#       final_t <- if (is.null(final_time)) current$time[nrow(current)] else final_time
-#     } else {
-#       final_t <- current$time[nrow(current)]
-#     }
-#
-#     xs <- seq(0, final_t - previous_t, length = 100)
-#
-#     # Extract fit info
-#     fit_name <- paste0("fit", groups[i])
-#     fit <- x$fits[[fit_name]]
-#     ros <- unname(stats::quantile(rstan::extract(fit, pars="ro")$ro, c(.05, .5, .95)))
-#
-#     N_low = previous_n * exp(ros[1] * xs)
-#     N_medium = previous_n * exp(ros[2] * xs)
-#     N_high = previous_n * exp(ros[3] * xs)
-#
-#     d <- data.frame(x=xs + previous_t, yl=N_low, ym=N_medium, yh=N_high)
-#     p <- p +
-#       ggplot2::geom_line(d, mapping=ggplot2::aes(x=.data$x, y=.data$ym), col="forestgreen") +
-#       ggplot2::geom_ribbon(d, mapping=ggplot2::aes(x=.data$x, y=.data$ym, ymin=.data$yl, ymax=.data$yh), fill="forestgreen", alpha=.5)
-#   }
-#
-#   p <- p +
-#     ggplot2::geom_point(x$counts, mapping=ggplot2::aes(x=.data$time, y=.data$count)) +
-#     my_ggplot_theme()
-#
-#   if (add_title) {
-#     p <- p + ggplot2::labs(
-#       title = paste("Exponential fit", x$sample),
-#       x = "time",
-#       y = "count"
-#     )
-#   } else {
-#     p <- p + ggplot2::labs(
-#       x = "time",
-#       y = "count"
-#     )
-#   }
-#
-#   p
-# }
+add_t0_posterior = function(base_plot, x) {
 
-plot_logistic_fit_old = function(x, final_time, add_title) {
+  # Add t0 posterior
+  values <- rstan::extract(x$fit, pars=c('t0')) %>% as.list() %>% unlist() %>% as.numeric()
 
-  p <- ggplot2::ggplot()
-  data <- data.frame()
-  groups <- unique(x$counts$group)
+  bins <- 30
+  intervals <- seq(min(values), max(values), length = bins)
+  dx <- (max(values) - min(values)) / bins
 
-  for (i in 2:length(groups)) {
-    previous <- x$counts %>%
-      dplyr::filter(.data$group == groups[i-1])
+  cut_values <- cut(values, breaks = intervals, include.lowest = TRUE)
+  cut_values <- table(cut_values) %>% as.numeric()
 
-    previous_t <- previous$time[nrow(previous)]
-    previous_n <- previous$count[nrow(previous)]
+  cut_values <- cut_values * max(x$counts$count) / max(cut_values)
 
-    current <- x$counts %>%
-      dplyr::filter(.data$group == groups[i])
+  intervals <- intervals[1:(bins-1)] + dx / 2
 
-    if (i == length(groups)) {
-      final_t <- if (is.null(final_time)) current$time[nrow(current)] else final_time
-    } else {
-      final_t <- current$time[nrow(current)]
-    }
+  df <- data.frame(x = intervals, y = cut_values)
 
-    xs <- seq(0, final_t - previous_t, length = 100)
+  base_plot <- base_plot +
+    ggplot2::geom_line(data = df, mapping = ggplot2::aes(x=.data$x, y=.data$y), col = "darkorange") +
+    ggplot2::geom_ribbon(data = df, mapping = ggplot2::aes(x=.data$x, ymin=0, ymax=.data$y), fill="darkorange", alpha=.5)
 
-    # Extract fit info
-    fit_name <- paste0("fit", groups[i])
-    fit <- x$fits[[fit_name]]
-    ros <- unname(stats::quantile(rstan::extract(fit, pars="ro")$ro, c(.05, .5, .95)))
-    K <- mean(rstan::extract(fit, pars="K")$K) * x$fit_info$factor_size
-
-    N_low = K * previous_n / (previous_n + (K - previous_n) * exp(-xs * ros[1]))
-    N_medium = K * previous_n / (previous_n + (K - previous_n) * exp(-xs * ros[2]))
-    N_high = K * previous_n / (previous_n + (K - previous_n) * exp(-xs * ros[3]))
-
-    d <- data.frame(x=xs + previous_t, yl=N_low, ym=N_medium, yh=N_high)
-    p <- p +
-      ggplot2::geom_line(d, mapping=ggplot2::aes(x=.data$x, y=.data$ym), col="forestgreen") +
-      ggplot2::geom_ribbon(d, mapping=ggplot2::aes(x=.data$x, y=.data$ym, ymin=.data$yl, ymax=.data$yh), fill="forestgreen", alpha=.5)
-  }
-
-  p <- p +
-    ggplot2::geom_point(x$counts, mapping=ggplot2::aes(x=.data$time, y=.data$count)) +
-    my_ggplot_theme()
-
-  if (add_title) {
-    p <- p + ggplot2::labs(
-      title = paste("Logistic fit", x$sample),
-      x = "time",
-      y = "count"
-    )
-  } else {
-    p <- p + ggplot2::labs(
-      x = "time",
-      y = "count"
-    )
-  }
-
-  p
-}
-
-exp_growth = function(t, t0, t_array, rho_array) {
-
-  if (length(t_array) == 0) return(exp(rho_array[1] * (t - t0)))
-
-  if (t <= t_array[1]) {
-    return(exp(rho_array[1] * (t - t0)))
-  }
-
-  res <- exp(rho_array[1] * (t_array[1] - t0))
-
-  if (length(t_array) >= 2) {
-    for (i in 2:length(t_array)) {
-      if (t <= t_array[i]) {
-        return(res * exp(rho_array[i] * (t - t_array[i-1])))
-      } else {
-        res <- res * exp(rho_array[i] * (t_array[i] - t_array[i-1]))
-      }
-    }
-  }
-
-  res <- res * exp(rho_array[length(rho_array)] * (t - t_array[length(t_array)]))
-  return(res)
-}
-
-
-
-log_growth = function(t, n0, rho, K) {
-  num = K * n0
-  den = n0 + (K - n0) * exp(-rho * t)
-  return(num/den)
-}
-
-log_growth_multiple = function(t, t0, t_array, rho_array, K) {
-
-  current_n0 = 1
-  if (length(t_array) == 0) return(log_growth(t - t0, current_n0, rho_array[1], K))
-
-  if (t <= t_array[1]) {
-    return(log_growth(t - t0, current_n0, rho_array[1], K))
-  }
-
-  dt = t_array[1] - t0
-  current_n0 = log_growth(dt, current_n0, rho_array[1], K)
-  if (length(t_array) >= 2) {
-    for (i in 2:length(t_array)) {
-      if (t <= t_array[i]) {
-        dt = t - t_array[i-1]
-        return(log_growth(dt, current_n0, rho_array[i], K))
-      } else {
-        dt = t_array[i] - t_array[i-1]
-        current_n0 = log_growth(dt, current_n0, rho_array[i], K)
-      }
-    }
-  }
-
-  dt = t - t_array[length(t_array)]
-  return(log_growth(dt, current_n0, rho_array[length(rho_array)], K))
 }

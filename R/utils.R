@@ -4,57 +4,59 @@ group_contiguous <- function(x) {
   return(rep(seq_along(rle_x$lengths) - 1, times = rle_x$lengths))
 }
 
-my_ggplot_theme = function(cex_opt = 1)
-{
-  ggplot2::theme_light(base_size = 10 * cex_opt) +
-    ggplot2::theme(
-      legend.position = "bottom",
-      legend.key.size = ggplot2::unit(.3 * cex_opt, "cm"),
-      panel.background = ggplot2::element_rect(fill = 'white')
-    )
+exp_growth = function(t, t0, t_array, rho_array) {
+
+  if (length(t_array) == 0) return(exp(rho_array[1] * (t - t0)))
+
+  if (t <= t_array[1]) {
+    return(exp(rho_array[1] * (t - t0)))
+  }
+
+  res <- exp(rho_array[1] * (t_array[1] - t0))
+
+  if (length(t_array) >= 2) {
+    for (i in 2:length(t_array)) {
+      if (t <= t_array[i]) {
+        return(res * exp(rho_array[i] * (t - t_array[i-1])))
+      } else {
+        res <- res * exp(rho_array[i] * (t_array[i] - t_array[i-1]))
+      }
+    }
+  }
+
+  res <- res * exp(rho_array[length(rho_array)] * (t - t_array[length(t_array)]))
+  return(res)
 }
 
-get_group_colors = function()
-{
-  color = c(
-    '0' = ggplot2::alpha('forestgreen', .8),
-    '1' = 'steelblue',
-    '2' = 'darkblue',
-    '3' = 'turquoise4',
-    '4' = ggplot2::alpha('orange', .8),
-    '5' = 'firebrick3'
-  )
-  color
+log_growth = function(t, n0, rho, K) {
+  num = K * n0
+  den = n0 + (K - n0) * exp(-rho * t)
+  return(num/den)
 }
 
-add_shadow_to_plot = function(x, base_plot) {
-  times <- (x$counts %>% dplyr::group_by(.data$group) %>% dplyr::summarise(times = max(.data$time)))$times
-  times <- c(min(x$counts$time), times)
+log_growth_multiple = function(t, t0, t_array, rho_array, K) {
 
-  ngroup <- length(times)
-  n_lower <- ngroup - 1
+  current_n0 = 1
+  if (length(t_array) == 0) return(log_growth(t - t0, current_n0, rho_array[1], K))
 
-  highlights <- data.frame(
-    group = seq(0,ngroup-2, by=1),
-    from = times[1:n_lower],
-    to = times[2:ngroup]
-  )
+  if (t <= t_array[1]) {
+    return(log_growth(t - t0, current_n0, rho_array[1], K))
+  }
 
-  g <- as.character(highlights$group)
-  base_plot <- base_plot +
-    ggplot2::geom_rect(
-      data = highlights,
-      ggplot2::aes(
-        xmin = .data$from,
-        xmax = .data$to,
-        ymin = 0,
-        ymax = Inf,
-        fill = factor(.data$group, levels = g)
-      ),
-      alpha = .2
-    ) +
-    ggplot2::scale_fill_manual(values = biPOD:::get_group_colors()) +
-    ggplot2::guides(fill = ggplot2::guide_legend('', override.aes = list(alpha = 1)))
+  dt = t_array[1] - t0
+  current_n0 = log_growth(dt, current_n0, rho_array[1], K)
+  if (length(t_array) >= 2) {
+    for (i in 2:length(t_array)) {
+      if (t <= t_array[i]) {
+        dt = t - t_array[i-1]
+        return(log_growth(dt, current_n0, rho_array[i], K))
+      } else {
+        dt = t_array[i] - t_array[i-1]
+        current_n0 = log_growth(dt, current_n0, rho_array[i], K)
+      }
+    }
+  }
 
-  base_plot
+  dt = t - t_array[length(t_array)]
+  return(log_growth(dt, current_n0, rho_array[length(rho_array)], K))
 }

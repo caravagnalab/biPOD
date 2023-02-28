@@ -4,18 +4,30 @@
 \alias{plot_fit}
 \title{Plot the fit over the input data.}
 \usage{
-plot_fit(x, final_time = NULL, add_title = F, add_highlights = F, plot_t0 = F)
+plot_fit(
+  x,
+  final_time = NULL,
+  legend_labels = NULL,
+  legend_title = "group",
+  zoom_limits = NULL,
+  sec_axis_breaks = NULL,
+  sec_axis_labels = NULL
+)
 }
 \arguments{
 \item{x}{A biPOD object of class \code{bipod}. Must contains 'fit'}
 
 \item{final_time}{The final time for which the fit need to be plotted.}
 
-\item{add_title}{Boolean, indicating whether the plot should have a title}
+\item{legend_labels}{Vector containing a name for each unique group in x$counts$group}
 
-\item{add_highlights}{Boolean, indicating whether the groups should be highlighted}
+\item{legend_title}{Title for the legend. Default is "group"}
 
-\item{plot_t0}{Boolean, indicating whether to plot t0 histogram and whole evolution plot}
+\item{zoom_limits}{Limits of the x-axis for the zoom of the plot}
+
+\item{sec_axis_breaks}{Vector containing values in which secondary x axis' breaks will be}
+
+\item{sec_axis_labels}{Vector containing labels for the secondary x axis}
 }
 \value{
 A plot of the fit over the input data.

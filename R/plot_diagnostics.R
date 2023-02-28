@@ -39,9 +39,13 @@ diagnose_chains = function(x, pars = c(), rhat_threshold = 1.01) {
 plot_traces = function(x, pars = c(), diagnose = FALSE) {
   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
   if (!("fit" %in% names(x))) stop("Input must contain a 'fits' field. It appears no model has been fitted yet.")
-  if (!(length(pars) > 0)) stop("'pars' should contain at least one input")
   if (!("fit_info" %in% names(x))) stop("Input must contain a 'fit_info' field")
   if (!(x$fit_info$sampling == "mcmc")) stop("'plot_traces' accepts only biPOD objects that have been fitted using MCMC")
+
+  if (!(length(pars) > 0)) {
+    cli::cli_alert_info("The input vector 'pars' is empty. All the following parameters will be reported: {.val {colnames(as.matrix(x$fit))}}.  It might take some time...", wrap = T)
+    pars <- colnames(as.matrix(x$fit))
+  }
 
   plots <- lapply(pars, function(par) {
     qc = "forestgreen"
