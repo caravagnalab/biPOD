@@ -13,11 +13,7 @@ knitr::opts_chunk$set(
 library(biPOD)
 ```
 
-The package gives the opportunity to perform model selection over a list of biPOD object that have been fitted. The two models must have some of their characteristics shared:
-
-- same sampling method (variational vs MCMC)
-- same type of prior
-- same parameters for the prior
+The package gives the opportunity to perform model selection over a list of biPOD object that have been fitted. The two models must have been sampled with the same technique.
 
 Moreover, the package gives the opportunity to perform model selection using either the Bayes Factor (BF) ratio or the Pareto smoothed importance-sampling leave-one-out cross-validation (LOO).
 
@@ -29,10 +25,10 @@ One could ask if a given dataset is better explained by a logistic or exponentia
 Hence, let's first simulate a logistic growth with the following parameters:
 
 ```{r}
-n0 = 1000
+n0 = 10000
 lambda = 1
 mu = .5
-K = 3000
+K = 30000
 T = 2
 steps = 10
 delta_t = T / steps
@@ -46,11 +42,11 @@ We can then fit two different models, one assuming an exponential growth and one
 ```{r}
 # Fit exponential
 x.exp <- biPOD::init(d, "")
-x.exp <- biPOD::fit(x.exp, growth_type = "exponential")
+x.exp <- biPOD::fit(x.exp, growth_type = "exponential", t0_lower_bound = -100)
 
 # Fit logistic
 x.log <- biPOD::init(d, "")
-x.log <- biPOD::fit(x.log, growth_type = "logistic")
+x.log <- biPOD::fit(x.log, growth_type = "logistic", t0_lower_bound = -100)
 ```
 
 And then one can compute the Bayes factor between the models using the `bf_selection` function.
@@ -65,7 +61,7 @@ It appears clear that the preferred model is the one which assumes an exponentia
 
 ```{r}
 plots <- lapply(list(x.exp, x.log), function(x) {
-  return(biPOD::plot_fit(x, add_title = T))
+  return(biPOD::plot_simple_fit(x))
 })
 ggpubr::ggarrange(plotlist = plots, ncol=2)
 ```
@@ -86,11 +82,11 @@ Let's fit again:
 ```{r}
 # Fit exponential
 x.exp <- biPOD::init(d, "")
-x.exp <- biPOD::fit(x.exp, growth_type = "exponential")
+x.exp <- biPOD::fit(x.exp, growth_type = "exponential", t0_lower_bound = -100)
 
 # Fit logistic
 x.log <- biPOD::init(d, "")
-x.log <- biPOD::fit(x.log, growth_type = "logistic")
+x.log <- biPOD::fit(x.log, growth_type = "logistic", t0_lower_bound = -100)
 ```
 
 Now the Bayes Factor should be quite different
@@ -104,25 +100,7 @@ And let's inspect visually the results.
 
 ```{r}
 plots <- lapply(list(x.exp, x.log), function(x) {
-  return(biPOD::plot_fit(x, add_title = T))
+  return(biPOD::plot_simple_fit(x))
 })
 ggpubr::ggarrange(plotlist = plots, ncol=2)
-```
-
-# Which carrying capacity?
-
-Another possibility is to use only the logistic fit with different priors for the carrying capacity K and then select the one with the highest Bayes Factor. More interestingly, this process is general and can be used also to fit an exponential growth (in this case K >> N_i where N_i are the observations).
-
-Let's simulate an exponential growth (i.e. the carrying capacity K is infinite)
-
-```{r}
-n0 = 1000
-lambda = 1
-mu = .5
-T = 2
-steps = 10
-delta_t = T / steps
-
-# Simulate exponential
-d <- biPOD::sim_stochastic_exponential(n0, lambda, mu, steps, delta_t)
 ```

@@ -6,7 +6,6 @@
 \usage{
 plot_fit(
   x,
-  final_time = NULL,
   legend_labels = NULL,
   legend_title = "group",
   zoom_limits = NULL,
@@ -16,8 +15,6 @@ plot_fit(
 }
 \arguments{
 \item{x}{A biPOD object of class \code{bipod}. Must contains 'fit'}
-
-\item{final_time}{The final time for which the fit need to be plotted.}
 
 \item{legend_labels}{Vector containing a name for each unique group in x$counts$group}
 

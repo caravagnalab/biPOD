@@ -2,14 +2,12 @@
 % Please edit documentation in R/plot_posterior.R
 \name{get_growth_rate_posteriors}
 \alias{get_growth_rate_posteriors}
-\title{Plot growth rates posteriors}
+\title{Produces a list of plots, representing the posteriors, one for each growth rate.}
 \usage{
-get_growth_rate_posteriors(x, add_prior = F, labels = NULL)
+get_growth_rate_posteriors(x, labels = NULL)
 }
 \arguments{
 \item{x}{a bipod object with a 'fit' field}
-
-\item{add_prior}{Boolean, indicate whether to plot also the prior distribution}
 
 \item{labels}{Vector of labels for the growth rate of each group. If NULL, the standard is 'rho' plus the group index.}
 }
@@ -17,5 +15,5 @@ get_growth_rate_posteriors(x, add_prior = F, labels = NULL)
 A ggplot object containing the posterior density plots of the growth rates and the prior density plot
 }
 \description{
-Plot growth rates posteriors
+Produces a list of plots, representing the posteriors, one for each growth rate.
 }

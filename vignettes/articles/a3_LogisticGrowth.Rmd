@@ -17,58 +17,53 @@ delta_t <- T / time_steps
 d <- biPOD::sim_stochastic_logistic(n0 = 1000, lambda = 1.5, mu = .2, K = 2000, delta_t = delta_t, steps = time_steps)
 ```
 
-The `fit_log` function can be used to fit a model over an input dataframe assuming an exponential growth.
-The function requires as input a `biPOD` object along with two main additional parameters:
+The `fit` function along with the parameter `growth_type = "logistic"` can be used to fit a model over an input dataframe assuming a logistic growth.
+With a logistic growth, the function accepts a new argument:
 
-- `model_type` : the type of model to use among `gauss`
-- `prior`      : the type of prior to use among `uniform` and `invgamma`
+- `prior_K` : a value defining the prior knwoledge of the carrying capacity. Can also be set to `NULL`   
 
 Additionally, one can tune many additional parameters for specific purposes:
 
-- `prior_K`, `a`, `b`, `g` : parameters to tune the shape of the prior distribution
 - `chains`, `iter`, `warmup`, `cores` : parameters for the MCMC algorithm
 
 A fit with fixed rates can be obtained without adding any `group` column to the input dataframe.
 
 ```{r fit log mcmc, results=FALSE, message=FALSE}
-bipod <- biPOD::init(d, "logistic sample using MCMC")
-biPOD::plot_evolution(bipod)
-bipod <- biPOD::fit(bipod, growth_type = "logistic", model_type = "gauss", prior = "invgamma", a = 1, b = 1)
+x <- biPOD::init(d, "logistic sample using MCMC")
+biPOD::plot_input(x)
+x <- biPOD::fit(x, growth_type = "logistic")
 ```
 
-The bipod object does now contains a field names `fits` which contains every fit for every group, in this case only one. 
+The bipod object does now contains the field `fit`. 
 The results of the fit can be visually inspected using:
 
-- `plot_traces` : plot the traces of the MCMC chains, passing as `pars` a vector of desired parameter and the `diagnose` flag 
-- `plot_birth_and_death_rates_posteriors` : to plot the prior and posteriors for the birth and death parameters
-- `plot_growth_rate_posteriors` : to plot the prior and posteriors for the growth rates
+- `plot_traces` : plot the traces of the MCMC chains, passing as `pars` a vector of desired parameter. You set `diagnose` to `TRUE` to obtain a visual representation about the goodness of the chains.
+- `plot_normalized_growth_rate_posteriors` : to plot the normalized posteriors for the growth rates
 - `plot_fit` : to plot the fitted curve against the observed data
+- `plot`
 
 ```{r, results=FALSE, message=FALSE}
-biPOD::plot_traces(bipod, pars = c("lambda", "mu"), diagnose = TRUE)
-biPOD::plot_birth_and_death_rates_posteriors(bipod)
-biPOD::plot_growth_rate_posteriors(bipod)
-biPOD::plot_fit(bipod)
+biPOD::plot_traces(x, pars = c("rho[1]", "K", "t0"), diagnose = TRUE)
+biPOD::plot_normalized_growth_rate_posteriors(x)
+biPOD::plot_carrying_capacity_posterior(x)
+biPOD::plot_fit(x)
 ```
 
-The fit can also obtained using variational inference. In order to do so, it is necessary to pass the flag `variational = TRUE` to the `fit_log` function.
+The fit can also obtained using variational inference. In order to do so, it is necessary to pass the flag `variational = TRUE` to the `fit` function.
 
 ```{r fit log variational, results=FALSE, message=FALSE}
-bipod_vb <- biPOD::init(d, "logistic sample using VB")
-bipod_vb <- biPOD::fit(bipod_vb, growth_type = "logistic", model_type = "gauss", prior = "invgamma", a = 2, b = 2, variational = TRUE)
+x_variational <- biPOD::init(d, "logistic sample using VB")
+x_variational <- biPOD::fit(x_variational, growth_type = "logistic", variational = TRUE)
 ```
 
 The bipod object does now contain a field named `elbo_data` which contains information regarding the ELBO for every group.
-The results of the fit can be visually inspected using:
+The results of the fit can be visually inspected using with this additional function:
 
 - `plot_elbo` : plot the diagnostic of the ELBO, passing the `diagnose` flag 
-- `plot_birth_and_death_rates_posteriors` : to plot the prior and posteriors for the birth and death parameters
-- `plot_growth_rate_posteriors` : to plot the prior and posteriors for the growth rates
-- `plot_fit` : to plot the fitted curve against the observed data
 
 ```{r, results=FALSE, message=FALSE}
-biPOD::plot_elbo(bipod_vb, diagnose = TRUE)
-biPOD::plot_birth_and_death_rates_posteriors(bipod_vb)
-biPOD::plot_growth_rate_posteriors(bipod_vb)
-biPOD::plot_fit(bipod_vb)
+biPOD::plot_elbo(x_variational, diagnose = TRUE)
+biPOD::plot_normalized_growth_rate_posteriors(x)
+biPOD::plot_carrying_capacity_posterior(x_variational)
+biPOD::plot_fit(x_variational)
 ```

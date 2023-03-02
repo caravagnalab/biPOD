@@ -23,8 +23,8 @@ This is the full simulated process:
 n_steps <- 10
 dt <- .1
 d <- biPOD::sim_stochastic_exponential(20, 1, .25, steps = n_steps, delta_t = dt)
-bipod <- biPOD::init(d, "Full sample")
-biPOD::plot_evolution(bipod)
+x <- biPOD::init(d, "Full sample")
+biPOD::plot_input(x)
 ```
 
 ```{r, results=FALSE, message=FALSE}
@@ -38,14 +38,14 @@ for (i in 3:length(indexes)) {
   idx <- sort(indexes[1:i])
   
   x <- biPOD::init(d[idx,], sample = paste(""))
-  x <- biPOD::fit(x, growth_type = "exponential", model_type = "exact", prior = "uniform", a = 0, b = 2, g = 2)
+  x <- biPOD::fit(x, growth_type = "exponential", t0_lower_bound = -20, factor_size = .01)
   
   name = paste("sample", i)
   print(name)
   print(d[idx,])
   
-  plot_fits[[name]] = biPOD::plot_fit(x)
-  posterior_plots[[name]] = biPOD::plot_birth_and_death_rates_posteriors(x)
+  plot_fits[[name]] = biPOD::plot_simple_fit(x, full_process = F)
+  posterior_plots[[name]] = ggpubr::ggarrange(plotlist = biPOD::get_growth_rate_posteriors(x))
 }
 ```
 

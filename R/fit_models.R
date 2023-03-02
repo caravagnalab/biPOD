@@ -18,13 +18,17 @@
 #' @export
 fit <- function(
     x,
-    growth_type = c("exponential", "logistic"),
+    growth_type = "exponential",
     variational = FALSE,
     t0_lower_bound = -10,
     factor_size = 1, prior_K = NULL,
     chains = 4, iter = 4000, warmup = 2000, cores = 4){
 
-  growth_type <- match.arg(growth_type)
+  # Check input
+  # Check input
+  if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
+  if (!(growth_type %in% c("exponential", "logistic"))) stop("growth_type must be one of 'exponential' and 'logistic'")
+  if (!(factor_size > 0)) stop("factor_size must be positive")
   sampling_type <- if(variational) "variational inference" else "MCMC sampling"
 
   cli::cli_alert_info(paste("Fitting", growth_type, "growth using", sampling_type, "..."))
@@ -51,10 +55,6 @@ fit_exp <- function(x,
                     variational = FALSE,
                     t0_lower_bound = -10,
                     chains = 4, iter = 4000, warmup = 2000, cores = 4) {
-
-  # Parameters check
-  if (!inherits(x, "bipod")) stop("Input must be a bipod object")
-  if (!(factor_size > 0)) stop("'factor_size' must be positive")
 
   # Prepare data
   G <- length(unique(x$counts$group))
@@ -129,8 +129,6 @@ fit_log <- function(x,
                     chains = 4, iter = 4000, warmup = 2000, cores = 4) {
 
   # Parameters check
-  if (!inherits(x, "bipod")) stop("Input must be a bipod object")
-  if (!(factor_size > 0)) stop("'factor_size' must be positive")
   if (is.null(prior_K)) {
     prior_K = max(x$counts$count) / factor_size
   } else {
@@ -263,7 +261,7 @@ parse_variational_output = function(out) {
     if (length(grep("MEDIAN ELBO CONVERGED", elbo_line))) has_converged = TRUE
   }
 
-  elbo_data <- data.frame(iter=iter, ELBO=ELBO, delta_ELBO_mean=delta_ELBO_mean, delta_ELBO_med=delta_ELBO_med) %>%
+  elbo_data <- dplyr::tibble(iter=iter, ELBO=ELBO, delta_ELBO_mean=delta_ELBO_mean, delta_ELBO_med=delta_ELBO_med) %>%
     dplyr::mutate(convergence = has_converged)
 
   elbo_data

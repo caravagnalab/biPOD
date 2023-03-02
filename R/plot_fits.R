@@ -2,7 +2,6 @@
 #' Plot the fit over the input data.
 #'
 #' @param x A biPOD object of class `bipod`. Must contains 'fit'
-#' @param final_time The final time for which the fit need to be plotted.
 #' @param legend_labels Vector containing a name for each unique group in x$counts$group
 #' @param legend_title Title for the legend. Default is "group"
 #' @param zoom_limits Limits of the x-axis for the zoom of the plot
@@ -12,7 +11,6 @@
 #' @returns A plot of the fit over the input data.
 #' @export
 plot_fit = function(x,
-                    final_time = NULL,
                     legend_labels = NULL,
                     legend_title = "group",
                     zoom_limits = NULL,
@@ -121,7 +119,7 @@ plot_simple_fit = function(x,
   return(p)
 }
 
-get_exponential_data = function(x, final_time = NULL) {
+get_exponential_data = function(x) {
   fit <- x$fit
 
   # Get fit info
@@ -136,23 +134,22 @@ get_exponential_data = function(x, final_time = NULL) {
   }
 
   factor_size <- x$fit_info$factor_size # factor size
-  if(is.null(final_time)) final_time = max(x$counts$time) # final time
 
   # Plot model with t0
   t0 <- rstan::extract(fit, pars=c('t0')) %>% as.list() %>% unlist() %>% as.numeric()
   t0 <- round(t0, 2)
 
-  rho <- rstan::extract(fit, pars=c("rho")) %>% as.data.frame()
-  ro_quantiles <- apply(rho, 2, function(x) stats::quantile(x, c(0.05, 0.5, 0.95))) %>% as.data.frame() %>% t() %>% as.data.frame()
+  rho <- rstan::extract(fit, pars=c("rho")) %>% dplyr::as_tibble()
+  ro_quantiles <- apply(rho, 2, function(x) stats::quantile(x, c(0.05, 0.5, 0.95))) %>% dplyr::as_tibble() %>% t() %>% dplyr::as_tibble()
 
   mode_t0 <- median(t0)
   # real_t0 <- (log(factor_size) - ro_quantiles[2]*mode_t0) / (-ro_quantiles[2])
-  xs <- seq(mode_t0, final_time, length=1000)
-  ylow <- lapply(xs, exp_growth, t0=mode_t0, t_array = as.array(t_array), rho_array = ro_quantiles$`5%`) %>% unlist()
-  ymid <- lapply(xs, exp_growth, t0=mode_t0, t_array = as.array(t_array), rho_array = ro_quantiles$`50%`) %>% unlist()
-  yhigh <- lapply(xs, exp_growth, t0=mode_t0, t_array = as.array(t_array), rho_array = ro_quantiles$`95%`) %>% unlist()
+  xs <- seq(mode_t0, max(x$counts$time), length=1000)
+  ylow <- lapply(xs, exp_growth, t0=mode_t0, t_array = as.array(t_array), rho_array = ro_quantiles$V1) %>% unlist()
+  ymid <- lapply(xs, exp_growth, t0=mode_t0, t_array = as.array(t_array), rho_array = ro_quantiles$V2) %>% unlist()
+  yhigh <- lapply(xs, exp_growth, t0=mode_t0, t_array = as.array(t_array), rho_array = ro_quantiles$V3) %>% unlist()
 
-  fitted_data <- data.frame(
+  fitted_data <- dplyr::tibble(
     x = xs,
     y = factor_size * ymid,
     ylow = factor_size * ylow,
@@ -174,7 +171,7 @@ get_exponential_data = function(x, final_time = NULL) {
   p
 }
 
-get_logistic_data = function(x, final_time = NULL) {
+get_logistic_data = function(x) {
   fit <- x$fit
   # Get fit info
   G <- length(unique(x$counts$group))
@@ -188,7 +185,6 @@ get_logistic_data = function(x, final_time = NULL) {
   }
 
   factor_size <- x$fit_info$factor_size # factor size
-  if(is.null(final_time)) final_time = max(x$counts$time) # final time
 
   # Plot model with t0
   t0 <- rstan::extract(fit, pars=c('t0')) %>% as.list() %>% unlist() %>% as.numeric()
@@ -196,18 +192,17 @@ get_logistic_data = function(x, final_time = NULL) {
 
   K <- mean(rstan::extract(fit, pars=c('K')) %>% as.list() %>% unlist())
 
-  rho <- rstan::extract(fit, pars=c("rho")) %>% as.data.frame()
-  ro_quantiles <- apply(rho, 2, function(x) stats::quantile(x, c(0.05, 0.5, 0.95))) %>% as.data.frame() %>% t() %>% as.data.frame()
+  rho <- rstan::extract(fit, pars=c("rho")) %>% dplyr::as_tibble()
+  ro_quantiles <- apply(rho, 2, function(x) stats::quantile(x, c(0.05, 0.5, 0.95))) %>% dplyr::as_tibble() %>% t() %>% dplyr::as_tibble()
 
   mode_t0 <- median(t0)
-  # real_t0 <- (log(factor_size) - ro_quantiles[2]*mode_t0) / (-ro_quantiles[2])
   xs <- seq(mode_t0, max(x$counts$time), length=1000)
 
-  ylow <- lapply(xs, log_growth_multiple, t0=mode_t0, t_array = as.array(t_array), rho_array = ro_quantiles$`5%`, K=K) %>% unlist()
-  ymid <- lapply(xs, log_growth_multiple, t0=mode_t0, t_array = as.array(t_array), rho_array = ro_quantiles$`50%`, K=K) %>% unlist()
-  yhigh <- lapply(xs, log_growth_multiple, t0=mode_t0, t_array = as.array(t_array), rho_array = ro_quantiles$`95%`, K) %>% unlist()
+  ylow <- lapply(xs, log_growth_multiple, t0=mode_t0, t_array = as.array(t_array), rho_array = ro_quantiles$V1, K=K) %>% unlist()
+  ymid <- lapply(xs, log_growth_multiple, t0=mode_t0, t_array = as.array(t_array), rho_array = ro_quantiles$V2, K=K) %>% unlist()
+  yhigh <- lapply(xs, log_growth_multiple, t0=mode_t0, t_array = as.array(t_array), rho_array = ro_quantiles$V3, K) %>% unlist()
 
-  fitted_data <- data.frame(
+  fitted_data <- dplyr::tibble(
     x = xs,
     y = factor_size * ymid,
     ylow = factor_size * ylow,
@@ -234,18 +229,19 @@ add_t0_posterior = function(base_plot, x) {
   # Add t0 posterior
   values <- rstan::extract(x$fit, pars=c('t0')) %>% as.list() %>% unlist() %>% as.numeric()
 
-  bins <- 30
-  intervals <- seq(min(values), max(values), length = bins)
-  dx <- (max(values) - min(values)) / bins
-
-  cut_values <- cut(values, breaks = intervals, include.lowest = TRUE)
-  cut_values <- table(cut_values) %>% as.numeric()
-
-  cut_values <- cut_values * max(x$counts$count) / max(cut_values)
-
-  intervals <- intervals[1:(bins-1)] + dx / 2
-
-  df <- data.frame(x = intervals, y = cut_values)
+  df <- get_normalized_density(values, max_value = max(x$counts$count))
+  # bins <- 30
+  # intervals <- seq(min(values), max(values), length = bins)
+  # dx <- (max(values) - min(values)) / bins
+  #
+  # cut_values <- cut(values, breaks = intervals, include.lowest = TRUE)
+  # cut_values <- table(cut_values) %>% as.numeric()
+  #
+  # cut_values <- cut_values * max(x$counts$count) / max(cut_values)
+  #
+  # intervals <- intervals[1:(bins-1)] + dx / 2
+  #
+  # df <- data.frame(x = intervals, y = cut_values)
 
   base_plot <- base_plot +
     ggplot2::geom_line(data = df, mapping = ggplot2::aes(x=.data$x, y=.data$y), col = "darkorange") +

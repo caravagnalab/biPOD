@@ -1,32 +1,4 @@
 
-#' Function to diagnose chains for a bipod object
-#'
-#' @param x a bipod object
-#' @param pars a character vector of parameter names to be examined
-#' @param rhat_threshold Threshold value accepted for Rhat value
-#'
-#' @return a logical vector indicating whether the chains for each fit passed or failed the diagnostic test
-#' @export
-diagnose_chains = function(x, pars = c(), rhat_threshold = 1.01) {
-  if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
-  if (!("fit" %in% names(x))) stop("Input must contain a 'fits' field. It appears no model has been fitted yet.")
-  if (!(length(pars) > 0)) stop("'pars' should contain at least one input")
-  if (!("fit_info" %in% names(x))) stop("Input must contain a 'fit_info' field")
-  if (!(x$fit_info$sampling == "mcmc")) stop("'plot_traces' accepts only biPOD objects that have been fitted using MCMC")
-
-  available_parameters <- x$fit %>% as.data.frame() %>% colnames()
-  print(available_parameters)
-
-  pass = TRUE
-  for (par in pars) {
-    if (!(par %in% available_parameters)) stop(paste("Parameter ", par, " is not present in the fit. The available parameters are: ", paste(available_parameters, collapse = ", ")))
-    rhat <- rstan::Rhat(as.array(x$fit)[,,par])
-    if (rhat > rhat_threshold) pass = FALSE
-  }
-
-  return(pass)
-}
-
 #' Plot traces of specified parameters from a fitted Stan model
 #'
 #' @param x A biPOD object of class `bipod`. Must contains 'fit'
@@ -37,34 +9,38 @@ diagnose_chains = function(x, pars = c(), rhat_threshold = 1.01) {
 #' @return A ggplot object with traces of the specified parameters
 #' @export
 plot_traces = function(x, pars = c(), diagnose = FALSE) {
-  if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
-  if (!("fit" %in% names(x))) stop("Input must contain a 'fits' field. It appears no model has been fitted yet.")
+  if (!(inherits(x, "bipod"))) stop("Input 'x' must be a 'bipod' object")
+  if (!("fit" %in% names(x))) stop("Input must contain a 'fit' field. It appears no model has been fitted yet.")
   if (!("fit_info" %in% names(x))) stop("Input must contain a 'fit_info' field")
   if (!(x$fit_info$sampling == "mcmc")) stop("'plot_traces' accepts only biPOD objects that have been fitted using MCMC")
 
+  all_pars <- colnames(as.matrix(x$fit))
   if (!(length(pars) > 0)) {
-    cli::cli_alert_info("The input vector 'pars' is empty. All the following parameters will be reported: {.val {colnames(as.matrix(x$fit))}}.  It might take some time...", wrap = T)
-    pars <- colnames(as.matrix(x$fit))
+    cli::cli_alert_info("The input vector 'pars' is empty. All the following parameters will be reported: {.val {all_pars}}.  It might take some time...", wrap = T)
+    pars <-all_pars
   }
 
   plots <- lapply(pars, function(par) {
+    if (!(par %in% all_pars)) {
+      cli::cli_abort(c("The available parameters are:  {.val {all_pars}}", "x" = "You passed {.val {par}}"))
+    }
     qc = "forestgreen"
 
     rhat <- rstan::Rhat(as.array(x$fit)[,,par])
-    chains <- as.data.frame(rstan::extract(x$fit, pars = par, permuted = FALSE))
-    names(chains) <- paste0("chain", 1:ncol(chains))
-    chains$sample <- 1:nrow(chains)
-    chains <- reshape2::melt(chains, id.vars = c("sample")) %>%
+
+    chains <- rstan::extract(x$fit, pars = par, permuted = FALSE) %>%
+      dplyr::as_tibble() %>%
+      `colnames<-`(paste0("chain", 1:ncol(as.array(x$fit)))) %>%
+      dplyr::mutate(index = dplyr::row_number()) %>%
+      tidyr::pivot_longer(!.data$index, values_to = "value", names_to = "chain") %>%
       dplyr::mutate(parameter = par)
-    #%>%
-    #  dplyr::mutate(parameter = paste0(par, gsub("fit", "", fit_name)))
 
     if (rhat > 1.01) qc = "indianred"
-    if (!diagnose) qc = "gray"
+      if (!diagnose) qc = "gray"
 
-    p <- ggplot2::ggplot(chains, ggplot2::aes(x=.data$sample, y=.data$value, col=.data$variable)) +
+    p <- ggplot2::ggplot(chains, ggplot2::aes(x=.data$index, y=.data$value, col=.data$chain)) +
       ggplot2::geom_line() +
-      ggplot2::facet_wrap(~ .data$parameter) +
+      ggplot2::facet_wrap(~ .data$parameter, labeller = ggplot2::label_parsed) +
       ggplot2::scale_color_brewer(palette = "Greens", direction = -1) +
       my_ggplot_theme() +
       ggplot2::theme(
@@ -101,8 +77,8 @@ plot_traces = function(x, pars = c(), diagnose = FALSE) {
 #' @return A ggplot object with traces of the specified parameters
 #' @export
 plot_elbo = function(x, diagnose = TRUE) {
-  if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
-  if (!("fit" %in% names(x))) stop("Input must contain a 'fits' field. It appears no model has been fitted yet.")
+  if (!(inherits(x, "bipod"))) stop("The input 'x' must be a 'bipod' object")
+  if (!("fit" %in% names(x))) stop("Input must contain a 'fit' field. It appears no model has been fitted yet.")
   if (!("fit_info" %in% names(x))) stop("Input must contain a 'fit_info' field")
   if (!(x$fit_info$sampling == "variational")) stop("'plot_elbo' accepts only biPOD objects that have been fitted using variational inference")
 
@@ -128,7 +104,7 @@ plot_elbo = function(x, diagnose = TRUE) {
   }
 
   p <- elbo_data %>%
-    as.data.frame %>%
+    dplyr::as_tibble() %>%
     dplyr::mutate(ELBO = -log(-.data$ELBO)) %>%
     dplyr::select(.data$iter, .data$ELBO, .data$delta_ELBO_mean) %>%
     reshape2::melt(id.vars = c("iter")) %>%
@@ -227,8 +203,7 @@ plot_elbo = function(x, diagnose = TRUE) {
 #'
 #' @returns A plot. Represents the posterior predictive checks.
 ppc_plot = function(x, ptype, prob = 0.5, prob_outer = 0.9) {
-  cli::cli_alert_danger("TODO")
-  stop()
+  cli::cli_abort("TODO")
   # assertthat::assert_that(inherits(x, "bipod"), msg = "Input must be a bipod object")
   # assertthat::assert_that("fit" %in% names(x), msg = "Input must contain a 'fit' field")
   # assertthat::assert_that(ptype %in% c("intervals", "ribbon"), msg = "ptype must be one of: intervals, ribbon")

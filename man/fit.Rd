@@ -6,7 +6,7 @@
 \usage{
 fit(
   x,
-  growth_type = c("exponential", "logistic"),
+  growth_type = "exponential",
   variational = FALSE,
   t0_lower_bound = -10,
   factor_size = 1,

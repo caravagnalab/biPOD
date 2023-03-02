@@ -54,6 +54,6 @@ check_input_data <- function(counts) {
   }
   cat("\n")
 
-  counts <- counts %>% dplyr::select(.data$time, .data$count, .data$group)
+  counts <- counts %>% dplyr::select(.data$time, .data$count, .data$group) %>% dplyr::as_tibble()
   counts
 }

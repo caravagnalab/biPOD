@@ -9,6 +9,8 @@ knitr::opts_chunk$set(
 )
 ```
 
+<!---
+
 ```{r setup}
 library(biPOD)
 ```
@@ -59,7 +61,7 @@ x50 <- biPOD::fit(x50)
 ```
 
 ```{r, warning=FALSE}
-fit.plot <- biPOD::plot_fit(x50, final_time = T * 1.01)
+fit.plot <- biPOD::plot_fit(x50)
 # Add the unused points
 unused_data <- d[n_points_to_use + 1:nrow(d),] %>% na.omit()
 fit.plot <- fit.plot + ggplot2::geom_point(unused_data, mapping=ggplot2::aes(x=time, y=count), alpha = .2)
@@ -94,3 +96,5 @@ summary.plot <- ggpubr::ggarrange(plotlist = list(plots.25, plots.50, plots.100)
 summary.plot <- cowplot::plot_grid(plotlist = list(plots.25, plots.50, plots.100), ncol = 1)
 summary.plot
 ```
+
+-->

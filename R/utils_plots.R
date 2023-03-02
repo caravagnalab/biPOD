@@ -12,12 +12,12 @@ my_ggplot_theme = function(cex_opt = 1)
 get_group_colors = function()
 {
   color = c(
-    '0' = "forestgreen",
-    '1' = "steelblue",
-    '2' = 'darkblue',
-    '3' = 'turquoise4',
-    '4' = 'orange',
-    '5' = 'firebrick3'
+    "forestgreen",
+    "steelblue",
+    'darkblue',
+    'turquoise4',
+    'orange',
+    'firebrick3'
   )
   color
 }
@@ -29,7 +29,7 @@ add_shadow_to_plot = function(x, base_plot) {
   ngroup <- length(times)
   n_lower <- ngroup - 1
 
-  highlights <- data.frame(
+  highlights <- dplyr::tibble(
     group = seq(0,ngroup-2, by=1),
     from = times[1:n_lower],
     to = times[2:ngroup]
@@ -52,4 +52,14 @@ add_shadow_to_plot = function(x, base_plot) {
     ggplot2::guides(fill = ggplot2::guide_legend('', override.aes = list(alpha = 1)))
 
   base_plot
+}
+
+get_normalized_density <- function(values, max_value = 1) {
+  # compute density and normalize it
+  dens <- density(values)
+  dens$y <- dens$y * max_value / max(dens$y)
+
+  # create tibble
+  df <- dplyr::tibble(x=dens$x, y=dens$y)
+  df
 }

@@ -24,7 +24,7 @@ get_relapse_time_distribution_old = function(x, n_thresh) {
   } else {
     times <- 1 / ro_samples * log(n_thresh / n0)
   }
-  return(as.data.frame(times))
+  return(dplyr::as_tibble(times))
 }
 
 get_relapse_time_distribution = function(x, n_thresh) {
@@ -48,7 +48,7 @@ get_relapse_time_distribution = function(x, n_thresh) {
   t0 <- round(t0, 2)
   median_t0 <- median(t0)
 
-  rho <- rstan::extract(fit, pars=c("rho")) %>% as.data.frame()
+  rho <- rstan::extract(fit, pars=c("rho")) %>% dplyr::as_tibble()
 
   if (x$fit_info$growth_type == "logistic") {
     K <- mean(rstan::extract(x$fits[[fit_name]], pars="K")$K)
@@ -81,7 +81,7 @@ get_relapse_time_distribution = function(x, n_thresh) {
   }
 
   times <- times + last_t
-  return(as.data.frame(times))
+  return(dplyr::as_tibble(times))
 }
 
 #' Plot the the posterior distribution of the 'relapse' times.

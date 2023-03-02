@@ -58,11 +58,11 @@ bipod <- init(counts, sample = sample_name)
 ```
 
 ```{r evo plot}
-biPOD::plot_evolution(bipod)
+biPOD::plot_input(bipod, add_title = T) 
 ```
 
 If different groups of parameters are needed, one should add a `group` column.
-The group should be ordered in increasing order, and the first item of the `group` vector should be equal to the second one.
+The group should be ordered in increasing order.
 
 ```{r}
 counts <- biPOD::sim_stochastic_exponential(n0 = 10, lambda = .5, mu = c(.4, .45, .3), steps = 3, delta_t = .1)
@@ -71,5 +71,4 @@ counts$group <- groups
 sample_name <- "Exponential sample"
 bipod <- biPOD::init(counts, sample = sample_name)
 ```
-
 
