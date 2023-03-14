@@ -11,6 +11,7 @@ fit(
   t0_lower_bound = -10,
   factor_size = 1,
   prior_K = NULL,
+  model_selection = FALSE,
   chains = 4,
   iter = 4000,
   warmup = 2000,
@@ -30,6 +31,8 @@ one of "exponential", "logistic".}
 \item{factor_size}{numeric factor by which to divide counts in the bipod object}
 
 \item{prior_K}{Prior mean for the carrying capacity.}
+
+\item{model_selection}{Boolean, if TRUE the best model between exponential and logistic will be used}
 
 \item{chains}{integer number of chains to run in the Markov Chain Monte Carlo (MCMC) algorithm}
 
