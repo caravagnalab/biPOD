@@ -89,8 +89,6 @@ fit_exp <- function(x,
   model_name <- 'exponential'
   model <- get(model_name, stanmodels)
 
-  print(variational)
-
   # Fit with either MCMC or Variational
   if (variational) {
     sampling = "variational"
@@ -252,7 +250,7 @@ fit_with_model_selection <- function(x,
   bayes_factors <- outer(marginal_likelihoods, marginal_likelihoods, FUN = function(x,y) {
     return(exp(x-y))
   })
-  bayes_factors <- dplyr::as_tibble(bayes_factors)
+  bayes_factors <- dplyr::as_tibble(bayes_factors, .name_repair = "minimal")
 
   if (bayes_factors[1,2] > 1) {
     K <- bayes_factors[1,2]
