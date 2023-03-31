@@ -86,7 +86,11 @@ fit_exp <- function(x,
   )
 
   # Get the model
-  model_name <- 'exponential'
+  if (t0_lower_bound == x$counts$time[1]) {
+    model_name <- 'exponential_start_at_1'
+  } else {
+    model_name <- 'exponential'
+  }
   model <- get(model_name, stanmodels)
 
   # Fit with either MCMC or Variational
@@ -167,7 +171,12 @@ fit_log <- function(x,
   )
 
   # Get the model
-  model_name <- 'logistic'
+  # Get the model
+  if (t0_lower_bound == x$counts$time[1]) {
+    model_name <- 'logistic_start_at_1'
+  } else {
+    model_name <- 'logistic'
+  }
   model <- get(model_name, stanmodels)
 
   # Fit the model with either MCMC or Variational

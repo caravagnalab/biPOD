@@ -134,10 +134,15 @@ get_exponential_data = function(x) {
   }
 
   factor_size <- x$fit_info$factor_size # factor size
+  t0_lower_bound <- x$fit_info$t0_lower_bound
 
   # Plot model with t0
-  t0 <- rstan::extract(fit, pars=c('t0')) %>% as.list() %>% unlist() %>% as.numeric()
-  t0 <- round(t0, 2)
+  if (t0_lower_bound == x$counts$time[1]) {
+    t0 <- as.array(t0_lower_bound)
+  } else {
+    t0 <- rstan::extract(fit, pars=c('t0')) %>% as.list() %>% unlist() %>% as.numeric()
+    t0 <- round(t0, 2)
+  }
 
   rho <- rstan::extract(fit, pars=c("rho")) %>% dplyr::as_tibble()
   ro_quantiles <- apply(rho, 2, function(x) stats::quantile(x, c(0.05, 0.5, 0.95))) %>% dplyr::as_tibble() %>% t() %>% dplyr::as_tibble()
@@ -185,10 +190,15 @@ get_logistic_data = function(x) {
   }
 
   factor_size <- x$fit_info$factor_size # factor size
+  t0_lower_bound <- x$fit_info$t0_lower_bound
 
   # Plot model with t0
-  t0 <- rstan::extract(fit, pars=c('t0')) %>% as.list() %>% unlist() %>% as.numeric()
-  t0 <- round(t0, 2)
+  if (t0_lower_bound == x$counts$time[1]) {
+    t0 <- as.array(t0_lower_bound)
+  } else {
+    t0 <- rstan::extract(fit, pars=c('t0')) %>% as.list() %>% unlist() %>% as.numeric()
+    t0 <- round(t0, 2)
+  }
 
   K <- mean(rstan::extract(fit, pars=c('K')) %>% as.list() %>% unlist())
 
@@ -226,25 +236,23 @@ get_logistic_data = function(x) {
 
 add_t0_posterior = function(base_plot, x) {
 
-  # Add t0 posterior
-  values <- rstan::extract(x$fit, pars=c('t0')) %>% as.list() %>% unlist() %>% as.numeric()
+  t0_lower_bound <- x$fit_info$t0_lower_bound
 
-  df <- get_normalized_density(values, max_value = max(x$counts$count))
-  # bins <- 30
-  # intervals <- seq(min(values), max(values), length = bins)
-  # dx <- (max(values) - min(values)) / bins
-  #
-  # cut_values <- cut(values, breaks = intervals, include.lowest = TRUE)
-  # cut_values <- table(cut_values) %>% as.numeric()
-  #
-  # cut_values <- cut_values * max(x$counts$count) / max(cut_values)
-  #
-  # intervals <- intervals[1:(bins-1)] + dx / 2
-  #
-  # df <- data.frame(x = intervals, y = cut_values)
+  # Plot model with t0
+  if (t0_lower_bound == x$counts$time[1]) {
 
-  base_plot <- base_plot +
-    ggplot2::geom_line(data = df, mapping = ggplot2::aes(x=.data$x, y=.data$y), col = "darkorange") +
-    ggplot2::geom_ribbon(data = df, mapping = ggplot2::aes(x=.data$x, ymin=0, ymax=.data$y), fill="darkorange", alpha=.5)
+    base_plot <- base_plot +
+      ggplot2::geom_segment(data = data.frame(x = t0_lower_bound, ymin = 0, ymax = max(x$counts$count)), mapping = ggplot2::aes(x=.data$x, xend=.data$x, y=.data$ymin, yend=.data$ymax), col = "darkorange")
 
+  } else {
+    values <- rstan::extract(x$fit, pars=c('t0')) %>% as.list() %>% unlist() %>% as.numeric()
+
+    # Add t0 posterior
+    df <- get_normalized_density(values, max_value = max(x$counts$count))
+
+    base_plot <- base_plot +
+      ggplot2::geom_line(data = df, mapping = ggplot2::aes(x=.data$x, y=.data$y), col = "darkorange") +
+      ggplot2::geom_ribbon(data = df, mapping = ggplot2::aes(x=.data$x, ymin=0, ymax=.data$y), fill="darkorange", alpha=.5)
+  }
+  base_plot
 }

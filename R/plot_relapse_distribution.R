@@ -1,32 +1,4 @@
 
-get_relapse_time_distribution_old = function(x, n_thresh) {
-  # Extract the distribution of the relapse times
-  # Extract the last fitted growth rate and the
-  # previous count as the n0
-
-  max_group <- max(x$counts$group)
-
-  # Extract 'previous' n0
-  previous_counts <- x$counts %>%
-    dplyr::filter(.data$group == max_group - 1)
-  n0 <- previous_counts$count[nrow(previous_counts)]
-
-  # Extract samples of the last growth rate
-  fit_name <- paste0("fit", max_group)
-  ro_samples <- rstan::extract(x$fits[[fit_name]], pars=c('ro'))$ro
-
-
-  # Compute the relapse times
-  if (x$fit_info$growth_type == "logistic") {
-    K <- mean(rstan::extract(x$fits[[fit_name]], pars="K")$K)
-    if (K < n_thresh) stop("n_thresh is greater than the predicted carrying capacity")
-    times <- - 1 / ro_samples * log(n0 * (K - n_thresh) / (n_thresh * (K - n0)))
-  } else {
-    times <- 1 / ro_samples * log(n_thresh / n0)
-  }
-  return(dplyr::as_tibble(times))
-}
-
 get_relapse_time_distribution = function(x, n_thresh) {
   # Extract the distribution of the relapse times
 
@@ -46,7 +18,7 @@ get_relapse_time_distribution = function(x, n_thresh) {
 
   t0 <- rstan::extract(fit, pars=c('t0')) %>% as.list() %>% unlist() %>% as.numeric()
   t0 <- round(t0, 2)
-  median_t0 <- median(t0)
+  best_t0 <- median(t0)
 
   rho <- rstan::extract(fit, pars=c("rho")) %>% dplyr::as_tibble()
 
@@ -54,34 +26,38 @@ get_relapse_time_distribution = function(x, n_thresh) {
     K <- mean(rstan::extract(x$fits[[fit_name]], pars="K")$K)
     if (K < n_thresh) stop("n_thresh is greater than the predicted carrying capacity")
 
-    last_n <- lapply(c(1:nrow(rho)), function(i) {
-      rho_array <- rho[i,] %>% as.numeric()
-      return(log_growth_multiple(last_t, median_t0, t_array, rho_array, K))
+    t <- max(x$counts$time)
+    ys <- lapply(c(1:nrow(rho)), function(i) {
+      rho_row <- rho[i,] %>% unlist() %>% unname()
+      biPOD:::log_growth_multiple(t = t, t0 = best_t0, t_array = as.array(t_array), rho_array = as.array(rho_row), K = K)
     }) %>% unlist()
 
-    last_rho_idx <- ncol(rho)
-    last_rho <- rho[,last_rho_idx]
+    last_rho <- rho[,ncol(rho)] %>% unlist() %>% as.array()
 
     check_last_rho_and_n_thresh(last_rho, last_n, n_thresh)
-    times <- - (1 / last_rho) * log(last_n * (K - n_thresh) / (n_thresh * (K - last_n)))
+    times <- - (1 / last_rho) * log(ys * (K - n_thresh) / (n_thresh * (K - ys)))
 
+    relapse_times <- times + last_t
   } else {
     # extract the rhos samples
 
-    last_n <- lapply(c(1:nrow(rho)), function(i) {
-      rho_array <- rho[i,] %>% as.numeric()
-      return(exp_growth(last_t, median_t0, t_array, rho_array))
+    t <- max(x$counts$time)
+    ys <- lapply(1:nrow(rho), function(i) {
+      rho_row <- rho[i,] %>% unlist() %>% unname()
+      biPOD:::exp_growth(t = t, t0 = best_t0, t_array = as.array(t_array), rho_array = as.array(rho_row))
     }) %>% unlist()
 
-    last_rho_idx <- ncol(rho)
-    last_rho <- rho[,last_rho_idx]
+    last_rhos <- rho[,ncol(rho)] %>% unlist() %>% as.array()
 
-    check_last_rho_and_n_thresh(last_rho, last_n, n_thresh)
-    times <- (1 / last_rho) * log(n_thresh / last_n)
+    print(min(last_rhos))
+    print(max(last_rhos))
+    print(all(last_rhos <= 0))
+
+    check_last_rho_and_n_thresh(last_rho = last_rhos, last_n = ys, n_thresh = n_thresh)
+    relapse_times <- 1 / last_rhos * (last_rhos * t + log(n_thresh / ys))
   }
 
-  times <- times + last_t
-  return(dplyr::as_tibble(times))
+  return(dplyr::as_tibble(relapse_times))
 }
 
 #' Plot the the posterior distribution of the 'relapse' times.
@@ -99,9 +75,9 @@ plot_relapse_time_distribution = function(x, n_thresh, add_title = F) {
   if (!("fit" %in% names(x))) stop("Input must contain a 'fits' field")
 
   times <- get_relapse_time_distribution(x, n_thresh)
-  bw = (max(times$times) - min(times$times)) / 100
-  p <- ggplot2::ggplot(times, aes(x=.data$times)) +
-    ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)), binwidth = bw, alpha = .3) +
+
+  p <- ggplot2::ggplot(times, aes(x=.data$value)) +
+    ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)), bins = 100, alpha = .3) +
     ggplot2::geom_density(col = "darkorange", size = .8) +
     ggplot2::labs(
       x = "time",
@@ -116,40 +92,6 @@ plot_relapse_time_distribution = function(x, n_thresh, add_title = F) {
         y = "density",
         title = paste0("Threshold = ", n_thresh)
     )
-  } else {
-    p <- p +
-      ggplot2::labs(
-        x = "time",
-        y = "density"
-      )
-  }
-
-  p
-}
-
-plot_relapse_time_distribution_old = function(x, n_thresh, add_title = F) {
-  # Check input
-  if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
-  if (!("fit" %in% names(x))) stop("Input must contain a 'fits' field")
-
-  times <- get_relapse_time_distribution(x, n_thresh)
-  bw = (max(times$times) - min(times$times)) / 100
-  p <- ggplot2::ggplot(times, aes(x=.data$times)) +
-    ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)), binwidth = bw, alpha = .3) +
-    ggplot2::geom_density(col = "darkorange", size = .8) +
-    ggplot2::labs(
-      x = "time",
-      y = "density") +
-    my_ggplot_theme() +
-    ggplot2::scale_y_continuous(breaks = scales::pretty_breaks(n = 4))
-
-  if (add_title) {
-    p <- p +
-      ggplot2::labs(
-        x = "time",
-        y = "density",
-        title = paste0("Threshold = ", n_thresh)
-      )
   } else {
     p <- p +
       ggplot2::labs(

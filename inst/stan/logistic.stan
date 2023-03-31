@@ -55,11 +55,11 @@ data {
 parameters {
   real rho[G];
   real<upper=T[1]> t0; // t0 will be smaller or equal than the first time point we have
-  real<lower=prior_K * .95> K; // carrying capacity
+  real<lower=prior_K, upper=100 * prior_K> K; // carrying capacity
 }
 
 model {
-  target += normal_lpdf(K | prior_K, prior_K * .1); // sample the carrying capacity
+  target += uniform_lpdf(K | prior_K, 100 * prior_K); // sample the carrying capacity
   for (i in 1:G) {
     target += normal_lpdf(rho[i] | 0, 1); // sample the growth rates
   }

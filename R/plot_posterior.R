@@ -154,28 +154,34 @@ plot_t0_posterior = function(x, add_prior = F) {
   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
   if (!("fit" %in% names(x))) stop("Input must contain a 'fits' field")
 
-  # Obtain list of parameters to plot
-  par_list <- c("t0")
+  t0_lower_bound <- x$fit_info$t0_lower_bound
 
-  d_long <- rstan::extract(x$fit, pars = par_list) %>%
-    dplyr::as_tibble() %>%
-    `colnames<-`(par_list) %>%
-    tidyr::pivot_longer(dplyr::everything(), names_to = "variable", values_to = "value")
+  # Plot model with t0
+  if (t0_lower_bound == x$counts$time[1]) {
+    d <- data.frame(x = t0_lower_bound, xend = t0_lower_bound, y = 0, yend = 1) %>%
+      dplyr::mutate(variable = "t0")
 
-  d_long$variable <- factor(d_long$variable, labels = c(bquote(t[0])))
+    p <- ggplot2::ggplot(d, ggplot2::aes(x=.data$x, xend=.data$xend, y=.data$y, yend=.data$yend)) +
+      ggplot2::geom_segment(color = "darkorange") +
+      ggplot2::facet_wrap( ~ .data$variable, labeller = ggplot2::label_parsed)
 
-  # plot posterior density
-  #xlims <- c(min(d_long$value) * .99, max(d_long$value) * 1.01)
+  } else {
+    # Obtain list of parameters to plot
+    par_list <- c("t0")
 
-  # Filter data
-  #d_long <- d_long %>%
-  #  dplyr::filter(.data$value >= xlims[1] & .data$value <= xlims[2])
+    d_long <- rstan::extract(x$fit, pars = par_list) %>%
+      dplyr::as_tibble() %>%
+      `colnames<-`(par_list) %>%
+      tidyr::pivot_longer(dplyr::everything(), names_to = "variable", values_to = "value")
 
-  # plot posterior density
-  p <- ggplot2::ggplot(d_long, ggplot2::aes(x=.data$value)) +
-    ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)), bins = 100, alpha = .3) +
-    ggplot2::geom_density(col = "black", linewidth = .8) +
-    ggplot2::facet_wrap( ~ .data$variable, labeller = ggplot2::label_parsed)
+    d_long$variable <- factor(d_long$variable, labels = c(bquote(t[0])))
+
+    # plot posterior density
+    p <- ggplot2::ggplot(d_long, ggplot2::aes(x=.data$value)) +
+      ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)), bins = 100, alpha = .3) +
+      ggplot2::geom_density(col = "black", linewidth = .8) +
+      ggplot2::facet_wrap( ~ .data$variable, labeller = ggplot2::label_parsed)
+  }
 
   if (add_prior) {
     xmin <- min(x$fit_info$t0_lower_bound, min(d_long$value)) - 0.1

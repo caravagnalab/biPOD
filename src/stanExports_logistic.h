@@ -349,7 +349,7 @@ public:
         double K(0);
         K = vals_r__[pos__++];
         try {
-            writer__.scalar_lb_unconstrain((prior_K * .95), K);
+            writer__.scalar_lub_unconstrain(prior_K, (100 * prior_K), K);
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable K: ") + e.what()), current_statement_begin__, prog_reader__());
         }
@@ -399,12 +399,12 @@ public:
             local_scalar_t__ K;
             (void) K;  // dummy to suppress unused var warning
             if (jacobian__)
-                K = in__.scalar_lb_constrain((prior_K * .95), lp__);
+                K = in__.scalar_lub_constrain(prior_K, (100 * prior_K), lp__);
             else
-                K = in__.scalar_lb_constrain((prior_K * .95));
+                K = in__.scalar_lub_constrain(prior_K, (100 * prior_K));
             // model body
             current_statement_begin__ = 62;
-            lp_accum__.add(normal_log(K, prior_K, (prior_K * .1)));
+            lp_accum__.add(uniform_log(K, prior_K, (100 * prior_K)));
             current_statement_begin__ = 63;
             for (int i = 1; i <= G; ++i) {
                 current_statement_begin__ = 64;
@@ -486,7 +486,7 @@ public:
         }
         double t0 = in__.scalar_ub_constrain(get_base1(T, 1, "T", 1));
         vars__.push_back(t0);
-        double K = in__.scalar_lb_constrain((prior_K * .95));
+        double K = in__.scalar_lub_constrain(prior_K, (100 * prior_K));
         vars__.push_back(K);
         double lp__ = 0.0;
         (void) lp__;  // dummy to suppress unused var warning
