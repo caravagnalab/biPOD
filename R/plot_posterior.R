@@ -178,8 +178,8 @@ plot_t0_posterior = function(x, add_prior = F) {
 
     # plot posterior density
     p <- ggplot2::ggplot(d_long, ggplot2::aes(x=.data$value)) +
-      ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)), bins = 100, alpha = .3) +
-      ggplot2::geom_density(col = "black", linewidth = .8) +
+      # ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)), bins = 100, alpha = .3) +
+      ggplot2::geom_density(col = "black", fill = "darkorange", linewidth = .8, alpha = .6) +
       ggplot2::facet_wrap( ~ .data$variable, labeller = ggplot2::label_parsed)
   }
 

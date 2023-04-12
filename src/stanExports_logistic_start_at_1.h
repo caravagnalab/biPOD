@@ -33,7 +33,7 @@ static int current_statement_begin__;
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
     reader.add_event(0, 0, "start", "model_logistic_start_at_1");
-    reader.add_event(80, 78, "end", "model_logistic_start_at_1");
+    reader.add_event(82, 80, "end", "model_logistic_start_at_1");
     return reader;
 }
 template <typename T0__, typename T1__, typename T2__, typename T3__>
@@ -278,7 +278,7 @@ public:
             current_statement_begin__ = 55;
             validate_non_negative_index("rho", "G", G);
             num_params_r__ += (1 * G);
-            current_statement_begin__ = 56;
+            current_statement_begin__ = 57;
             num_params_r__ += 1;
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
@@ -317,7 +317,7 @@ public:
                 stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable rho: ") + e.what()), current_statement_begin__, prog_reader__());
             }
         }
-        current_statement_begin__ = 56;
+        current_statement_begin__ = 57;
         if (!(context__.contains_r("K")))
             stan::lang::rethrow_located(std::runtime_error(std::string("Variable K missing")), current_statement_begin__, prog_reader__());
         vals_r__ = context__.vals_r("K");
@@ -326,7 +326,7 @@ public:
         double K(0);
         K = vals_r__[pos__++];
         try {
-            writer__.scalar_lub_unconstrain(prior_K, (100 * prior_K), K);
+            writer__.scalar_lb_unconstrain(prior_K, K);
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable K: ") + e.what()), current_statement_begin__, prog_reader__());
         }
@@ -365,24 +365,24 @@ public:
                 else
                     rho.push_back(in__.scalar_constrain());
             }
-            current_statement_begin__ = 56;
+            current_statement_begin__ = 57;
             local_scalar_t__ K;
             (void) K;  // dummy to suppress unused var warning
             if (jacobian__)
-                K = in__.scalar_lub_constrain(prior_K, (100 * prior_K), lp__);
+                K = in__.scalar_lb_constrain(prior_K, lp__);
             else
-                K = in__.scalar_lub_constrain(prior_K, (100 * prior_K));
+                K = in__.scalar_lb_constrain(prior_K);
             // model body
-            current_statement_begin__ = 60;
-            lp_accum__.add(uniform_log(K, prior_K, (100 * prior_K)));
-            current_statement_begin__ = 61;
+            current_statement_begin__ = 62;
+            lp_accum__.add(normal_log(K, prior_K, prior_K));
+            current_statement_begin__ = 63;
             for (int i = 1; i <= G; ++i) {
-                current_statement_begin__ = 62;
+                current_statement_begin__ = 64;
                 lp_accum__.add(normal_log(get_base1(rho, i, "rho", 1), 0, 1));
             }
-            current_statement_begin__ = 65;
+            current_statement_begin__ = 67;
             for (int i = 2; i <= S; ++i) {
-                current_statement_begin__ = 66;
+                current_statement_begin__ = 68;
                 lp_accum__.add(poisson_log(get_base1(N, i, "N", 1), mean_t(get_base1(T, i, "T", 1), get_base1(T, 1, "T", 1), t_array, rho, K, pstream__)));
             }
         } catch (const std::exception& e) {
@@ -449,7 +449,7 @@ public:
         for (size_t k_0__ = 0; k_0__ < rho_k_0_max__; ++k_0__) {
             vars__.push_back(rho[k_0__]);
         }
-        double K = in__.scalar_lub_constrain(prior_K, (100 * prior_K));
+        double K = in__.scalar_lb_constrain(prior_K);
         vars__.push_back(K);
         double lp__ = 0.0;
         (void) lp__;  // dummy to suppress unused var warning
@@ -461,31 +461,31 @@ public:
             if (!include_gqs__ && !include_tparams__) return;
             if (!include_gqs__) return;
             // declare and define generated quantities
-            current_statement_begin__ = 71;
+            current_statement_begin__ = 73;
             validate_non_negative_index("N_rep", "(S - 1)", (S - 1));
             std::vector<int> N_rep((S - 1), int(0));
             stan::math::fill(N_rep, std::numeric_limits<int>::min());
-            current_statement_begin__ = 72;
+            current_statement_begin__ = 74;
             validate_non_negative_index("log_lik", "(S - 1)", (S - 1));
             std::vector<double> log_lik((S - 1), double(0));
             stan::math::initialize(log_lik, DUMMY_VAR__);
             stan::math::fill(log_lik, DUMMY_VAR__);
             // generated quantities statements
-            current_statement_begin__ = 74;
+            current_statement_begin__ = 76;
             for (int i = 2; i <= S; ++i) {
-                current_statement_begin__ = 75;
+                current_statement_begin__ = 77;
                 stan::model::assign(log_lik, 
                             stan::model::cons_list(stan::model::index_uni((i - 1)), stan::model::nil_index_list()), 
                             poisson_log(get_base1(N, i, "N", 1), mean_t(get_base1(T, i, "T", 1), get_base1(T, 1, "T", 1), t_array, rho, K, pstream__)), 
                             "assigning variable log_lik");
-                current_statement_begin__ = 76;
+                current_statement_begin__ = 78;
                 stan::model::assign(N_rep, 
                             stan::model::cons_list(stan::model::index_uni((i - 1)), stan::model::nil_index_list()), 
                             poisson_rng(mean_t(get_base1(T, i, "T", 1), get_base1(T, 1, "T", 1), t_array, rho, K, pstream__), base_rng__), 
                             "assigning variable N_rep");
             }
             // validate, write generated quantities
-            current_statement_begin__ = 71;
+            current_statement_begin__ = 73;
             size_t N_rep_i_0_max__ = (S - 1);
             for (size_t i_0__ = 0; i_0__ < N_rep_i_0_max__; ++i_0__) {
                 check_greater_or_equal(function__, "N_rep[i_0__]", N_rep[i_0__], 0);
@@ -494,7 +494,7 @@ public:
             for (size_t k_0__ = 0; k_0__ < N_rep_k_0_max__; ++k_0__) {
                 vars__.push_back(N_rep[k_0__]);
             }
-            current_statement_begin__ = 72;
+            current_statement_begin__ = 74;
             size_t log_lik_k_0_max__ = (S - 1);
             for (size_t k_0__ = 0; k_0__ < log_lik_k_0_max__; ++k_0__) {
                 vars__.push_back(log_lik[k_0__]);

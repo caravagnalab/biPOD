@@ -162,18 +162,6 @@ get_exponential_data = function(x) {
   )
 
   return(fitted_data)
-
-  # Plot them
-  p <- ggplot2::ggplot() +
-    ggplot2::geom_point(x$counts, mapping = aes(x=.data$time, y=.data$count)) + #original points
-    ggplot2::geom_line(fitted_data, mapping=aes(x=.data$x, y=.data$y), col="black") +
-    ggplot2::geom_ribbon(fitted_data, mapping=aes(x=.data$x, y=.data$y, ymin=.data$ylow, ymax=.data$yhigh), fill="black", alpha=.3) +
-    my_ggplot_theme()
-
-  # Add t0 posterior
-  #p <- p + ggplot2::geom_histogram(data.frame(x=t0), mapping=aes(x=.data$x), binwidth = .2, fill="darkorange", alpha=.5)
-
-  p
 }
 
 get_logistic_data = function(x) {
@@ -205,12 +193,15 @@ get_logistic_data = function(x) {
   rho <- rstan::extract(fit, pars=c("rho")) %>% dplyr::as_tibble()
   ro_quantiles <- apply(rho, 2, function(x) stats::quantile(x, c(0.05, 0.5, 0.95))) %>% dplyr::as_tibble() %>% t() %>% dplyr::as_tibble()
 
+  print(K)
+  print(ro_quantiles)
+
   mode_t0 <- median(t0)
   xs <- seq(mode_t0, max(x$counts$time), length=1000)
 
   ylow <- lapply(xs, log_growth_multiple, t0=mode_t0, t_array = as.array(t_array), rho_array = ro_quantiles$V1, K=K) %>% unlist()
   ymid <- lapply(xs, log_growth_multiple, t0=mode_t0, t_array = as.array(t_array), rho_array = ro_quantiles$V2, K=K) %>% unlist()
-  yhigh <- lapply(xs, log_growth_multiple, t0=mode_t0, t_array = as.array(t_array), rho_array = ro_quantiles$V3, K) %>% unlist()
+  yhigh <- lapply(xs, log_growth_multiple, t0=mode_t0, t_array = as.array(t_array), rho_array = ro_quantiles$V3, K=K) %>% unlist()
 
   fitted_data <- dplyr::tibble(
     x = xs,
@@ -220,18 +211,6 @@ get_logistic_data = function(x) {
   )
 
   return(fitted_data)
-
-  # Plot them
-  p <- ggplot2::ggplot() +
-    ggplot2::geom_point(x$counts, mapping = aes(x=.data$time, y=.data$count)) + #original points
-    #geom_line(N_rep_quantiles, mapping=aes(x=time, y=mid), col="steelblue") +
-    #geom_ribbon(N_rep_quantiles, mapping=aes(x=time, y=mid, ymin=low, ymax=high), fill="steelblue", alpha=.3) +
-    ggplot2::geom_line(fitted_data, mapping=aes(x=.data$x, y=.data$y), col="black") +
-    ggplot2::geom_ribbon(fitted_data, mapping=aes(x=.data$x, y=.data$y, ymin=.data$ylow, ymax=.data$yhigh), fill="black", alpha=.3) +
-    my_ggplot_theme()
-
-  p
-
 }
 
 add_t0_posterior = function(base_plot, x) {

@@ -53,11 +53,13 @@ data {
 
 parameters {
   real rho[G];
-  real<lower=prior_K, upper=100 * prior_K> K; // carrying capacity
+  // real<lower=prior_K, upper=100 * prior_K> K; // carrying capacity
+  real<lower=prior_K> K; // carrying capacity
 }
 
 model {
-  target += uniform_lpdf(K | prior_K, 100 * prior_K); // sample the carrying capacity
+  // target += uniform_lpdf(K | prior_K, 100 * prior_K); // sample the carrying capacity
+  target += normal_lpdf(K | prior_K, prior_K); // sample the carrying capacity
   for (i in 1:G) {
     target += normal_lpdf(rho[i] | 0, 1); // sample the growth rates
   }
