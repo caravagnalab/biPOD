@@ -30,9 +30,9 @@ plot_fit = function(x,
 
   # Plot data
   p <- ggplot2::ggplot() +
-    ggplot2::geom_point(x$counts, mapping = aes(x=.data$time, y=.data$count)) + #original points
-    ggplot2::geom_line(fitted_data, mapping=aes(x=.data$x, y=.data$y), col="black") +
-    ggplot2::geom_ribbon(fitted_data, mapping=aes(x=.data$x, y=.data$y, ymin=.data$ylow, ymax=.data$yhigh), fill="black", alpha=.3) +
+    ggplot2::geom_point(x$counts, mapping = ggplot2::aes(x=.data$time, y=.data$count)) + #original points
+    ggplot2::geom_line(fitted_data, mapping = ggplot2::aes(x=.data$x, y=.data$y), col="black") +
+    ggplot2::geom_ribbon(fitted_data, mapping = ggplot2::aes(x=.data$x, y=.data$y, ymin=.data$ylow, ymax=.data$yhigh), fill="black", alpha=.3) +
     my_ggplot_theme()
 
   # add highlights
@@ -95,9 +95,9 @@ plot_simple_fit = function(x,
 
   # Plot data
   p <- ggplot2::ggplot() +
-    ggplot2::geom_point(x$counts, mapping = aes(x=.data$time, y=.data$count)) + #original points
-    ggplot2::geom_line(fitted_data, mapping=aes(x=.data$x, y=.data$y), col="black") +
-    ggplot2::geom_ribbon(fitted_data, mapping=aes(x=.data$x, y=.data$y, ymin=.data$ylow, ymax=.data$yhigh), fill="black", alpha=.3) +
+    ggplot2::geom_point(x$counts, mapping=ggplot2::aes(x=.data$time, y=.data$count)) + #original points
+    ggplot2::geom_line(fitted_data, mapping=ggplot2::aes(x=.data$x, y=.data$y), col="black") +
+    ggplot2::geom_ribbon(fitted_data, mapping=ggplot2::aes(x=.data$x, y=.data$y, ymin=.data$ylow, ymax=.data$yhigh), fill="black", alpha=.3) +
     my_ggplot_theme()
 
   # add highlights
@@ -147,7 +147,7 @@ get_exponential_data = function(x) {
   rho <- rstan::extract(fit, pars=c("rho")) %>% dplyr::as_tibble()
   ro_quantiles <- apply(rho, 2, function(x) stats::quantile(x, c(0.05, 0.5, 0.95))) %>% dplyr::as_tibble() %>% t() %>% dplyr::as_tibble()
 
-  mode_t0 <- median(t0)
+  mode_t0 <- stats::median(t0)
   # real_t0 <- (log(factor_size) - ro_quantiles[2]*mode_t0) / (-ro_quantiles[2])
   xs <- seq(mode_t0, max(x$counts$time), length=1000)
   ylow <- lapply(xs, exp_growth, t0=mode_t0, t_array = as.array(t_array), rho_array = ro_quantiles$V1) %>% unlist()
@@ -196,7 +196,7 @@ get_logistic_data = function(x) {
   print(K)
   print(ro_quantiles)
 
-  mode_t0 <- median(t0)
+  mode_t0 <- stats::median(t0)
   xs <- seq(mode_t0, max(x$counts$time), length=1000)
 
   ylow <- lapply(xs, log_growth_multiple, t0=mode_t0, t_array = as.array(t_array), rho_array = ro_quantiles$V1, K=K) %>% unlist()
