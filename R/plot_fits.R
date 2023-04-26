@@ -123,14 +123,12 @@ get_exponential_data = function(x) {
   fit <- x$fit
 
   # Get fit info
-  G <- length(unique(x$counts$group))
-
-  if (G == 1) {
-    t_array = array(0, dim=c(0))
+  if (is.null(x$breakpoints)) {
+    G <- 1
+    breakpoints = array(0, dim=c(0))
   } else {
-    n <- G - 1
-    t_array <- (x$counts %>% dplyr::group_by(.data$group) %>% dplyr::slice_tail(n=1) %>% dplyr::ungroup() %>%  dplyr::select(.data$time))$time
-    t_array <- t_array[1:n]
+    G = length(x$breakpoints) + 1
+    breakpoints <- x$breakpoints
   }
 
   factor_size <- x$fit_info$factor_size # factor size
@@ -166,15 +164,14 @@ get_exponential_data = function(x) {
 
 get_logistic_data = function(x) {
   fit <- x$fit
-  # Get fit info
-  G <- length(unique(x$counts$group))
 
-  if (G == 1) {
-    t_array = array(0, dim=c(0))
+  # Get fit info
+  if (is.null(x$breakpoints)) {
+    G <- 1
+    breakpoints = array(0, dim=c(0))
   } else {
-    n <- G - 1
-    t_array <- (x$counts %>% dplyr::group_by(.data$group) %>% dplyr::slice_tail(n=1) %>% dplyr::ungroup() %>% dplyr::select(.data$time))$time
-    t_array <- t_array[1:n]
+    G = length(x$breakpoints) + 1
+    breakpoints <- x$breakpoints
   }
 
   factor_size <- x$fit_info$factor_size # factor size
