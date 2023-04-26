@@ -116,7 +116,7 @@ get_growth_rate_posteriors = function(x, labels = NULL) {
     filtered_d <- d_long %>% dplyr::filter(.data$variable == v)
 
     p <- ggplot2::ggplot(filtered_d, mapping = ggplot2::aes(x = .data$value)) +
-      ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)), alpha = .3, bins = 100) +
+      ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(stats::density)), alpha = .3, bins = 100) +
       ggplot2::geom_density(col = "black", linewidth = .8) +
       ggplot2::facet_wrap( ~ .data$variable, labeller = ggplot2::label_parsed) +
       my_ggplot_theme()
@@ -187,7 +187,7 @@ plot_t0_posterior = function(x, add_prior = F) {
     xmin <- min(x$fit_info$t0_lower_bound, min(d_long$value)) - 0.1
     xmax <- max(c(min(x$counts$time), max(d_long$value))) + 0.1
     xs <- seq(xmin, xmax, length=500)
-    ys <- dunif(xs, x$fit_info$t0_lower_bound, min(x$counts$time))
+    ys <- stats::dunif(xs, x$fit_info$t0_lower_bound, min(x$counts$time))
     prior_data = dplyr::tibble(x=xs, y=ys)
     p <- p + ggplot2::geom_line(
       data = prior_data,
@@ -243,7 +243,7 @@ plot_carrying_capacity_posterior = function(x, add_prior = F) {
 
   # plot posterior density
   p <- ggplot2::ggplot(d_long, ggplot2::aes(x=.data$value)) +
-    ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)), binwidth = bw, alpha = .3) +
+    ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(stats::density)), binwidth = bw, alpha = .3) +
     ggplot2::geom_density(col = "black", linewidth = .8) +
     ggplot2::facet_wrap( ~ .data$variable, labeller = ggplot2::label_parsed)
 

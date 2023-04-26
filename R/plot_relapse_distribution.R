@@ -18,7 +18,7 @@ get_relapse_time_distribution = function(x, n_thresh) {
 
   t0 <- rstan::extract(fit, pars=c('t0')) %>% as.list() %>% unlist() %>% as.numeric()
   t0 <- round(t0, 2)
-  best_t0 <- median(t0)
+  best_t0 <- stats::median(t0)
   n_thresh <- n_thresh / x$fit_info$factor_size
 
   rho <- rstan::extract(fit, pars=c("rho")) %>% dplyr::as_tibble()
@@ -91,7 +91,7 @@ plot_relapse_time_distribution = function(x, n_thresh, add_title = F) {
   times <- get_relapse_time_distribution(x, n_thresh) %>%
     dplyr::mutate(variable = "Relapse_time")
 
-  p <- ggplot2::ggplot(times, aes(x=.data$value)) +
+  p <- ggplot2::ggplot(times, ggplot2::aes(x=.data$value)) +
     # ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)), bins = 100, alpha = .3) +
     ggplot2::geom_density(fill = "violetred4", col = "black", size = .8, alpha = .6) +
     ggplot2::facet_wrap( ~ .data$variable, labeller = ggplot2::label_parsed) +
