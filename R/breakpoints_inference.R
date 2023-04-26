@@ -74,6 +74,11 @@ bp_inference = function(x,
   # Prepare input data
   input_data <- prep_data_bp_inference(x=x, factor_size=factor_size, prior_K=prior_K)
 
+  if (length(input_data$changing_times_prior) == 0) {
+    cli::cli_alert_danger("Not possible to infer break points. Zero probable breakpoints were found!")
+    return(x)
+  }
+
   # Get the model
   if (model_selection) {
     cli::cli_abort("MODEL SELECTION FOR BP TO DO YET")

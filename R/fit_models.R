@@ -65,23 +65,21 @@ prep_data_fit = function(x, factor_size, prior_K, t0_lower_bound) {
   }
 
   # Prepare data
-  G <- length(unique(x$counts$group))
-
-  if (G == 1) {
-    t_array = array(0, dim=c(0))
+  if (is.null(x$breakpoints)) {
+    G <- 1
+    breakpoints = array(0, dim=c(0))
   } else {
-    n <- G - 1
-    t_array <- (x$counts %>% dplyr::group_by(.data$group) %>% dplyr::slice_tail(n=1) %>% dplyr::select(.data$time))$time
-    t_array <- t_array[1:n]
+    G = length(x$breakpoints) + 1
+    breakpoints <- x$breakpoints
   }
 
   # Prepare input data list
   input_data <- list(
     S = nrow(x$counts),
-    G = length(as.array(t_array)) + 1,
+    G = G,
     N = as.array(as.integer(x$counts$count / factor_size)),
     T = as.array(x$counts$time),
-    t_array = as.array(t_array),
+    t_array = as.array(breakpoints),
     t0_lower_bound = t0_lower_bound,
     prior_K = prior_K
   )

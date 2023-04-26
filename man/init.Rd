@@ -4,7 +4,7 @@
 \alias{init}
 \title{Creates a biPOD object.}
 \usage{
-init(counts, sample)
+init(counts, sample, break_points = NULL)
 }
 \arguments{
 \item{counts}{A dataframe of counts with the following fields:

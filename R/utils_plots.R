@@ -23,17 +23,23 @@ get_group_colors = function()
 }
 
 add_shadow_to_plot = function(x, base_plot) {
-  times <- (x$counts %>% dplyr::group_by(.data$group) %>% dplyr::summarise(times = max(.data$time)))$times
-  times <- c(min(x$counts$time), times)
 
-  ngroup <- length(times)
-  n_lower <- ngroup - 1
 
-  highlights <- dplyr::tibble(
-    group = seq(0,ngroup-2, by=1),
-    from = times[1:n_lower],
-    to = times[2:ngroup]
-  )
+
+  if (is.null(x$breakpoints)) {
+    highlights <- dplyr::tibble(
+      group = 0,
+      from = min(x$counts$time),
+      to = max(x$counts$time)
+    )
+  } else {
+    ngroup <- length(x$breakpoints) + 1
+    highlights <- dplyr::tibble(
+      group = seq(0,ngroup-1, by=1),
+      from = c(min(x$counts$time), x$breakpoints),
+      to = c(x$breakpoints, max(x$counts$time))
+    )
+  }
 
   g <- as.character(highlights$group)
   base_plot <- base_plot +
