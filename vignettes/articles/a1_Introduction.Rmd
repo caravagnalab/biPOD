@@ -58,7 +58,7 @@ bipod <- init(counts, sample = sample_name)
 ```
 
 ```{r evo plot}
-biPOD::plot_input(bipod, add_title = T) 
+biPOD::plot_input(bipod, add_highlights = F, log_scale = F) 
 ```
 
 If different groups of parameters are needed, one should add a `group` column.

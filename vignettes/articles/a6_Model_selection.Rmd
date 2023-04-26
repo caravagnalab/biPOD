@@ -9,6 +9,8 @@ knitr::opts_chunk$set(
 )
 ```
 
+<!---
+
 ```{r setup}
 library(biPOD)
 ```
@@ -104,3 +106,5 @@ plots <- lapply(list(x.exp, x.log), function(x) {
 })
 ggpubr::ggarrange(plotlist = plots, ncol=2)
 ```
+
+-->

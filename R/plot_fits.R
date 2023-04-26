@@ -193,9 +193,6 @@ get_logistic_data = function(x) {
   rho <- rstan::extract(fit, pars=c("rho")) %>% dplyr::as_tibble()
   ro_quantiles <- apply(rho, 2, function(x) stats::quantile(x, c(0.05, 0.5, 0.95))) %>% dplyr::as_tibble() %>% t() %>% dplyr::as_tibble()
 
-  print(K)
-  print(ro_quantiles)
-
   mode_t0 <- stats::median(t0)
   xs <- seq(mode_t0, max(x$counts$time), length=1000)
 

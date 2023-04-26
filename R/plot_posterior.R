@@ -116,7 +116,7 @@ get_growth_rate_posteriors = function(x, labels = NULL) {
     filtered_d <- d_long %>% dplyr::filter(.data$variable == v)
 
     p <- ggplot2::ggplot(filtered_d, mapping = ggplot2::aes(x = .data$value)) +
-      ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(stats::density)), alpha = .3, bins = 100) +
+      # ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(stats::density)), alpha = .3, bins = 100) +
       ggplot2::geom_density(col = "black", linewidth = .8) +
       ggplot2::facet_wrap( ~ .data$variable, labeller = ggplot2::label_parsed) +
       my_ggplot_theme()
@@ -243,8 +243,8 @@ plot_carrying_capacity_posterior = function(x, add_prior = F) {
 
   # plot posterior density
   p <- ggplot2::ggplot(d_long, ggplot2::aes(x=.data$value)) +
-    ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(stats::density)), binwidth = bw, alpha = .3) +
-    ggplot2::geom_density(col = "black", linewidth = .8) +
+    # ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(stats::density)), binwidth = bw, alpha = .3) +
+    ggplot2::geom_density(col = "black", fill = "darkorange", linewidth = .8, alpha = .6) +
     ggplot2::facet_wrap( ~ .data$variable, labeller = ggplot2::label_parsed)
 
   if (add_prior) {

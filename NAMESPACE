@@ -2,6 +2,7 @@
 
 export("%>%")
 export(bf_selection)
+export(bp_inference)
 export(fit)
 export(get_growth_rate_posteriors)
 export(init)

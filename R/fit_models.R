@@ -36,18 +36,16 @@ fit <- function(
     cli::cli_alert_info(paste("Fitting with model selection."))
     cat("\n")
 
-    res <- fit_with_model_selection(x, factor_size, variational, t0_lower_bound, prior_K, chains, iter, warmup, cores)
+    res <- fit_with_model_selection(x=x, factor_size = factor_size,
+                                    variational = variational, t0_lower_bound = t0_lower_bound, prior_K=prior_K,
+                                    chains=chains, iter = iter, warmup = warmup, cores = cores)
   } else {
     cli::cli_alert_info(paste("Fitting", growth_type, "growth using", sampling_type, "..."))
     cat("\n")
 
-    if (growth_type == "exponential") {
-      res <- fit_exp(x, factor_size, variational, t0_lower_bound, chains, iter, warmup, cores)
-    } else if (growth_type == "logistic") {
-      res <- fit_log(x, factor_size, variational, t0_lower_bound, prior_K, chains, iter, warmup, cores)
-    } else {
-      stop("'growth_type' should be either 'exponential' or 'logistic'")
-    }
+    res <- fit_data(x=x, growth_type=growth_type, factor_size=factor_size,
+                    variational=variational, t0_lower_bound=t0_lower_bound, prior_K=prior_K,
+                    chains=chains, iter=iter, warmup=warmup, cores=cores)
   }
 
   # Add results to bipod object
@@ -57,89 +55,7 @@ fit <- function(
   return(x)
 }
 
-# Fit exponential growth model to bipod object
-fit_exp <- function(x,
-                    factor_size = 1,
-                    variational = FALSE,
-                    t0_lower_bound = -10,
-                    chains = 4, iter = 4000, warmup = 2000, cores = 4) {
-
-  # Prepare data
-  G <- length(unique(x$counts$group))
-
-  if (G == 1) {
-    t_array = array(0, dim=c(0))
-  } else {
-    n <- G - 1
-    t_array <- (x$counts %>% dplyr::group_by(.data$group) %>% dplyr::slice_tail(n=1) %>% dplyr::select(.data$time))$time
-    t_array <- t_array[1:n]
-  }
-
-  # Prepare input data list
-  input_data <- list(
-    S = nrow(x$counts),
-    G = length(as.array(t_array)) + 1,
-    N = as.array(as.integer(x$counts$count / factor_size)),
-    T = as.array(x$counts$time),
-    t_array = as.array(t_array),
-    t0_lower_bound = t0_lower_bound
-  )
-
-  # Get the model
-  if (t0_lower_bound == x$counts$time[1]) {
-    model_name <- 'exponential_start_at_1'
-  } else {
-    model_name <- 'exponential'
-  }
-  model <- get(model_name, stanmodels)
-
-  # Fit with either MCMC or Variational
-  if (variational) {
-    sampling = "variational"
-    res <- suppressWarnings(suppressMessages(iterative_variational(model, input_data, iter, warmup)))
-    fit_model <- res$fit_model
-    elbo_d <- res$elbo_d
-
-  } else {
-    sampling = "mcmc"
-    fit_model <- rstan::sampling(
-      model,
-      data = input_data,
-      chains = chains, iter = iter, warmup = warmup,
-      cores = cores
-    )
-  }
-
-  elbo_data <- c()
-  if (variational) elbo_data <- elbo_d
-  fit <- fit_model
-
-  # Write fit info
-  fit_info <- list(
-    sampling = sampling,
-    growth_type = "exponential",
-    factor_size = factor_size,
-    t0_lower_bound = t0_lower_bound
-  )
-
-  res <- list(
-    elbo_data = elbo_data,
-    fit = fit,
-    fit_info = fit_info
-  )
-
-  return(res)
-}
-
-
-# Fit logistic growth model to bipod object
-fit_log <- function(x,
-                    factor_size = 1,
-                    variational = FALSE,
-                    t0_lower_bound = -10,
-                    prior_K = NULL,
-                    chains = 4, iter = 4000, warmup = 2000, cores = 4) {
-
+prep_data_fit = function(x, factor_size, prior_K, t0_lower_bound) {
   # Parameters check
   if (is.null(prior_K)) {
     prior_K = max(x$counts$count) / factor_size
@@ -170,16 +86,29 @@ fit_log <- function(x,
     prior_K = prior_K
   )
 
-  # Get the model
+  return(input_data)
+}
+
+# Fit exponential growth model to bipod object
+fit_data <- function(x,
+                     growth_type = "exponential",
+                     factor_size = 1,
+                     variational = FALSE,
+                     t0_lower_bound = -10,
+                     prior_K = NULL,
+                     chains = 4, iter = 4000, warmup = 2000, cores = 4) {
+
+  input_data <- prep_data_fit(x=x, factor_size=factor_size, prior_K=prior_K, t0_lower_bound=t0_lower_bound)
+
   # Get the model
   if (t0_lower_bound == x$counts$time[1]) {
-    model_name <- 'logistic_start_at_1'
+    model_name <- paste0(growth_type, '_start_at_1')
   } else {
-    model_name <- 'logistic'
+    model_name <- growth_type
   }
   model <- get(model_name, stanmodels)
 
-  # Fit the model with either MCMC or Variational
+  # Fit with either MCMC or Variational
   if (variational) {
     sampling = "variational"
     res <- suppressWarnings(suppressMessages(iterative_variational(model, input_data, iter, warmup)))
@@ -200,17 +129,16 @@ fit_log <- function(x,
   if (variational) elbo_data <- elbo_d
   fit <- fit_model
 
-
   # Write fit info
   fit_info <- list(
     sampling = sampling,
-    growth_type = "logistic",
+    growth_type = growth_type,
     factor_size = factor_size,
-    prior_K = prior_K,
-    t0_lower_bound = t0_lower_bound
+    t0_lower_bound = t0_lower_bound,
+    prior_K = input_data$prior_K
   )
 
-  res = list(
+  res <- list(
     elbo_data = elbo_data,
     fit = fit,
     fit_info = fit_info
@@ -243,8 +171,14 @@ fit_with_model_selection <- function(x,
                                      prior_K = NULL,
                                      chains = 4, iter = 4000, warmup = 2000, cores = 4) {
 
-  res_exp <- fit_exp(x, factor_size, variational, t0_lower_bound, chains, iter, warmup, cores)
-  res_log <- fit_log(x, factor_size, variational, t0_lower_bound, prior_K, chains, iter, warmup, cores)
+  input_data <- prep_data_fit(x=x, factor_size=factor_size, prior_K=prior_K, t0_lower_bound=t0_lower_bound)
+
+  res_exp <- fit_data(x=x, growth_type="exponential", factor_size=factor_size,
+                  variational=variational, t0_lower_bound=t0_lower_bound, prior_K=prior_K,
+                  chains=chains, iter=iter, warmup=warmup, cores=cores)
+  res_log <- fit_data(x=x, growth_type="logistic", factor_size=factor_size,
+                  variational=variational, t0_lower_bound=t0_lower_bound, prior_K=prior_K,
+                  chains=chains, iter=iter, warmup=warmup, cores=cores)
 
   fits <- list(res_exp$fit, res_log$fit)
 
