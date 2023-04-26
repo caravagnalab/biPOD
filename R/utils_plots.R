@@ -56,7 +56,7 @@ add_shadow_to_plot = function(x, base_plot) {
 
 get_normalized_density <- function(values, max_value = 1) {
   # compute density and normalize it
-  dens <- stats::density(values)
+  dens <- density(values)
   dens$y <- dens$y * max_value / max(dens$y)
 
   # create tibble
