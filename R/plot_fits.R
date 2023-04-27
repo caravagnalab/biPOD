@@ -148,9 +148,9 @@ get_exponential_data = function(x) {
   mode_t0 <- stats::median(t0)
   # real_t0 <- (log(factor_size) - ro_quantiles[2]*mode_t0) / (-ro_quantiles[2])
   xs <- seq(mode_t0, max(x$counts$time), length=1000)
-  ylow <- lapply(xs, exp_growth, t0=mode_t0, t_array = as.array(t_array), rho_array = ro_quantiles$V1) %>% unlist()
-  ymid <- lapply(xs, exp_growth, t0=mode_t0, t_array = as.array(t_array), rho_array = ro_quantiles$V2) %>% unlist()
-  yhigh <- lapply(xs, exp_growth, t0=mode_t0, t_array = as.array(t_array), rho_array = ro_quantiles$V3) %>% unlist()
+  ylow <- lapply(xs, exp_growth, t0=mode_t0, t_array = as.array(breakpoints), rho_array = ro_quantiles$V1) %>% unlist()
+  ymid <- lapply(xs, exp_growth, t0=mode_t0, t_array = as.array(breakpoints), rho_array = ro_quantiles$V2) %>% unlist()
+  yhigh <- lapply(xs, exp_growth, t0=mode_t0, t_array = as.array(breakpoints), rho_array = ro_quantiles$V3) %>% unlist()
 
   fitted_data <- dplyr::tibble(
     x = xs,
@@ -193,9 +193,9 @@ get_logistic_data = function(x) {
   mode_t0 <- stats::median(t0)
   xs <- seq(mode_t0, max(x$counts$time), length=1000)
 
-  ylow <- lapply(xs, log_growth_multiple, t0=mode_t0, t_array = as.array(t_array), rho_array = ro_quantiles$V1, K=K) %>% unlist()
-  ymid <- lapply(xs, log_growth_multiple, t0=mode_t0, t_array = as.array(t_array), rho_array = ro_quantiles$V2, K=K) %>% unlist()
-  yhigh <- lapply(xs, log_growth_multiple, t0=mode_t0, t_array = as.array(t_array), rho_array = ro_quantiles$V3, K=K) %>% unlist()
+  ylow <- lapply(xs, log_growth_multiple, t0=mode_t0, t_array = as.array(breakpoints), rho_array = ro_quantiles$V1, K=K) %>% unlist()
+  ymid <- lapply(xs, log_growth_multiple, t0=mode_t0, t_array = as.array(breakpoints), rho_array = ro_quantiles$V2, K=K) %>% unlist()
+  yhigh <- lapply(xs, log_growth_multiple, t0=mode_t0, t_array = as.array(breakpoints), rho_array = ro_quantiles$V3, K=K) %>% unlist()
 
   fitted_data <- dplyr::tibble(
     x = xs,
