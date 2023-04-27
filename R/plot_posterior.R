@@ -21,7 +21,7 @@ plot_normalized_growth_rate_posteriors = function(x, add_prior = F, legend_label
   par_list <- paste0("rho[", c(1:n_groups), "]")
 
   d_long <- rstan::extract(x$fit, pars = par_list) %>%
-    dplyr::as_tibble()
+    dplyr::as_tibble(.name_repair = "minimal")
 
   if (!(is.null(legend_labels))) {
     if (!(length(unique(legend_labels)) == n_groups)) stop(glue::glue("The number of unique labels should be equal to the number of groups, which is {n_groups}"))

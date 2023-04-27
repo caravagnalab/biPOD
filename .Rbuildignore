@@ -7,3 +7,5 @@
 ^LICENSE\.md$
 ^vignettes/articles$
 ^\.github$
+^doc$
+^Meta$

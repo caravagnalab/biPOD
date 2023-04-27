@@ -58,12 +58,11 @@ biPOD::plot_normalized_growth_rate_posteriors(x)
 biPOD::plot_fit(x)
 ```
 
-To obtain a fit with variable growth rates one should add the `group` column. We will use three group:
+To obtain a fit with variable growth rates one should gives the breakpoints as input. We will use three group:
 
 ```{r fit exp variable}
-d$group <- floor(d$time)
-d$group[nrow(d)] <- 2
-gx <- biPOD::init(d, "Grouped sample")
+break_points <- c(.8, 1.7)
+gx <- biPOD::init(d, "Grouped sample", break_points = break_points)
 gx <- biPOD::fit(gx, growth_type = "exponential", t0_lower_bound = -100, factor_size = 1)
 ```
 You might obtain warnings regarding transitions that exceeded the maximum treedepth, but they do not represent an error during the fitting. 

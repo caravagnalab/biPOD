@@ -58,17 +58,16 @@ bipod <- init(counts, sample = sample_name)
 ```
 
 ```{r evo plot}
-biPOD::plot_input(bipod, add_highlights = F, log_scale = F) 
+biPOD::plot_input(bipod, add_highlights = T, log_scale = F) 
 ```
 
-If different groups of parameters are needed, one should add a `group` column.
-The group should be ordered in increasing order.
+If different groups of parameters are needed and one knows the chaning points in the evolution, one need to pass them in the `init` function.
 
 ```{r}
 counts <- biPOD::sim_stochastic_exponential(n0 = 10, lambda = .5, mu = c(.4, .45, .3), steps = 3, delta_t = .1)
-groups <- c(0, 0, 1, 2)
-counts$group <- groups
+break_poins <- c(.1, .2, .3)
 sample_name <- "Exponential sample"
-bipod <- biPOD::init(counts, sample = sample_name)
+bipod <- biPOD::init(counts, sample = sample_name, break_points = break_poins)
+biPOD::plot_input(bipod, add_highlights = T)
 ```
 
