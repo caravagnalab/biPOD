@@ -9,8 +9,6 @@
 #' * `count` population count, integer.
 #'
 #' @param sample A string containing the sample name.
-#' @param break_points A vector of time points indicating the points in
-#'        which the dynamics of the population changes.
 #'
 #' @return A biPOD object of class `bipod`.
 #'

@@ -9,6 +9,8 @@ knitr::opts_chunk$set(
 )
 ```
 
+<!---
+
 ```{r setup}
 library(biPOD)
 T <- 3
@@ -25,6 +27,8 @@ With a logistic growth, the function accepts a new argument:
 Additionally, one can tune many additional parameters for specific purposes:
 
 - `chains`, `iter`, `warmup`, `cores` : parameters for the MCMC algorithm
+
+A fit with fixed rates can be obtained without adding any `group` column to the input dataframe.
 
 ```{r fit log mcmc, results=FALSE, message=FALSE}
 x <- biPOD::init(d, "logistic sample using MCMC")
@@ -65,3 +69,5 @@ biPOD::plot_normalized_growth_rate_posteriors(x)
 biPOD::plot_carrying_capacity_posterior(x_variational)
 biPOD::plot_fit(x_variational)
 ```
+
+-->
