@@ -26,8 +26,6 @@ Additionally, one can tune many additional parameters for specific purposes:
 
 - `chains`, `iter`, `warmup`, `cores` : parameters for the MCMC algorithm
 
-A fit with fixed rates can be obtained without adding any `group` column to the input dataframe.
-
 ```{r fit log mcmc, results=FALSE, message=FALSE}
 x <- biPOD::init(d, "logistic sample using MCMC")
 biPOD::plot_input(x)

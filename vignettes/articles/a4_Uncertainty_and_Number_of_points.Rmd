@@ -9,6 +9,8 @@ knitr::opts_chunk$set(
 )
 ```
 
+<!---
+
 ```{r setup}
 library(biPOD)
 ```
@@ -53,3 +55,5 @@ for (i in 3:length(indexes)) {
 ggpubr::ggarrange(plotlist = plot_fits)
 ggpubr::ggarrange(plotlist = posterior_plots)
 ```
+
+-->
