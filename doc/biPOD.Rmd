@@ -1,0 +1,27 @@
+---
+title: "Get started"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Get started}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+### Installation of the package
+
+You can install biPOD from GitHub using `devtools`.
+```{r install_pkg, eval=FALSE, include=TRUE}
+devtools::install_github("caravagnalab/biPOD")
+```
+
+Load the package.
+```{r load_pkg, message=FALSE, warning=FALSE}
+library(biPOD) 
+```
