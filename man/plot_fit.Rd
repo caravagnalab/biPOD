@@ -6,6 +6,7 @@
 \usage{
 plot_fit(
   x,
+  CI = 0.95,
   legend_labels = NULL,
   legend_title = "group",
   zoom_limits = NULL,
@@ -15,6 +16,8 @@ plot_fit(
 }
 \arguments{
 \item{x}{A biPOD object of class \code{bipod}. Must contains 'fit'}
+
+\item{CI}{confidence interval for the growth rate to plot}
 
 \item{legend_labels}{Vector containing a name for each unique group in x$counts$group}
 

@@ -31,7 +31,7 @@ get_relapse_time_distribution = function(x, n_thresh) {
     ys <- lapply(c(1:nrow(rho)), function(i) {
       rho_row <- rho[i,] %>% unlist() %>% unname()
 
-      biPOD:::log_growth_multiple(t = t, t0 = best_t0, t_array = as.array(t_array), rho_array = as.array(rho_row), K = K)
+      log_growth_multiple(t = t, t0 = best_t0, t_array = as.array(t_array), rho_array = as.array(rho_row), K = K)
     }) %>% unlist()
 
     last_rho <- rho[,ncol(rho)] %>% unlist() %>% as.array()
@@ -54,7 +54,7 @@ get_relapse_time_distribution = function(x, n_thresh) {
     t <- max(x$counts$time)
     ys <- lapply(1:nrow(rho), function(i) {
       rho_row <- rho[i,] %>% unlist() %>% unname()
-      biPOD:::exp_growth(t = t, t0 = best_t0, t_array = as.array(t_array), rho_array = as.array(rho_row))
+      exp_growth(t = t, t0 = best_t0, t_array = as.array(t_array), rho_array = as.array(rho_row))
     }) %>% unlist()
 
     last_rho <- rho[,ncol(rho)] %>% unlist() %>% as.array()

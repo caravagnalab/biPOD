@@ -7,10 +7,12 @@
 #' @param zoom_limits Limits of the x-axis for the zoom of the plot
 #' @param sec_axis_breaks Vector containing values in which secondary x axis' breaks will be
 #' @param sec_axis_labels Vector containing labels for the secondary x axis
+#' @param CI confidence interval for the growth rate to plot
 #'
 #' @returns A plot of the fit over the input data.
 #' @export
 plot_fit = function(x,
+                    CI = .95,
                     legend_labels = NULL,
                     legend_title = "group",
                     zoom_limits = NULL,
@@ -22,10 +24,12 @@ plot_fit = function(x,
 
   growth_type <- x$fit_info$growth_type
 
+  alpha = 1 - CI
+
   if (growth_type == "exponential") {
-    fitted_data <- get_exponential_data(x)
+    fitted_data <- get_exponential_data(x, alpha=alpha)
   } else {
-    fitted_data <- get_logistic_data(x)
+    fitted_data <- get_logistic_data(x, alpha=alpha)
   }
 
   # Plot data
@@ -70,10 +74,12 @@ plot_fit = function(x,
 #' @param legend_labels Vector containing a name for each unique group in x$counts$group
 #' @param legend_title Title for the legend. Default is "group"
 #' @param full_process Boolean, indicating whether to plot the process starting from t0 or not.
+#' @param CI confidence interval for the growth rate to plot
 #'
 #' @returns A plot of the fit over the input data.
 #' @export
 plot_simple_fit = function(x,
+                           CI = .95,
                            full_process = F,
                            legend_labels = NULL,
                            legend_title = "group") {
@@ -82,11 +88,12 @@ plot_simple_fit = function(x,
   if (!("fit" %in% names(x))) stop("Input must contain a 'fits' field")
 
   growth_type <- x$fit_info$growth_type
+  alpha = 1 - CI
 
   if (growth_type == "exponential") {
-    fitted_data <- get_exponential_data(x)
+    fitted_data <- get_exponential_data(x, alpha=alpha)
   } else {
-    fitted_data <- get_logistic_data(x)
+    fitted_data <- get_logistic_data(x, alpha=alpha)
   }
 
   xmin <- min(x$counts$time)
@@ -119,7 +126,7 @@ plot_simple_fit = function(x,
   return(p)
 }
 
-get_exponential_data = function(x) {
+get_exponential_data = function(x, alpha) {
   fit <- x$fit
 
   # Get fit info
@@ -143,7 +150,8 @@ get_exponential_data = function(x) {
   }
 
   rho <- rstan::extract(fit, pars=c("rho")) %>% dplyr::as_tibble()
-  ro_quantiles <- apply(rho, 2, function(x) stats::quantile(x, c(0.05, 0.5, 0.95))) %>% dplyr::as_tibble() %>% t() %>% dplyr::as_tibble()
+  ro_quantiles <- apply(rho, 2, function(x) stats::quantile(x, c(alpha/2, 0.5, 1-alpha/2))) %>%
+    dplyr::as_tibble(.name_repair = "minimal") %>% t() %>% dplyr::as_tibble(.name_repair = "minimal")
 
   mode_t0 <- stats::median(t0)
   # real_t0 <- (log(factor_size) - ro_quantiles[2]*mode_t0) / (-ro_quantiles[2])
@@ -162,7 +170,7 @@ get_exponential_data = function(x) {
   return(fitted_data)
 }
 
-get_logistic_data = function(x) {
+get_logistic_data = function(x, alpha) {
   fit <- x$fit
 
   # Get fit info
@@ -188,7 +196,7 @@ get_logistic_data = function(x) {
   K <- mean(rstan::extract(fit, pars=c('K')) %>% as.list() %>% unlist())
 
   rho <- rstan::extract(fit, pars=c("rho")) %>% dplyr::as_tibble()
-  ro_quantiles <- apply(rho, 2, function(x) stats::quantile(x, c(0.05, 0.5, 0.95))) %>% dplyr::as_tibble() %>% t() %>% dplyr::as_tibble()
+  ro_quantiles <- apply(rho, 2, function(x) stats::quantile(x, c(alpha/2, 0.5, 1-alpha/2))) %>% dplyr::as_tibble() %>% t() %>% dplyr::as_tibble()
 
   mode_t0 <- stats::median(t0)
   xs <- seq(mode_t0, max(x$counts$time), length=1000)

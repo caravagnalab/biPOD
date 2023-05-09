@@ -104,7 +104,11 @@ fit_data <- function(x,
   } else {
     model_name <- growth_type
   }
+  print(model_name)
+
   model <- get(model_name, stanmodels)
+
+  print(model)
 
   # Fit with either MCMC or Variational
   if (variational) {
@@ -188,7 +192,7 @@ fit_with_model_selection <- function(x,
 
   marginal_likelihoods <- marginal_likelihoods %>% unlist()
   # Compute pairwise Bayes factor
-  bayes_factors <- outer(marginal_likelihoods, marginal_likelihoods, FUN = function(x,y) {
+  bayes_factors <- outer(marginal_likelihoods, marginal_likelihoods, function(x,y) {
     return(exp(x-y))
   })
   bayes_factors <- dplyr::as_tibble(bayes_factors, .name_repair = "minimal")

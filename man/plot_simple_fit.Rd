@@ -6,6 +6,7 @@
 \usage{
 plot_simple_fit(
   x,
+  CI = 0.95,
   full_process = F,
   legend_labels = NULL,
   legend_title = "group"
@@ -13,6 +14,8 @@ plot_simple_fit(
 }
 \arguments{
 \item{x}{A biPOD object of class \code{bipod}. Must contains 'fit'}
+
+\item{CI}{confidence interval for the growth rate to plot}
 
 \item{full_process}{Boolean, indicating whether to plot the process starting from t0 or not.}
 

@@ -14,6 +14,8 @@ init(counts, sample, break_points = NULL)
 }}
 
 \item{sample}{A string containing the sample name.}
+
+\item{break_points}{An array containing the changing points.}
 }
 \value{
 A biPOD object of class \code{bipod}.

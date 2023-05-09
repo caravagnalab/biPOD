@@ -9,6 +9,7 @@
 #' * `count` population count, integer.
 #'
 #' @param sample A string containing the sample name.
+#' @param break_points An array containing the changing points.
 #'
 #' @return A biPOD object of class `bipod`.
 #'
