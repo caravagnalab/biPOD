@@ -60,8 +60,8 @@ model {
   }
 
   for (i in 2:G) {
-    target += uniform_lpdf(changing_times_unit[i-1] | -dt, dt);
-    // target += normal_lpdf(changing_times_unit[i-1] | 0, 1);
+    // target += uniform_lpdf(changing_times_unit[i-1] | -dt, dt);
+    target += normal_lpdf(changing_times_unit[i-1] | 0, dt);
   }
 
   for (i in 1:S) {

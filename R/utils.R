@@ -60,3 +60,17 @@ log_growth_multiple = function(t, t0, t_array, rho_array, K) {
   dt = t - t_array[length(t_array)]
   return(log_growth(dt, current_n0, rho_array[length(rho_array)], K))
 }
+
+extract_parameter = function(fit, par_name) {
+  rstan::extract(fit, pars=c(par_name)) %>% dplyr::as_tibble() %>%
+    dplyr::mutate(par_name = par_name) %>%
+    dplyr::rename("value" = 1, "parameter" = 2)
+}
+
+extract_parameters = function(fit, par_list) {
+  d <- dplyr::tibble()
+  for (p in par_list) {
+    d <- dplyr::bind_rows(d, extract_parameter(fit, p))
+  }
+  d
+}

@@ -1,7 +1,7 @@
 
 my_ggplot_theme = function(cex_opt = 1)
 {
-  ggplot2::theme_light(base_size = 10 * cex_opt) +
+  ggplot2::theme_bw(base_size = 10 * cex_opt) +
     ggplot2::theme(
       legend.position = "bottom",
       legend.key.size = ggplot2::unit(.3 * cex_opt, "cm"),
@@ -24,20 +24,18 @@ get_group_colors = function()
 
 add_shadow_to_plot = function(x, base_plot) {
 
-
-
-  if (is.null(x$breakpoints)) {
+  if (is.null(x$metadata$breakpoints)) {
     highlights <- dplyr::tibble(
       group = 0,
       from = min(x$counts$time),
       to = max(x$counts$time)
     )
   } else {
-    ngroup <- length(x$breakpoints) + 1
+    ngroup <- length(x$metadata$breakpoints) + 1
     highlights <- dplyr::tibble(
       group = seq(0,ngroup-1, by=1),
-      from = c(min(x$counts$time), x$breakpoints),
-      to = c(x$breakpoints, max(x$counts$time))
+      from = c(min(x$counts$time), x$metadata$breakpoints),
+      to = c(x$metadata$breakpoints, max(x$counts$time))
     )
   }
 

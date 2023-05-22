@@ -2,11 +2,12 @@
 
 export("%>%")
 export(bf_selection)
-export(bp_inference)
+export(breakpoints_inference)
 export(fit)
 export(get_growth_rate_posteriors)
 export(init)
 export(loo_selection)
+export(plot_breakpoints_posterior)
 export(plot_carrying_capacity_posterior)
 export(plot_elbo)
 export(plot_fit)

@@ -4,10 +4,12 @@
 \alias{plot_traces}
 \title{Plot traces of specified parameters from a fitted Stan model}
 \usage{
-plot_traces(x, pars = c(), diagnose = FALSE)
+plot_traces(x, fit, pars = c(), diagnose = FALSE)
 }
 \arguments{
-\item{x}{A biPOD object of class \code{bipod}. Must contains 'fit'}
+\item{x}{A biPOD object of class \code{bipod}. Must contains at least one fit}
+
+\item{fit}{the name of the fit oh which the traces should be plotted}
 
 \item{pars}{A character vector of parameters to plot.}
 

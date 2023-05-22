@@ -1,23 +1,22 @@
 
 #' Plot traces of specified parameters from a fitted Stan model
 #'
-#' @param x A biPOD object of class `bipod`. Must contains 'fit'
+#' @param x A biPOD object of class `bipod`. Must contains at least one fit
+#' @param fit the name of the fit oh which the traces should be plotted
 #' @param pars A character vector of parameters to plot.
 #' @param diagnose A Boolean indicating whether the plots should be colored and
 #'  contain info regarding the convergence of the MCMC sampling.
 #'
 #' @return A ggplot object with traces of the specified parameters
 #' @export
-plot_traces = function(x, pars = c(), diagnose = FALSE) {
+plot_traces = function(x, fit, pars = c(), diagnose = FALSE) {
   if (!(inherits(x, "bipod"))) stop("Input 'x' must be a 'bipod' object")
-  if (!("fit" %in% names(x))) stop("Input must contain a 'fit' field. It appears no model has been fitted yet.")
-  if (!("fit_info" %in% names(x))) stop("Input must contain a 'fit_info' field")
-  if (!(x$fit_info$sampling == "mcmc")) stop("'plot_traces' accepts only biPOD objects that have been fitted using MCMC")
+  if (!(x$metadata$sampling == "mcmc")) stop("'plot_traces' accepts only biPOD objects that have been fitted using MCMC")
 
-  all_pars <- colnames(as.matrix(x$fit))
+  all_pars <- colnames(as.matrix(fit))
   if (!(length(pars) > 0)) {
     cli::cli_alert_info("The input vector 'pars' is empty. All the following parameters will be reported: {.val {all_pars}}.  It might take some time...", wrap = T)
-    pars <-all_pars
+    pars <- all_pars
   }
 
   plots <- lapply(pars, function(par) {
@@ -26,19 +25,19 @@ plot_traces = function(x, pars = c(), diagnose = FALSE) {
     }
     qc = "forestgreen"
 
-    rhat <- rstan::Rhat(as.array(x$fit)[,,par])
+    rhat <- rstan::Rhat(as.array(fit)[,,par])
 
-    chains <- rstan::extract(x$fit, pars = par, permuted = FALSE) %>%
+    chains <- rstan::extract(fit, pars = par, permuted = FALSE) %>%
       dplyr::as_tibble() %>%
-      `colnames<-`(paste0("chain", 1:ncol(as.array(x$fit)))) %>%
+      `colnames<-`(paste0("chain", 1:ncol(as.array(fit)))) %>%
       dplyr::mutate(index = dplyr::row_number()) %>%
       tidyr::pivot_longer(!.data$index, values_to = "value", names_to = "chain") %>%
       dplyr::mutate(parameter = par)
 
     if (rhat > 1.01) qc = "indianred"
-      if (!diagnose) qc = "gray"
+    if (!diagnose) qc = "gray"
 
-    p <- ggplot2::ggplot(chains, ggplot2::aes(x=.data$index, y=.data$value, col=.data$chain)) +
+    p <- ggplot2::ggplot(chains, ggplot2::aes(x=index, y=.data$value, col=.data$chain)) +
       ggplot2::geom_line() +
       ggplot2::facet_wrap(~ .data$parameter, labeller = ggplot2::label_parsed) +
       ggplot2::scale_color_brewer(palette = "Greens", direction = -1) +
@@ -76,11 +75,9 @@ plot_traces = function(x, pars = c(), diagnose = FALSE) {
 #'
 #' @return A ggplot object with traces of the specified parameters
 #' @export
-plot_elbo = function(x, diagnose = TRUE) {
+plot_elbo = function(x, fit, diagnose = TRUE) {
   if (!(inherits(x, "bipod"))) stop("The input 'x' must be a 'bipod' object")
-  if (!("fit" %in% names(x))) stop("Input must contain a 'fit' field. It appears no model has been fitted yet.")
-  if (!("fit_info" %in% names(x))) stop("Input must contain a 'fit_info' field")
-  if (!(x$fit_info$sampling == "variational")) stop("'plot_elbo' accepts only biPOD objects that have been fitted using variational inference")
+  if (!(x$metadata$sampling == "variational")) stop("'plot_elbo' accepts only biPOD objects that have been fitted using variational inference")
 
   elbo_data <- x$elbo_data
 
@@ -94,7 +91,7 @@ plot_elbo = function(x, diagnose = TRUE) {
     qc = line_color = "forestgreen"
       msg = "Pareto k lower than 0.5 and convergent ELBO."
   } else {
-    qc = line_color = "darkorange"
+    qc = line_color = "darkorange2"
       msg = "Convergent ELBO but Pareto k between .5 and 1."
   }
 

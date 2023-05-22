@@ -5,7 +5,7 @@
 \title{Plot the logarithm of the ELBO and the delta ELBO mean
 obtained during the variational sampling.}
 \usage{
-plot_elbo(x, diagnose = TRUE)
+plot_elbo(x, fit, diagnose = TRUE)
 }
 \arguments{
 \item{x}{A biPOD object of class \code{bipod}. Must contains 'fit'}

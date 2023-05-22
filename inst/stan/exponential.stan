@@ -42,7 +42,7 @@ parameters {
 
 model {
   for (i in 1:G) {
-    target += normal_lpdf(rho[i] | 0, 1);
+    target += normal_lpdf(rho[i] | 0, 10);
   }
 
   // target += normal_lpdf(t0 | - (log(N[1] / (rho[1]))), 1);

@@ -349,8 +349,8 @@ public:
             }
             current_statement_begin__ = 56;
             for (int i = 2; i <= G; ++i) {
-                current_statement_begin__ = 57;
-                lp_accum__.add(uniform_log(get_base1(changing_times_unit, (i - 1), "changing_times_unit", 1), -(dt), dt));
+                current_statement_begin__ = 58;
+                lp_accum__.add(normal_log(get_base1(changing_times_unit, (i - 1), "changing_times_unit", 1), 0, dt));
             }
             current_statement_begin__ = 61;
             for (int i = 1; i <= S; ++i) {

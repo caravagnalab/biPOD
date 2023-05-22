@@ -312,7 +312,7 @@ public:
             current_statement_begin__ = 44;
             for (int i = 1; i <= G; ++i) {
                 current_statement_begin__ = 45;
-                lp_accum__.add(normal_log(get_base1(rho, i, "rho", 1), 0, 1));
+                lp_accum__.add(normal_log(get_base1(rho, i, "rho", 1), 0, 10));
             }
             current_statement_begin__ = 49;
             lp_accum__.add(uniform_log(t0, t0_lower_bound, get_base1(T, 1, "T", 1)));
