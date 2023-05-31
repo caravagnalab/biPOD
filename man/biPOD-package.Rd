@@ -2,12 +2,28 @@
 % Please edit documentation in R/biPOD-package.R
 \docType{package}
 \name{biPOD-package}
-\alias{biPOD-package}
 \alias{biPOD}
-\title{The 'biPOD' package.}
+\alias{biPOD-package}
+\title{biPOD: biPOD}
 \description{
+\if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
+
+biPOD does.
+
 A DESCRIPTION OF THE PACKAGE
 }
 \references{
 Stan Development Team (2022). RStan: the R interface to Stan. R package version 2.21.7. https://mc-stan.org
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://caravagnalab.github.io/biPOD/}
+}
+
+}
+\author{
+\strong{Maintainer}: Giovanni Santacatterina \email{santacatterinagiovanni@gmail.com}
+
+}
+\keyword{internal}

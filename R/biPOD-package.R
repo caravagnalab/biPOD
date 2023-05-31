@@ -1,3 +1,6 @@
+#' @keywords internal
+"_PACKAGE"
+
 #' The 'biPOD' package.
 #'
 #' @description A DESCRIPTION OF THE PACKAGE

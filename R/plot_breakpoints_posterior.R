@@ -15,7 +15,7 @@ plot_breakpoints_posterior = function(x) {
   breakpoints_sample <- biPOD:::extract_parameters(x$breakpoints_fit, par_list = breakpoints_names)
 
   p <- ggplot2::ggplot() +
-    ggplot2::geom_density(data=breakpoints_sample, mapping=ggplot2::aes(x=value, fill=parameter, col=parameter), alpha=.7) +
+    ggplot2::geom_density(data=breakpoints_sample, mapping=ggplot2::aes(x=.data$value, fill=.data$parameter, col=.data$parameter), alpha=.7) +
     ggplot2::scale_fill_manual(values = biPOD:::get_group_colors()[1:length(breakpoints_names)]) +
     ggplot2::scale_color_manual(values = biPOD:::get_group_colors()[1:length(breakpoints_names)]) +
     biPOD:::my_ggplot_theme()

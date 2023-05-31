@@ -1,15 +1,15 @@
 
 functions {
-  real mean_t (real t, real t0, real[] t_array, real[] rho_array) {
+  real mean_t (real t, real t0, real n0, real[] t_array, real[] rho_array) {
     real res;
     int n_t = num_elements(t_array);
     int n_rho = num_elements(rho_array);
 
-    if (n_t == 0) return exp(rho_array[1] * (t - t0));
+    if (n_t == 0) return n0 * exp(rho_array[1] * (t - t0));
 
-    if (t <= t_array[1]) return exp(rho_array[1] * (t - t0));
+    if (t <= t_array[1]) return n0 * exp(rho_array[1] * (t - t0));
 
-    res = exp(rho_array[1] * (t_array[1] - t0));
+    res = n0 * exp(rho_array[1] * (t_array[1] - t0));
 
     for (i in 2:n_t) {
       if (t <= t_array[i]) {
@@ -43,7 +43,7 @@ model {
   }
 
   for (i in 2:S) {
-    target += poisson_lpmf(N[i] | mean_t(T[i], T[1], t_array, rho));
+    target += poisson_lpmf(N[i] | mean_t(T[i], T[1], N[1], t_array, rho));
   }
 }
 
@@ -52,7 +52,7 @@ generated quantities {
   real log_lik[S-1];
 
   for (i in 2:S) {
-    log_lik[i-1] = poisson_lpmf(N[i] | mean_t(T[i], T[1], t_array, rho));
-    N_rep[i-1] = poisson_rng(mean_t(T[i], T[1], t_array, rho));
+    log_lik[i-1] = poisson_lpmf(N[i] | mean_t(T[i], T[1], N[1], t_array, rho));
+    N_rep[i-1] = poisson_rng(mean_t(T[i], T[1], N[1], t_array, rho));
   }
 }

@@ -4,15 +4,15 @@ group_contiguous <- function(x) {
   return(rep(seq_along(rle_x$lengths) - 1, times = rle_x$lengths))
 }
 
-exp_growth = function(t, t0, t_array, rho_array) {
+exp_growth = function(t, t0, t_array, rho_array, n0) {
 
-  if (length(t_array) == 0) return(exp(rho_array[1] * (t - t0)))
+  if (length(t_array) == 0) return(n0 * exp(rho_array[1] * (t - t0)))
 
   if (t <= t_array[1]) {
-    return(exp(rho_array[1] * (t - t0)))
+    return(n0 * exp(rho_array[1] * (t - t0)))
   }
 
-  res <- exp(rho_array[1] * (t_array[1] - t0))
+  res <- n0 * exp(rho_array[1] * (t_array[1] - t0))
 
   if (length(t_array) >= 2) {
     for (i in 2:length(t_array)) {
@@ -34,9 +34,9 @@ log_growth = function(t, n0, rho, K) {
   return(num/den)
 }
 
-log_growth_multiple = function(t, t0, t_array, rho_array, K) {
+log_growth_multiple = function(t, t0, t_array, rho_array, K, n0) {
 
-  current_n0 = 1
+  current_n0 = n0
   if (length(t_array) == 0) return(log_growth(t - t0, current_n0, rho_array[1], K))
 
   if (t <= t_array[1]) {

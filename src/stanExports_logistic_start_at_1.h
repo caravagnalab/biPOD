@@ -82,14 +82,15 @@ struct logistic_growth_functor__ {
         return logistic_growth(t, n0, rho, K, pstream__);
     }
 };
-template <typename T0__, typename T1__, typename T2__, typename T3__, typename T4__>
-typename boost::math::tools::promote_args<T0__, T1__, T2__, T3__, typename boost::math::tools::promote_args<T4__>::type>::type
+template <typename T0__, typename T1__, typename T2__, typename T3__, typename T4__, typename T5__>
+typename boost::math::tools::promote_args<T0__, T1__, T2__, T3__, typename boost::math::tools::promote_args<T4__, T5__>::type>::type
 mean_t(const T0__& t,
            const T1__& t0,
-           const std::vector<T2__>& t_array,
-           const std::vector<T3__>& rho_array,
-           const T4__& K, std::ostream* pstream__) {
-    typedef typename boost::math::tools::promote_args<T0__, T1__, T2__, T3__, typename boost::math::tools::promote_args<T4__>::type>::type local_scalar_t__;
+           const T2__& n0,
+           const std::vector<T3__>& t_array,
+           const std::vector<T4__>& rho_array,
+           const T5__& K, std::ostream* pstream__) {
+    typedef typename boost::math::tools::promote_args<T0__, T1__, T2__, T3__, typename boost::math::tools::promote_args<T4__, T5__>::type>::type local_scalar_t__;
     typedef local_scalar_t__ fun_return_scalar_t__;
     const static bool propto__ = true;
     (void) propto__;
@@ -103,7 +104,7 @@ mean_t(const T0__& t,
         (void) current_n0;  // dummy to suppress unused var warning
         stan::math::initialize(current_n0, DUMMY_VAR__);
         stan::math::fill(current_n0, DUMMY_VAR__);
-        stan::math::assign(current_n0,1);
+        stan::math::assign(current_n0,n0);
         current_statement_begin__ = 11;
         local_scalar_t__ dt(DUMMY_VAR__);
         (void) dt;  // dummy to suppress unused var warning
@@ -164,14 +165,15 @@ mean_t(const T0__& t,
     }
 }
 struct mean_t_functor__ {
-    template <typename T0__, typename T1__, typename T2__, typename T3__, typename T4__>
-        typename boost::math::tools::promote_args<T0__, T1__, T2__, T3__, typename boost::math::tools::promote_args<T4__>::type>::type
+    template <typename T0__, typename T1__, typename T2__, typename T3__, typename T4__, typename T5__>
+        typename boost::math::tools::promote_args<T0__, T1__, T2__, T3__, typename boost::math::tools::promote_args<T4__, T5__>::type>::type
     operator()(const T0__& t,
            const T1__& t0,
-           const std::vector<T2__>& t_array,
-           const std::vector<T3__>& rho_array,
-           const T4__& K, std::ostream* pstream__) const {
-        return mean_t(t, t0, t_array, rho_array, K, pstream__);
+           const T2__& n0,
+           const std::vector<T3__>& t_array,
+           const std::vector<T4__>& rho_array,
+           const T5__& K, std::ostream* pstream__) const {
+        return mean_t(t, t0, n0, t_array, rho_array, K, pstream__);
     }
 };
 #include <stan_meta_header.hpp>
@@ -383,7 +385,7 @@ public:
             current_statement_begin__ = 67;
             for (int i = 2; i <= S; ++i) {
                 current_statement_begin__ = 68;
-                lp_accum__.add(poisson_log(get_base1(N, i, "N", 1), mean_t(get_base1(T, i, "T", 1), get_base1(T, 1, "T", 1), t_array, rho, K, pstream__)));
+                lp_accum__.add(poisson_log(get_base1(N, i, "N", 1), mean_t(get_base1(T, i, "T", 1), get_base1(T, 1, "T", 1), get_base1(N, 1, "N", 1), t_array, rho, K, pstream__)));
             }
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
@@ -476,12 +478,12 @@ public:
                 current_statement_begin__ = 77;
                 stan::model::assign(log_lik, 
                             stan::model::cons_list(stan::model::index_uni((i - 1)), stan::model::nil_index_list()), 
-                            poisson_log(get_base1(N, i, "N", 1), mean_t(get_base1(T, i, "T", 1), get_base1(T, 1, "T", 1), t_array, rho, K, pstream__)), 
+                            poisson_log(get_base1(N, i, "N", 1), mean_t(get_base1(T, i, "T", 1), get_base1(T, 1, "T", 1), get_base1(N, 1, "N", 1), t_array, rho, K, pstream__)), 
                             "assigning variable log_lik");
                 current_statement_begin__ = 78;
                 stan::model::assign(N_rep, 
                             stan::model::cons_list(stan::model::index_uni((i - 1)), stan::model::nil_index_list()), 
-                            poisson_rng(mean_t(get_base1(T, i, "T", 1), get_base1(T, 1, "T", 1), t_array, rho, K, pstream__), base_rng__), 
+                            poisson_rng(mean_t(get_base1(T, i, "T", 1), get_base1(T, 1, "T", 1), get_base1(N, 1, "N", 1), t_array, rho, K, pstream__), base_rng__), 
                             "assigning variable N_rep");
             }
             // validate, write generated quantities

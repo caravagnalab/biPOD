@@ -1,10 +1,10 @@
 Package: biPOD
 Type: Package
 Title: biPOD
-Version: 0.0.0.9000
+Version: 0.1
 Author: Giovanni Santacatterina
 Authors@R: person("Giovanni", "Santacatterina", role=c("aut", "cre"), email="santacatterinagiovanni@gmail.com")
-Description: What the package does (one paragraph).
+Description: biPOD does.
 License: GPL (>= 3)
 Depends: 
     R (>= 3.4.0)

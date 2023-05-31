@@ -1,4 +1,43 @@
-url: https://caravagnalab.github.io/biPOD/
+
+destination: docs
+
+url:
+  https://caravagnalab.github.io/biPOD/
+
 template:
   bootstrap: 5
 
+reference:
+- title: Fit data
+  desc:  Functions to initialize data and fit them.
+- contents:
+  - init
+  - breakpoints_inference
+  - fit
+
+- title: Plot data
+  desc:  Function to visualize data and results.
+- contents:
+  - get_growth_rate_posteriors
+  - plot_breakpoints_posterior
+  - plot_carrying_capacity_posterior
+  - plot_elbo
+  - plot_fit
+  - plot_simple_fit
+  - plot_input
+  - plot_normalized_growth_rate_posteriors
+  - plot_relapse_time_distribution
+  - plot_t0_posterior
+  - plot_traces
+
+- title: Model selection
+  desc: Functions to perform model selection across fits
+- contents:
+  - bf_selection
+  - loo_selection
+
+- title: Simulate data
+  desc:  Function to produce synthetic data.
+- contents:
+  - sim_stochastic_exponential
+  - sim_stochastic_logistic

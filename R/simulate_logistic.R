@@ -1,85 +1,4 @@
 
-#' Simulate population growth with logistic growth
-#'
-#' This function simulates population growth for a single individual with a logistic
-#' growth model. The population size at each time step is calculated based on the
-#' growth rate (lambda) and death rate (mu) at that step, and the carrying capacity
-#' (K). The time step (delta_t) is determined by randomly sampling from an exponential
-#' distribution. The function returns the final population size.
-#'
-#' @param n0 Initial population size (must be 1).
-#' @param lambda Growth rate.
-#' @param mu Death rate.
-#' @param K Carrying capacity.
-#' @param delta_t Time step.
-#' @return The final population size.
-#'
-#' @export
-sim_single_stochastic_logistic = function(n0, lambda, mu, K, delta_t) {
-  # Parameters check
-  if (!(n0 >= 0)) stop("n0 must be a positive integer")
-  if (!(lambda >= 0)) stop("lambda must be positive")
-  if (!(mu >= 0)) stop("mu must be positive")
-  if (!(K > 0)) stop("K must be a positive integer")
-  if (!(delta_t >= 0)) stop("delta_t must be positive")
-
-  # Calculate the intrinsic growth rate, which is the difference between
-  # the per-capita birth rate and death rate.
-  ro <- lambda - mu
-
-  # Calculate the density-dependent term, which describes
-  # how the growth rate changes as the population size approaches the carrying capacity.
-  b2 <- ro / K
-
-  # Set the time of the last event to zero and the current population size to the initial population size.
-  event_time <- 0
-  pop_size <- n0
-
-  # Initialize a counter and a time variable for the simulation loop.
-  counter <- 1
-  t <- delta_t
-
-  # Run the simulation loop until the population size reaches zero or until the counter exceeds 1.
-  while(TRUE) {
-    # Calculate the birth and death rates for the current population size.
-    birth <- lambda - b2 * pop_size
-    death <- mu
-
-    # Calculate the overall rate of change in the population size.
-    rate <- (lambda - b2 * pop_size) * pop_size + (death) * pop_size
-
-    # Update the time of the next event by sampling from an exponential distribution with rate parameter "rate".
-    event_time <- event_time - log(stats::runif(1,0,1)) / rate
-
-    # Update the time variable for the simulation loop until it exceeds the time step or the counter exceeds 1.
-    while (event_time > t && counter <= 1) {
-      counter <- counter + 1
-      t <- counter * delta_t
-    }
-
-    # If the population size has reached zero, exit the simulation loop.
-    if (pop_size == 0) break
-
-    # Calculate the probability of a birth event occurring at the next event.
-    p <- (lambda - b2 * pop_size) * pop_size / ((lambda - b2 * pop_size) * pop_size + (mu) * pop_size)
-
-    # If the probability is not a number (NA), exit the simulation loop.
-    if (is.na(p)) break
-
-    # If a random uniform value is less than or equal to p, increment the population size by 1. Otherwise, decrement it by 1.
-    if (stats::runif(1, 0, 1) <= p) {
-      pop_size <- pop_size + 1
-    } else {
-      pop_size <- pop_size - 1
-    }
-
-    # If the counter exceeds 1 or the population size reaches zero, exit the simulation loop.
-    if (counter > 1 || pop_size == 0) break
-  }
-
-  # Return the final population size after the simulation.
-  pop_size
-}
 
 #' Simulate population growth with logistic growth for multiple time steps
 #'
@@ -148,3 +67,70 @@ sim_stochastic_logistic <- function(n0, lambda, mu, K, steps, delta_t) {
   d <- dplyr::tibble(time, count = pop.size, group = groups)
   return(d)
 }
+
+sim_single_stochastic_logistic = function(n0, lambda, mu, K, delta_t) {
+  # Parameters check
+  if (!(n0 >= 0)) stop("n0 must be a positive integer")
+  if (!(lambda >= 0)) stop("lambda must be positive")
+  if (!(mu >= 0)) stop("mu must be positive")
+  if (!(K > 0)) stop("K must be a positive integer")
+  if (!(delta_t >= 0)) stop("delta_t must be positive")
+
+  # Calculate the intrinsic growth rate, which is the difference between
+  # the per-capita birth rate and death rate.
+  ro <- lambda - mu
+
+  # Calculate the density-dependent term, which describes
+  # how the growth rate changes as the population size approaches the carrying capacity.
+  b2 <- ro / K
+
+  # Set the time of the last event to zero and the current population size to the initial population size.
+  event_time <- 0
+  pop_size <- n0
+
+  # Initialize a counter and a time variable for the simulation loop.
+  counter <- 1
+  t <- delta_t
+
+  # Run the simulation loop until the population size reaches zero or until the counter exceeds 1.
+  while(TRUE) {
+    # Calculate the birth and death rates for the current population size.
+    birth <- lambda - b2 * pop_size
+    death <- mu
+
+    # Calculate the overall rate of change in the population size.
+    rate <- (lambda - b2 * pop_size) * pop_size + (death) * pop_size
+
+    # Update the time of the next event by sampling from an exponential distribution with rate parameter "rate".
+    event_time <- event_time - log(stats::runif(1,0,1)) / rate
+
+    # Update the time variable for the simulation loop until it exceeds the time step or the counter exceeds 1.
+    while (event_time > t && counter <= 1) {
+      counter <- counter + 1
+      t <- counter * delta_t
+    }
+
+    # If the population size has reached zero, exit the simulation loop.
+    if (pop_size == 0) break
+
+    # Calculate the probability of a birth event occurring at the next event.
+    p <- (lambda - b2 * pop_size) * pop_size / ((lambda - b2 * pop_size) * pop_size + (mu) * pop_size)
+
+    # If the probability is not a number (NA), exit the simulation loop.
+    if (is.na(p)) break
+
+    # If a random uniform value is less than or equal to p, increment the population size by 1. Otherwise, decrement it by 1.
+    if (stats::runif(1, 0, 1) <= p) {
+      pop_size <- pop_size + 1
+    } else {
+      pop_size <- pop_size - 1
+    }
+
+    # If the counter exceeds 1 or the population size reaches zero, exit the simulation loop.
+    if (counter > 1 || pop_size == 0) break
+  }
+
+  # Return the final population size after the simulation.
+  pop_size
+}
+
