@@ -13,11 +13,11 @@ get_group_colors = function()
 {
   color = c(
     "steelblue",
-    'orange',
-    'forestgreen',
+    'chocolate',
+    'darkgreen',
     'firebrick3',
     'turquoise4',
-    "goldenrod1"
+    "goldenrod3"
   )
   color
 }
@@ -143,8 +143,8 @@ add_t0_posterior = function(base_plot, x) {
     df <- biPOD:::get_normalized_density(values, max_value = max(x$counts$count))
 
     base_plot <- base_plot +
-      ggplot2::geom_line(data = df, mapping = ggplot2::aes(x=.data$x, y=.data$y), col = "darkorange") +
-      ggplot2::geom_ribbon(data = df, mapping = ggplot2::aes(x=.data$x, ymin=0, ymax=.data$y), fill="darkorange", alpha=.5)
+      ggplot2::geom_line(data = df, mapping = ggplot2::aes(x=.data$x, y=.data$y), col = "mediumpurple") +
+      ggplot2::geom_ribbon(data = df, mapping = ggplot2::aes(x=.data$x, ymin=0, ymax=.data$y), fill="mediumpurple", alpha=.5)
   }
   base_plot
 }

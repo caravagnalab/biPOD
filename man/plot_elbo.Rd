@@ -10,6 +10,8 @@ plot_elbo(x, fit, diagnose = TRUE)
 \arguments{
 \item{x}{A biPOD object of class \code{bipod}. Must contains 'fit'}
 
+\item{fit}{Fit of x from which the elbo information must be extracted}
+
 \item{diagnose}{A Boolean indicating whether the plots should be colored and
 contain info regarding the convergence of the variational sampling.}
 }

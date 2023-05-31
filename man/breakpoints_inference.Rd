@@ -29,6 +29,8 @@ one of "exponential", "logistic".}
 
 \item{variational}{Boolean specifying whether using variational as opposed to mcmc sampling}
 
+\item{spline_spar}{degree of smoothness of the spline to use}
+
 \item{factor_size}{numeric factor by which to divide counts in the bipod object}
 
 \item{prior_K}{Prior mean for the carrying capacity.}

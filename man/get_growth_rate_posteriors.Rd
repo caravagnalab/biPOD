@@ -8,8 +8,6 @@ get_growth_rate_posteriors(x)
 }
 \arguments{
 \item{x}{a bipod object with a 'fit' field}
-
-\item{labels}{Vector of labels for the growth rate of each group. If NULL, the standard is 'rho' plus the group index.}
 }
 \value{
 A ggplot object containing the posterior density plots of the growth rates and the prior density plot
