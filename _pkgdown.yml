@@ -29,6 +29,7 @@ reference:
   - plot_relapse_time_distribution
   - plot_t0_posterior
   - plot_traces
+  - plot_bayes_factor
 
 - title: Model selection
   desc: Functions to perform model selection across fits
