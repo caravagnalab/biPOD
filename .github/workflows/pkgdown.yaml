@@ -30,11 +30,11 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          needs: website
           dependencies: NA
           extra-packages: |
             knitr
             rmarkdown
+          needs: website
 
       - name: Build Cmdstan
         run: |
