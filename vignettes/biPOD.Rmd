@@ -23,5 +23,5 @@ devtools::install_github("caravagnalab/biPOD")
 
 Load the package.
 ```{r load_pkg, message=FALSE, warning=FALSE}
-library(biPOD) 
+library(biPOD)
 ```

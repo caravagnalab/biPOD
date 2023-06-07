@@ -9,7 +9,8 @@ breakpoints_inference(
   dt = NULL,
   growth_type = "exponential",
   variational = FALSE,
-  spline_spar = 0.5,
+  lambda = 0.5,
+  desired_changepoints = NULL,
   factor_size = 1,
   prior_K = NULL,
   model_selection = FALSE,
@@ -28,7 +29,9 @@ one of "exponential", "logistic".}
 
 \item{variational}{Boolean specifying whether using variational as opposed to mcmc sampling}
 
-\item{spline_spar}{degree of smoothness of the spline to use}
+\item{lambda}{degree of smoothness of the spline to use}
+
+\item{desired_changepoints}{.}
 
 \item{factor_size}{numeric factor by which to divide counts in the bipod object}
 
