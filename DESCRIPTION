@@ -20,13 +20,13 @@ Imports:
     reshape2,
     rlang,
     stats,
-    cmdstanr,
     posterior
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 Suggests: 
     knitr,
+    cmdstanr,
     rmarkdown
 SystemRequirements: GNU make
 VignetteBuilder: knitr
