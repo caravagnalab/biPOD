@@ -1,19 +1,8 @@
 #' @keywords internal
 "_PACKAGE"
 
-#' The 'biPOD' package.
-#'
-#' @description A DESCRIPTION OF THE PACKAGE
-#'
-#' @docType package
-#' @name biPOD-package
-#' @aliases biPOD
-#' @useDynLib biPOD, .registration = TRUE
-#' @import methods
-#' @import Rcpp
+## usethis namespace: start
+#' @importFrom magrittr %>%
 #' @importFrom rlang .data
-#'
-#' @references
-#' Stan Development Team (2022). RStan: the R interface to Stan. R package version 2.21.7. https://mc-stan.org
-#'
+## usethis namespace: end
 NULL

@@ -4,12 +4,21 @@
 \alias{plot_carrying_capacity_posterior}
 \title{Plot posteriors of carrying capacity K}
 \usage{
-plot_carrying_capacity_posterior(x, add_prior = F)
+plot_carrying_capacity_posterior(
+  x,
+  add_prior = F,
+  with_histogram = F,
+  alpha = 0.6
+)
 }
 \arguments{
 \item{x}{a bipod object with a 'fit' field}
 
 \item{add_prior}{Boolean, indicate whether to plot also the prior distribution}
+
+\item{with_histogram}{.}
+
+\item{alpha}{.}
 }
 \value{
 A ggplot object containing the posterior density plots of the growth rates and the prior density plot

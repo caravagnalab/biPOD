@@ -9,7 +9,6 @@ License: GPL (>= 3)
 Depends: 
     R (>= 3.4.0)
 Imports: 
-    bridgesampling,
     cli,
     dplyr,
     ggplot2,
@@ -17,24 +16,12 @@ Imports:
     ggforce,
     glue,
     tidyr,
-    loo,
     magrittr,
-    methods,
-    Rcpp (>= 0.12.0),
     reshape2,
     rlang,
-    rstan (>= 2.18.1),
-    scales,
     stats,
-    rstantools
-LinkingTo: 
-    BH (>= 1.66.0),
-    Rcpp (>= 0.12.0),
-    RcppEigen (>= 0.3.3.3.0),
-    RcppParallel (>= 5.0.1),
-    rstan (>= 2.18.1),
-    StanHeaders (>= 2.18.0)
-Biarch: true
+    cmdstanr,
+    posterior
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3

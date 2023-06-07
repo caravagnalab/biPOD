@@ -9,11 +9,6 @@
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 
 biPOD does.
-
-A DESCRIPTION OF THE PACKAGE
-}
-\references{
-Stan Development Team (2022). RStan: the R interface to Stan. R package version 2.21.7. https://mc-stan.org
 }
 \seealso{
 Useful links:

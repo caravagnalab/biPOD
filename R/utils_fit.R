@@ -1,19 +1,18 @@
-
-prep_data_fit = function(x, factor_size, prior_K, t0_lower_bound) {
+prep_data_fit <- function(x, factor_size, prior_K, t0_lower_bound) {
   # Parameters check
   if (is.null(prior_K)) {
-    prior_K = max(x$counts$count) / factor_size
+    prior_K <- max(x$counts$count) / factor_size
   } else {
-    prior_K = prior_K / factor_size
+    prior_K <- prior_K / factor_size
     if (prior_K <= 0) stop("'prior_K' should eiter be NULL or positive")
   }
 
   # Prepare data
   if (is.null(x$metadata$breakpoints)) {
     G <- 1
-    breakpoints = array(0, dim=c(0))
+    breakpoints <- array(0, dim = c(0))
   } else {
-    G = length(x$metadata$breakpoints) + 1
+    G <- length(x$metadata$breakpoints) + 1
     breakpoints <- x$metadata$breakpoints
   }
 
@@ -38,33 +37,26 @@ fit_data <- function(x,
                      variational = FALSE,
                      t0_lower_bound = -10,
                      prior_K = NULL,
-                     chains = 4, iter = 4000, warmup = 2000, cores = 4) {
-
-  input_data <- prep_data_fit(x=x, factor_size=factor_size, prior_K=prior_K, t0_lower_bound=t0_lower_bound)
+                     chains = 4, iter = 4000, cores = 4) {
+  input_data <- prep_data_fit(x = x, factor_size = factor_size, prior_K = prior_K, t0_lower_bound = t0_lower_bound)
 
   # Get the model
   if (t0_lower_bound == x$counts$time[1]) {
-    model_name <- paste0(growth_type, '_start_at_1')
+    model_name <- paste0(growth_type, "_no_t0")
   } else {
     model_name <- growth_type
   }
-  model <- get(model_name, stanmodels)
+  model <- biPOD:::get_model(model_name = model_name)
 
   # Fit with either MCMC or Variational
   if (variational) {
-    sampling = "variational"
-    res <- suppressWarnings(suppressMessages(iterative_variational(model, input_data, iter, warmup)))
+    sampling <- "variational"
+    res <- biPOD:::iterative_variational(model = model, data = input_data, iter = iter, max_iterations = 500)
     fit_model <- res$fit_model
     elbo_d <- res$elbo_d
-
   } else {
-    sampling = "mcmc"
-    out <- utils::capture.output(fit_model <- rstan::sampling(
-      model,
-      data = input_data,
-      chains = chains, iter = iter, warmup = warmup,
-      cores = cores
-    ))
+    sampling <- "mcmc"
+    tmp <- utils::capture.output(suppressMessages(fit_model <- model$sample(data = input_data, chains = chains, parallel_chains = cores, iter_warmup = iter, iter_sampling = iter, refresh = iter)))
   }
 
   elbo_data <- c()

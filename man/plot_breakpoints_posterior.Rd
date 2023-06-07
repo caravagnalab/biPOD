@@ -4,10 +4,14 @@
 \alias{plot_breakpoints_posterior}
 \title{Plot the posterior distributions of the inferred breakpoints.}
 \usage{
-plot_breakpoints_posterior(x)
+plot_breakpoints_posterior(x, with_histogram = F, alpha = 0.6)
 }
 \arguments{
 \item{x}{a bipod object with a 'fit' field}
+
+\item{with_histogram}{.}
+
+\item{alpha}{.}
 }
 \value{
 A ggplot object containing the posterior distributions of the inferred breakpoints.

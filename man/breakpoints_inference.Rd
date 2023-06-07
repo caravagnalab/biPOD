@@ -15,7 +15,6 @@ breakpoints_inference(
   model_selection = FALSE,
   chains = 4,
   iter = 4000,
-  warmup = 2000,
   cores = 4
 )
 }
@@ -40,8 +39,6 @@ one of "exponential", "logistic".}
 \item{chains}{integer number of chains to run in the Markov Chain Monte Carlo (MCMC) algorithm}
 
 \item{iter}{integer number of iterations to run in the MCMC algorithm}
-
-\item{warmup}{integer number of warmup iterations to run in the MCMC algorithm}
 
 \item{cores}{integer number of cores to use in parallel processing}
 }

@@ -14,12 +14,12 @@
 #' @return A biPOD object of class `bipod`.
 #'
 #' @export
-init = function(counts, sample, break_points = NULL) {
+init <- function(counts, sample, break_points = NULL) {
   cli::cli_h1("biPOD - bayesian inference for Population Dynamics")
   cat("\n")
 
   # Output
-  bipod = list()
+  bipod <- list()
   class(bipod) <- "bipod"
 
   # Add sample to metadata
@@ -42,7 +42,3 @@ init = function(counts, sample, break_points = NULL) {
 
   bipod
 }
-
-
-
-

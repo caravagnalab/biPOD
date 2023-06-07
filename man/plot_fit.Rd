@@ -15,7 +15,7 @@ plot_fit(
 )
 }
 \arguments{
-\item{x}{A biPOD object of class \code{bipod}. Must contains 'fit'}
+\item{x}{A bipod object of class \code{bipod}. Must contains 'fit'}
 
 \item{CI}{confidence interval for the growth rate to plot}
 

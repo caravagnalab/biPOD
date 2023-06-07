@@ -7,7 +7,7 @@
 plot_input(x, log_scale = F, add_highlights = F)
 }
 \arguments{
-\item{x}{A biPOD object of class \code{bipod}.}
+\item{x}{A bipod object of class \code{bipod}.}
 
 \item{log_scale}{Boolean, indicating whether the plot should have a title}
 

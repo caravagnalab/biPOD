@@ -1,4 +1,3 @@
-
 #' Fit growth model to bipod object
 #'
 #' @param x a bipod object
@@ -12,7 +11,6 @@
 #' @param model_selection Boolean, if TRUE the best model between exponential and logistic will be used
 #' @param chains integer number of chains to run in the Markov Chain Monte Carlo (MCMC) algorithm
 #' @param iter integer number of iterations to run in the MCMC algorithm
-#' @param warmup integer number of warmup iterations to run in the MCMC algorithm
 #' @param cores integer number of cores to use in parallel processing
 #'
 #' @return the input bipod object with an added 'fit' slot containing the fitted model and an added 'fit_info' slot containing information about the fit
@@ -24,32 +22,35 @@ fit <- function(
     t0_lower_bound = -10,
     factor_size = 1, prior_K = NULL,
     model_selection = FALSE,
-    chains = 4, iter = 4000, warmup = 2000, cores = 4){
-
+    chains = 4, iter = 4000, cores = 4) {
   # Check input
   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
   if (!(growth_type %in% c("exponential", "logistic"))) stop("growth_type must be one of 'exponential' and 'logistic'")
   if (!(factor_size > 0)) stop("factor_size must be positive")
-  sampling_type <- if(variational) "variational inference" else "MCMC sampling"
+  sampling_type <- if (variational) "variational inference" else "MCMC sampling"
 
   if (model_selection) {
     cli::cli_alert_info(paste("Fitting with model selection."))
     cat("\n")
 
-    res <- fit_with_model_selection(x=x, factor_size = factor_size,
-                                    variational = variational, t0_lower_bound = t0_lower_bound, prior_K=prior_K,
-                                    chains=chains, iter = iter, warmup = warmup, cores = cores)
+    res <- fit_with_model_selection(
+      x = x, factor_size = factor_size,
+      variational = variational, t0_lower_bound = t0_lower_bound, prior_K = prior_K,
+      chains = chains, iter = iter, cores = cores
+    )
   } else {
     cli::cli_alert_info(paste("Fitting", growth_type, "growth using", sampling_type, "..."))
     cat("\n")
 
-    res <- fit_data(x=x, growth_type=growth_type, factor_size=factor_size,
-                    variational=variational, t0_lower_bound=t0_lower_bound, prior_K=prior_K,
-                    chains=chains, iter=iter, warmup=warmup, cores=cores)
+    res <- fit_data(
+      x = x, growth_type = growth_type, factor_size = factor_size,
+      variational = variational, t0_lower_bound = t0_lower_bound, prior_K = prior_K,
+      chains = chains, iter = iter, cores = cores
+    )
   }
 
   # Add results to bipod object
-  x$elbo_data <- res$elbo_data
+  x$fit_elbo <- res$elbo_data
   x$fit <- res$fit
 
   # Add metadata

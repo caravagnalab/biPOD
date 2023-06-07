@@ -1,4 +1,3 @@
-
 check_input_data <- function(counts) {
   if (!("count" %in% names(counts))) stop("Input dataframe should contain a column named either 'count'")
   if (!("time" %in% names(counts))) stop("Input dataframe should contain a column named either 'time'")
@@ -11,12 +10,13 @@ check_input_data <- function(counts) {
       dplyr::arrange(.data$time)
   }
 
-  counts <- counts %>% dplyr::select(.data$time, .data$count, .data$group) %>% dplyr::as_tibble()
+  counts <- counts %>%
+    dplyr::select(.data$time, .data$count, .data$group) %>%
+    dplyr::as_tibble()
   counts
 }
 
-bp_to_groups = function(d, break_points) {
-
+bp_to_groups <- function(d, break_points) {
   j <- 1
   groups <- rep(0, nrow(d))
   times <- d$time
@@ -30,7 +30,7 @@ bp_to_groups = function(d, break_points) {
   return(groups)
 }
 
-check_break_points = function(d, break_points) {
+check_break_points <- function(d, break_points) {
   if (is.unsorted(break_points)) stop("Break points should be in increasing order")
 
   # takes breakpoints and d and create group column

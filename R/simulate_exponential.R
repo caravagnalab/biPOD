@@ -1,4 +1,3 @@
-
 #' Simulate a stochastic birth-death process for multiple time steps
 #'
 #' @param n0 The initial population size.
@@ -75,7 +74,9 @@ sim_single_stochastic_exponential <- function(n0, lambda, mu, delta_t) {
   if (!(delta_t >= 0)) stop("delta_t must be positive")
 
   # Return n0 if n0 is zero
-  if (n0 == 0) return(n0)
+  if (n0 == 0) {
+    return(n0)
+  }
 
   # Calculate the total event rate and the probability of a birth event
   w <- lambda + mu
@@ -114,5 +115,3 @@ sim_single_stochastic_exponential <- function(n0, lambda, mu, delta_t) {
   # Return the final population size
   pop_size
 }
-
-

@@ -1,5 +1,3 @@
-
-
 #' Simulate population growth with logistic growth for multiple time steps
 #'
 #' @param n0 The initial population size.
@@ -68,7 +66,7 @@ sim_stochastic_logistic <- function(n0, lambda, mu, K, steps, delta_t) {
   return(d)
 }
 
-sim_single_stochastic_logistic = function(n0, lambda, mu, K, delta_t) {
+sim_single_stochastic_logistic <- function(n0, lambda, mu, K, delta_t) {
   # Parameters check
   if (!(n0 >= 0)) stop("n0 must be a positive integer")
   if (!(lambda >= 0)) stop("lambda must be positive")
@@ -93,7 +91,7 @@ sim_single_stochastic_logistic = function(n0, lambda, mu, K, delta_t) {
   t <- delta_t
 
   # Run the simulation loop until the population size reaches zero or until the counter exceeds 1.
-  while(TRUE) {
+  while (TRUE) {
     # Calculate the birth and death rates for the current population size.
     birth <- lambda - b2 * pop_size
     death <- mu
@@ -102,7 +100,7 @@ sim_single_stochastic_logistic = function(n0, lambda, mu, K, delta_t) {
     rate <- (lambda - b2 * pop_size) * pop_size + (death) * pop_size
 
     # Update the time of the next event by sampling from an exponential distribution with rate parameter "rate".
-    event_time <- event_time - log(stats::runif(1,0,1)) / rate
+    event_time <- event_time - log(stats::runif(1, 0, 1)) / rate
 
     # Update the time variable for the simulation loop until it exceeds the time step or the counter exceeds 1.
     while (event_time > t && counter <= 1) {
@@ -133,4 +131,3 @@ sim_single_stochastic_logistic = function(n0, lambda, mu, K, delta_t) {
   # Return the final population size after the simulation.
   pop_size
 }
-
