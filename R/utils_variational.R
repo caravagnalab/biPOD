@@ -1,33 +1,21 @@
-iterative_variational <- function(model, data, iter, max_iterations = 100) {
-  # Iteratively fit with rstan::vb
-  # For the first 3/4 of iterations, stop if pareto k value is lower than 0.5
-  # For the remaining iterations, it stops if pareto k value is lower than 1
-  # If this does not happen, you obtain a fit which is not credible and robus
 
+variational_fit <- function(model, data, iter, max_iterations = 100) {
   for (i in 1:max_iterations) {
-    out <- utils::capture.output({
-      warnings <- NULL
-      fit_model <- withCallingHandlers(
-        {
-          model$variational(data = data, output_samples = iter, refresh = iter, adapt_engaged = TRUE)
-        },
-        warning = function(w) {
-          warnings <<- c(warnings, w$message)
-        }
-      )
-      warnings
-    })
 
-    pareto_k <- biPOD:::parse_pareto_warning(w = warnings)
-    if (i <= max_iterations * 3 / 4) {
-      if (pareto_k == 0) break
-    } else {
-      if (pareto_k <= 1) break
+    out <- utils::capture.output(
+      suppressMessages(suppressWarnings(fit_model <- model$variational(data = data, output_samples = iter, refresh = iter, adapt_engaged = TRUE, iter = iter * 5)))
+    )
+
+    if (length(grep("MEDIAN ELBO CONVERGED", out))) break
+    if (i >= (max_iterations * .1)) {
+      if (length(grep("MAY BE", out))) break
     }
   }
 
-  elbo_d <- suppressWarnings(parse_variational_output(out = out)) %>%
-    dplyr::mutate(pareto_k = pareto_k)
+  print(out)
+  print(fit_model)
+
+  elbo_d <- parse_variational_output(out = out)
 
   return(list(fit_model = fit_model, elbo_d = elbo_d))
 }

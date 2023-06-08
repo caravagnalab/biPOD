@@ -51,7 +51,7 @@ fit_data <- function(x,
   # Fit with either MCMC or Variational
   if (variational) {
     sampling <- "variational"
-    res <- biPOD:::iterative_variational(model = model, data = input_data, iter = iter, max_iterations = 500)
+    res <- biPOD:::variational_fit(model = model, data = input_data, iter = iter)
     fit_model <- res$fit_model
     elbo_d <- res$elbo_d
   } else {

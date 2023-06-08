@@ -15,15 +15,12 @@ plot_elbo <- function(x, elbo_data, diagnose = TRUE) {
   elbo_converged <- all(elbo_data$convergence)
   pareto_k <- elbo_data$pareto_k[1]
 
-  if ((pareto_k > 1) | (!elbo_converged)) {
-    qc <- line_color <- "indianred"
-    msg <- "Pareto k higher than 1 and/or ELBO not convergent."
-  } else if (pareto_k == 0) {
+  if (elbo_converged) {
     qc <- line_color <- "forestgreen"
-    msg <- "Pareto k lower than 0.5 and convergent ELBO."
+    msg <- "ELBO converged."
   } else {
-    qc <- line_color <- "darkorange2"
-    msg <- "Convergent ELBO but Pareto k between .5 and 1."
+    qc <- line_color <- "indianred"
+    msg <- "ELBO did not converge."
   }
 
   if (!diagnose) {
