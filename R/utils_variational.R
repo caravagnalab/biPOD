@@ -1,23 +1,33 @@
 
-variational_fit <- function(model, data, iter, max_iterations = 100) {
-  for (i in 1:max_iterations) {
+variational_fit <- function(model, data, iter, max_iterations = 10) {
+  fitted <- FALSE
+  attempts <- 1
 
-    out <- utils::capture.output(
-      suppressMessages(suppressWarnings(fit_model <- model$variational(data = data, output_samples = iter, refresh = iter, adapt_engaged = TRUE, iter = iter * 5)))
+  while (attempts <= max_iterations) {
+    tryCatch(
+      expr = {
+        out <- utils::capture.output(
+          fit_model <- model$variational(data=data, output_samples=iter, iter = iter*4, eta=.1, adapt_engaged=T, adapt_iter=200, algorithm="meanfield")
+        )
+        fitted <- TRUE
+      },
+      error = function(err) {
+        fitted <- FALSE
+      },
+      warning = function(warn) {
+        fitted <- FALSE
+      }
     )
 
-    if (length(grep("MEDIAN ELBO CONVERGED", out))) break
-    if (i >= (max_iterations * .1)) {
-      if (length(grep("MAY BE", out))) break
+    if (fitted) {
+      elbo_d <- suppressWarnings(parse_variational_output(out = out))
+      return(list(fit_model = fit_model, elbo_d = elbo_d))
+    } else {
+      attempts <- attempts + 1
     }
   }
 
-  print(out)
-  print(fit_model)
-
-  elbo_d <- parse_variational_output(out = out)
-
-  return(list(fit_model = fit_model, elbo_d = elbo_d))
+  return(NULL)
 }
 
 parse_variational_output <- function(out) {
