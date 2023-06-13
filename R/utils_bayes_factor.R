@@ -1,9 +1,9 @@
-fit_with_model_selection <- function(x,
-                                     factor_size = 1,
-                                     variational = FALSE,
-                                     t0_lower_bound = -10,
-                                     prior_K = NULL,
-                                     chains = 4, iter = 4000, cores = 4) {
+fit_with_bayes_factor <- function(x,
+                                 factor_size = 1,
+                                 variational = FALSE,
+                                 t0_lower_bound = -10,
+                                 prior_K = NULL,
+                                 chains = 4, iter = 4000, cores = 4) {
   input_data <- prep_data_fit(x = x, factor_size = factor_size, prior_K = prior_K, t0_lower_bound = t0_lower_bound)
 
   res_exp <- fit_data(
@@ -56,6 +56,7 @@ fit_with_model_selection <- function(x,
   res$fit_info$best_growth <- best_growth
   res$fit_info$bayes_factor <- K
   res$fit_info$evidence <- evidence
+  res$fit_info$model_selection_algo <- "bayes_factor"
 
   cli::cli_alert_info("Model selection finished!")
   cli::cli_alert_info("Model with {.val {best_growth}} growth deemed better with {.val {evidence}} evidence. (BF = {.val {K}})")
@@ -78,18 +79,4 @@ bayes_factor_evidence <- function(K) {
     evidence <- "Decisive"
   }
   evidence
-}
-
-check_model_selection_input <- function(models) {
-  # Check similarities in Priors
-  for (i in 1:length(models)) {
-    if (!(inherits(models[[i]], "bipod"))) stop("Models must be a vector of bipod objects")
-  }
-
-  for (i in 2:length(models)) {
-    info1 <- models[[i - 1]]$fit_info
-    info2 <- models[[i]]$fit_info
-
-    if (!(info1$sampling == info2$sampling)) stop("Models must have the same sampling method!")
-  }
 }

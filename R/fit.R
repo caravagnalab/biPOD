@@ -9,6 +9,7 @@
 #' @param t0_lower_bound lower bound of t0, which is the instant of time in which the population is born
 #' @param prior_K Prior mean for the carrying capacity.
 #' @param model_selection Boolean, if TRUE the best model between exponential and logistic will be used
+#' @param model_selection_algo Algorithm to use for model selection, either 'bayes_factor' or 'mixture_model'
 #' @param chains integer number of chains to run in the Markov Chain Monte Carlo (MCMC) algorithm
 #' @param iter integer number of iterations to run in the MCMC algorithm
 #' @param cores integer number of cores to use in parallel processing
@@ -21,7 +22,7 @@ fit <- function(
     variational = FALSE,
     t0_lower_bound = -10,
     factor_size = 1, prior_K = NULL,
-    model_selection = FALSE,
+    model_selection = FALSE, model_selection_algo = "bayes_factor",
     chains = 4, iter = 4000, cores = 4) {
   # Check input
   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
@@ -30,14 +31,24 @@ fit <- function(
   sampling_type <- if (variational) "variational inference" else "MCMC sampling"
 
   if (model_selection) {
+    if (!(model_selection_algo %in% c("bayes_factor", "mixture_model"))) stop("model_selection_algo must be one of 'bayes_factor' and 'mixture_model'")
     cli::cli_alert_info(paste("Fitting with model selection."))
     cat("\n")
 
-    res <- fit_with_model_selection(
-      x = x, factor_size = factor_size,
-      variational = variational, t0_lower_bound = t0_lower_bound, prior_K = prior_K,
-      chains = chains, iter = iter, cores = cores
-    )
+    if (model_selection_algo == "bayes_factor") {
+      res <- fit_with_bayes_factor(
+        x = x, factor_size = factor_size,
+        variational = variational, t0_lower_bound = t0_lower_bound, prior_K = prior_K,
+        chains = chains, iter = iter, cores = cores
+      )
+    } else {
+      res <- fit_with_mixture_model(
+        x=x, factor_size=factor_size, variational=variational, t0_lower_bound=t0_lower_bound,
+        prior_K=prior_K, chains=chains, iter=iter, cores=cores
+      )
+    }
+
+
   } else {
     cli::cli_alert_info(paste("Fitting", growth_type, "growth using", sampling_type, "..."))
     cat("\n")
@@ -63,6 +74,10 @@ fit <- function(
   x$metadata$best_growth <- res$fit_info$best_growth
   x$metadata$bayes_factor <- res$fit_info$bayes_factor
   x$metadata$evidence <- res$fit_info$evidence
+
+  x$metadata$odd <- res$fit_info$odds
+  x$metadata$model_selection_algo <- res$fit_info$model_selection_algo
+  x$metadata$omega_mixture_model <- res$fit_info$omega_mixture_model
 
   return(x)
 }

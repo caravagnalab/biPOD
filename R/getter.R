@@ -5,7 +5,8 @@ get_model <- function(model_name) {
     "exponential_no_t0" = "exponential_no_t0.stan",
     "logistic" = "logistic.stan",
     "logistic_changepoints" = "logistic_changepoints.stan",
-    "logistic_no_t0" = "logistic_no_t0.stan"
+    "logistic_no_t0" = "logistic_no_t0.stan",
+    "exp_log_mixture" = "exp_log_mixture.stan"
   )
 
   if (!(model_name) %in% names(all_paths)) stop("model_name not recognized")

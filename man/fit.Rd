@@ -12,6 +12,7 @@ fit(
   factor_size = 1,
   prior_K = NULL,
   model_selection = FALSE,
+  model_selection_algo = "bayes_factor",
   chains = 4,
   iter = 4000,
   cores = 4
@@ -32,6 +33,8 @@ one of "exponential", "logistic".}
 \item{prior_K}{Prior mean for the carrying capacity.}
 
 \item{model_selection}{Boolean, if TRUE the best model between exponential and logistic will be used}
+
+\item{model_selection_algo}{Algorithm to use for model selection, either 'bayes_factor' or 'mixture_model'}
 
 \item{chains}{integer number of chains to run in the Markov Chain Monte Carlo (MCMC) algorithm}
 
