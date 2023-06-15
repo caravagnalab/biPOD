@@ -1,4 +1,3 @@
-
 variational_fit <- function(model, data, iter, max_iterations = 10) {
   fitted <- FALSE
   attempts <- 1
@@ -7,7 +6,7 @@ variational_fit <- function(model, data, iter, max_iterations = 10) {
     tryCatch(
       expr = {
         out <- utils::capture.output(
-          fit_model <- model$variational(data=data, output_samples=iter, iter = iter*4, eta=.1, adapt_engaged=T, adapt_iter=200, algorithm="meanfield")
+          fit_model <- model$variational(data = data, output_samples = iter, iter = iter * 4, eta = .1, adapt_engaged = T, adapt_iter = 200, algorithm = "meanfield")
         )
         fitted <- TRUE
       },

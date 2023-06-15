@@ -36,7 +36,7 @@ add_shadow_to_plot <- function(x, base_plot, colors) {
   }
 
   if (is.null(colors)) {
-    colors = get_group_colors()
+    colors <- get_group_colors()
   }
 
   g <- as.character(highlights$group)

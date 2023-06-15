@@ -17,7 +17,7 @@ plot_posteriors <- function(x, x_fit, par_list, with_histogram = F, alpha = .6, 
   if (with_histogram) alpha <- 0
 
   if (is.null(colors)) {
-    colors = get_group_colors()
+    colors <- get_group_colors()
   } else {
     if (length(colors) != length(par_list)) stop("Length of colors should be equal to the length of par_list")
   }

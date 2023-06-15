@@ -18,24 +18,18 @@ reference:
 - title: Plot data
   desc:  Function to visualize data and results.
 - contents:
-  - get_growth_rate_posteriors
+  - plot_bayes_factor
   - plot_breakpoints_posterior
   - plot_carrying_capacity_posterior
   - plot_elbo
   - plot_fit
-  - plot_simple_fit
   - plot_input
+  - plot_mixture_model_omega
   - plot_normalized_growth_rate_posteriors
-  - plot_relapse_time_distribution
+  - plot_simple_fit
   - plot_t0_posterior
   - plot_traces
-  - plot_bayes_factor
-
-- title: Model selection
-  desc: Functions to perform model selection across fits
-- contents:
-  - bf_selection
-  - loo_selection
+  - plots_of_growth_rate_posteriors
 
 - title: Simulate data
   desc:  Function to produce synthetic data.

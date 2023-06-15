@@ -48,7 +48,7 @@ plot_normalized_growth_rate_posteriors <- function(x,
     par_list <- unique(legend_labels)
   }
 
-  x_lim = max(abs(min(densities$x)), abs(max(densities$x)))
+  x_lim <- max(abs(min(densities$x)), abs(max(densities$x)))
 
   p <- ggplot2::ggplot() +
     ggplot2::geom_line(data = densities, mapping = ggplot2::aes(x = .data$x, y = .data$y, color = .data$group)) +

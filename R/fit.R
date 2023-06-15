@@ -43,12 +43,10 @@ fit <- function(
       )
     } else {
       res <- fit_with_mixture_model(
-        x=x, factor_size=factor_size, variational=variational, t0_lower_bound=t0_lower_bound,
-        prior_K=prior_K, chains=chains, iter=iter, cores=cores
+        x = x, factor_size = factor_size, variational = variational, t0_lower_bound = t0_lower_bound,
+        prior_K = prior_K, chains = chains, iter = iter, cores = cores
       )
     }
-
-
   } else {
     cli::cli_alert_info(paste("Fitting", growth_type, "growth using", sampling_type, "..."))
     cat("\n")

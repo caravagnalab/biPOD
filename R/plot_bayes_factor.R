@@ -79,14 +79,14 @@ empty_bayes_factor_plot_with_categories <- function() {
 empty_bayes_factor_plot <- function() {
   max_value <- 10
 
-  x_from <- seq(-max_value, max_value-1, by=1)
+  x_from <- seq(-max_value, max_value - 1, by = 1)
   x_from <- x_from[x_from != 0]
-  x_to <- seq(-max_value+1, max_value, by=1)
+  x_to <- seq(-max_value + 1, max_value, by = 1)
   x_to <- x_to[x_to != 0]
-  group <- abs(seq(-max_value+1, max_value-1, by=1))
+  group <- abs(seq(-max_value + 1, max_value - 1, by = 1))
   highlights <- dplyr::tibble(from = x_from, to = x_to, group = group)
 
-  palette <- c("white", '#f7fcf0','#e0f3db','#ccebc5','#a8ddb5','#7bccc4','#4eb3d3','#2b8cbe','#0868ac','#084081')
+  palette <- c("white", "#f7fcf0", "#e0f3db", "#ccebc5", "#a8ddb5", "#7bccc4", "#4eb3d3", "#2b8cbe", "#0868ac", "#084081")
 
   ggplot2::ggplot() +
     ggplot2::geom_hline(yintercept = 0) +
@@ -105,8 +105,8 @@ empty_bayes_factor_plot <- function() {
     ggplot2::theme_classic() +
     ggplot2::scale_x_continuous(
       name = "Exponential                                               log10(BF)                                               Logistic",
-      breaks = seq(-max_value, max_value, by=1),
-      labels = abs(seq(-max_value, max_value, by=1)),
+      breaks = seq(-max_value, max_value, by = 1),
+      labels = abs(seq(-max_value, max_value, by = 1)),
       limits = c(-max_value, max_value)
     ) +
     ggplot2::theme(
@@ -119,5 +119,4 @@ empty_bayes_factor_plot <- function() {
     ggplot2::scale_fill_manual(values = palette) +
     ggplot2::labs(fill = "") +
     ggplot2::theme(legend.position = "none")
-
 }

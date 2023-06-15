@@ -1,9 +1,9 @@
 fit_with_bayes_factor <- function(x,
-                                 factor_size = 1,
-                                 variational = FALSE,
-                                 t0_lower_bound = -10,
-                                 prior_K = NULL,
-                                 chains = 4, iter = 4000, cores = 4) {
+                                  factor_size = 1,
+                                  variational = FALSE,
+                                  t0_lower_bound = -10,
+                                  prior_K = NULL,
+                                  chains = 4, iter = 4000, cores = 4) {
   input_data <- prep_data_fit(x = x, factor_size = factor_size, prior_K = prior_K, t0_lower_bound = t0_lower_bound)
 
   res_exp <- fit_data(

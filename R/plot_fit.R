@@ -39,7 +39,7 @@ plot_fit <- function(x,
   p <- add_shadow_to_plot(x, base_plot = p, colors = shadows_colors)
 
   # add t0 posterior
-  p <- add_t0_posterior(base_plot = p, x = x, color=t0_posterior_color)
+  p <- add_t0_posterior(base_plot = p, x = x, color = t0_posterior_color)
 
   # change legend
   if (!(is.null(legend_labels))) {
