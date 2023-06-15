@@ -7,13 +7,10 @@
 breakpoints_inference(
   x,
   dt = NULL,
-  growth_type = "exponential",
   variational = FALSE,
   lambda = 0.5,
   desired_changepoints = NULL,
   factor_size = 1,
-  prior_K = NULL,
-  model_selection = FALSE,
   chains = 4,
   iter = 4000,
   cores = 4
@@ -24,9 +21,6 @@ breakpoints_inference(
 
 \item{dt}{half-size of the interval to consider for each proposed breakpoints}
 
-\item{growth_type}{character string specifying the type of growth assumed,
-one of "exponential", "logistic".}
-
 \item{variational}{Boolean specifying whether using variational as opposed to mcmc sampling}
 
 \item{lambda}{degree of smoothness of the spline to use}
@@ -34,10 +28,6 @@ one of "exponential", "logistic".}
 \item{desired_changepoints}{.}
 
 \item{factor_size}{numeric factor by which to divide counts in the bipod object}
-
-\item{prior_K}{Prior mean for the carrying capacity.}
-
-\item{model_selection}{Boolean, if TRUE the best model between exponential and logistic will be used}
 
 \item{chains}{integer number of chains to run in the Markov Chain Monte Carlo (MCMC) algorithm}
 

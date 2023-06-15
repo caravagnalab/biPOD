@@ -27,15 +27,15 @@ init <- function(counts, sample, break_points = NULL) {
   cli::cli_alert_info("Using sample named: {.field {sample}}.")
 
   # Parse input
-  counts <- biPOD:::check_input_data(counts)
+  counts <- check_input_data(counts)
   bipod$counts <- counts
 
   # Convert breakpoints to groups
   if (is.null(break_points)) {
     bipod$counts$group <- rep(0, nrow(counts))
   } else {
-    break_points <- biPOD:::check_break_points(d = counts, break_points = break_points)
-    bipod$counts$group <- biPOD:::bp_to_groups(counts, break_points)
+    break_points <- check_break_points(d = counts, break_points = break_points)
+    bipod$counts$group <- bp_to_groups(counts, break_points)
   }
 
   bipod$metadata$breakpoints <- break_points

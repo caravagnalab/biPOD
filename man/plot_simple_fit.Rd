@@ -9,7 +9,8 @@ plot_simple_fit(
   CI = 0.95,
   full_process = F,
   legend_labels = NULL,
-  legend_title = "group"
+  legend_title = "group",
+  shadows_colors = NULL
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ plot_simple_fit(
 \item{legend_labels}{Vector containing a name for each unique group in x$counts$group}
 
 \item{legend_title}{Title for the legend. Default is "group"}
+
+\item{shadows_colors}{colors to use for the different time windows}
 }
 \value{
 A plot of the fit over the input data.

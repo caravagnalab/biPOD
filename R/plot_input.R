@@ -20,10 +20,10 @@ plot_input <- function(x, log_scale = F, add_highlights = F) {
     ggplot2::geom_line(data, mapping = ggplot2::aes(x = .data$xs, y = .data$ys), col = "black") +
     ggplot2::geom_point(data, mapping = ggplot2::aes(x = .data$xs, y = .data$ys), col = "black") +
     ggplot2::scale_y_continuous(trans = trans) +
-    biPOD:::my_ggplot_theme()
+    my_ggplot_theme()
 
   if (add_highlights) {
-    p <- biPOD:::add_shadow_to_plot(x, base_plot = p)
+    p <- add_shadow_to_plot(x, base_plot = p)
   }
 
   # add style

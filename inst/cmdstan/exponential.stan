@@ -53,12 +53,12 @@ model {
   }
 }
 
-generated quantities {
-  int <lower=0> N_rep[S];
-  real log_lik[S];
-
-  for (i in 1:S) {
-    log_lik[i] = poisson_lpmf(N[i] | mean_t(T[i], t0, t_array, rho));
-    N_rep[i] = poisson_rng(mean_t(T[i], t0, t_array, rho));
-  }
-}
+// generated quantities {
+//   int <lower=0> N_rep[S];
+//   real log_lik[S];
+//
+//   for (i in 1:S) {
+//     log_lik[i] = poisson_lpmf(N[i] | mean_t(T[i], t0, t_array, rho));
+//     N_rep[i] = poisson_rng(mean_t(T[i], t0, t_array, rho));
+//   }
+// }

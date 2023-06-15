@@ -1,12 +1,4 @@
-prep_data_bp_inference <- function(x, factor_size = 1, prior_K = NULL, dt = NULL, lambda = .5, n_nodes = NULL) {
-  # Parameters check
-  if (is.null(prior_K)) {
-    prior_K <- max(x$counts$count) / factor_size
-  } else {
-    prior_K <- prior_K / factor_size
-    if (prior_K <= 0) stop("'prior_K' should eiter be NULL or positive")
-  }
-
+prep_data_bp_inference <- function(x, factor_size = 1, dt = NULL, lambda = .5, n_nodes = NULL) {
   # Get spline prior for changing times
   xs <- x$counts$time
   ys <- x$counts$count
@@ -33,7 +25,6 @@ prep_data_bp_inference <- function(x, factor_size = 1, prior_K = NULL, dt = NULL
     T = as.array(x$counts$time),
     changing_times_prior = as.array(change_x),
     dt = dt,
-    prior_K = prior_K,
     control = list(max_treedepth = 15, adapt_delta = .8)
   )
 

@@ -3,14 +3,13 @@
 #' @param x a bipod object with a 'fit' field
 #' @param with_histogram .
 #' @param alpha .
+#' @param colors colors to use for the different inferred breakpoints
 #'
 #' @return A ggplot object containing the posterior distributions of the inferred breakpoints.
 #' @export
 #'
-plot_breakpoints_posterior <- function(x, with_histogram = F, alpha = .6) {
+plot_breakpoints_posterior <- function(x, with_histogram = F, alpha = .6, colors = NULL) {
   x <- x
-  with_histogram <- F
-  alpha <- .6
 
   # FUN
   # plot_breakpoints_posterior function
@@ -23,9 +22,10 @@ plot_breakpoints_posterior <- function(x, with_histogram = F, alpha = .6) {
     paste0("changing_times[", i, "]")
   }) %>% unlist()
 
-  biPOD:::plot_posteriors(x, x$breakpoints_fit,
+  plot_posteriors(x, x$breakpoints_fit,
     par_list = breakpoints_names,
     with_histogram = with_histogram,
-    alpha = alpha
+    alpha = alpha,
+    colors = colors
   )
 }

@@ -46,12 +46,12 @@ fit_data <- function(x,
   } else {
     model_name <- growth_type
   }
-  model <- biPOD:::get_model(model_name = model_name)
+  model <- get_model(model_name = model_name)
 
   # Fit with either MCMC or Variational
   if (variational) {
     sampling <- "variational"
-    res <- biPOD:::variational_fit(model = model, data = input_data, iter = iter)
+    res <- variational_fit(model = model, data = input_data, iter = iter)
     fit_model <- res$fit_model
     elbo_d <- res$elbo_d
   } else {

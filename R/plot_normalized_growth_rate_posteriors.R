@@ -5,11 +5,16 @@
 #' @param add_prior Boolean, indicate whether to plot also the prior distribution
 #' @param legend_labels Vector containing a name for each unique fitted parameters. Default is 'rho'
 #' @param legend_title Title for the legend. Default is "group"
+#' @param colors colors to use for the different growth rates posteriors
 #'
 #' @return A ggplot object containing the posterior density plots of the growth rates and the prior density plot
 #' @export
 #'
-plot_normalized_growth_rate_posteriors <- function(x, add_prior = F, legend_labels = NULL, legend_title = "group") {
+plot_normalized_growth_rate_posteriors <- function(x,
+                                                   add_prior = F,
+                                                   legend_labels = NULL,
+                                                   legend_title = "group",
+                                                   colors = NULL) {
   # Check input
   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
   if (!("fit" %in% names(x))) stop("Input must contain a 'fits' field")
@@ -19,7 +24,7 @@ plot_normalized_growth_rate_posteriors <- function(x, add_prior = F, legend_labe
   n_groups <- length(unique(x$counts$group))
   par_list <- paste0("rho[", c(1:n_groups), "]")
 
-  d_long <- biPOD:::get_parameters(x$fit, par_list = par_list)
+  d_long <- get_parameters(x$fit, par_list = par_list)
 
   # get densities for each variable
   densities <- lapply(c(1:length(par_list)), function(i) {
@@ -27,26 +32,31 @@ plot_normalized_growth_rate_posteriors <- function(x, add_prior = F, legend_labe
     values <- d_long %>%
       dplyr::filter(.data$parameter == v) %>%
       dplyr::pull(.data$value)
-    d <- biPOD:::get_normalized_density(values, max_value = 1) %>% dplyr::mutate(group = v)
+    d <- get_normalized_density(values, max_value = 1) %>% dplyr::mutate(group = v)
     return(d)
   })
   densities <- do.call(rbind, densities)
 
   # plot each one
-  colors <- biPOD:::get_group_colors()
-  colors <- colors[1:n_groups]
+  if (is.null(colors)) {
+    colors <- get_group_colors()
+    colors <- colors[1:n_groups]
+  }
 
   if (!(is.null(legend_labels))) {
     if (!(length(unique(legend_labels)) == n_groups)) stop(glue::glue("The number of unique labels should be equal to the number of groups, which is {n_groups}"))
     par_list <- unique(legend_labels)
   }
 
+  x_lim = max(abs(min(densities$x)), abs(max(densities$x)))
+
   p <- ggplot2::ggplot() +
     ggplot2::geom_line(data = densities, mapping = ggplot2::aes(x = .data$x, y = .data$y, color = .data$group)) +
     ggplot2::geom_ribbon(data = densities, mapping = ggplot2::aes(x = .data$x, y = .data$y, fill = .data$group, ymin = 0, ymax = .data$y), alpha = .3) +
     ggplot2::scale_fill_manual(values = colors, labels = par_list) +
     ggplot2::scale_color_manual(values = colors, labels = par_list) +
-    ggplot2::guides(fill = ggplot2::guide_legend(title = legend_title), color = ggplot2::guide_legend(title = legend_title))
+    ggplot2::guides(fill = ggplot2::guide_legend(title = legend_title), color = ggplot2::guide_legend(title = legend_title)) +
+    ggplot2::xlim(-x_lim, x_lim)
 
   # Add prior
   if (add_prior) {

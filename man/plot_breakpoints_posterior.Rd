@@ -4,7 +4,7 @@
 \alias{plot_breakpoints_posterior}
 \title{Plot the posterior distributions of the inferred breakpoints.}
 \usage{
-plot_breakpoints_posterior(x, with_histogram = F, alpha = 0.6)
+plot_breakpoints_posterior(x, with_histogram = F, alpha = 0.6, colors = NULL)
 }
 \arguments{
 \item{x}{a bipod object with a 'fit' field}
@@ -12,6 +12,8 @@ plot_breakpoints_posterior(x, with_histogram = F, alpha = 0.6)
 \item{with_histogram}{.}
 
 \item{alpha}{.}
+
+\item{colors}{colors to use for the different inferred breakpoints}
 }
 \value{
 A ggplot object containing the posterior distributions of the inferred breakpoints.

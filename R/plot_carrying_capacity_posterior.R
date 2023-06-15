@@ -15,8 +15,8 @@ plot_carrying_capacity_posterior <- function(x, add_prior = F, with_histogram = 
   if (!(x$metadata$growth_type == "logistic")) stop("Carrying capacity posterior is available only for 'logistic' model!")
 
   # plot posterior density
-  # p <- biPOD:::plot_posterior(x, x$fit, par_name = "K", color = "seagreen")
-  p <- biPOD:::plot_posteriors(x, x$fit,
+  # p <- plot_posterior(x, x$fit, par_name = "K", color = "seagreen")
+  p <- plot_posteriors(x, x$fit,
     par_list = c("K"),
     with_histogram = with_histogram, alpha = alpha
   )
@@ -40,7 +40,7 @@ plot_carrying_capacity_posterior <- function(x, add_prior = F, with_histogram = 
   p <- p +
     ggplot2::labs(y = "density", x = "value") +
     # ggplot2::coord_cartesian(xlim=xlims) +
-    biPOD:::my_ggplot_theme()
+    my_ggplot_theme()
 
   p
 }

@@ -14,13 +14,13 @@ plots_of_growth_rate_posteriors <- function(x) {
   # Obtain list of parameters to plot
   n_groups <- length(unique(x$counts$group))
   par_list <- paste0("rho[", c(1:n_groups), "]")
-  colors <- biPOD:::get_group_colors()
+  colors <- get_group_colors()
 
   plots <- lapply(1:length(par_list), function(i) {
     par_name <- par_list[i]
     color <- colors[i]
 
-    p <- biPOD:::plot_posterior(x = x, x_fit = x$fit, par_name = par_name, color = color)
+    p <- plot_posterior(x = x, x_fit = x$fit, par_name = par_name, color = color)
     p
   })
 

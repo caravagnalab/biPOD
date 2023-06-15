@@ -20,7 +20,7 @@ plot_mixture_model_omega = function(x, plot_type = "hist", color="maroon") {
     p <- ggplot2::ggplot(data=omega_samples, mapping = ggplot2::aes(x=.data$value, y=ggplot2::after_stat(..density..))) +
       ggplot2::geom_histogram(fill = color, col = color, alpha = .6, bins = 100) +
       ggplot2::geom_density(col = color, linewidth = 1.2) +
-      biPOD:::my_ggplot_theme() +
+      my_ggplot_theme() +
       ggplot2::scale_x_continuous(
         name = expression(omega),
         breaks = c(0, 1),
@@ -36,7 +36,7 @@ plot_mixture_model_omega = function(x, plot_type = "hist", color="maroon") {
       ggplot2::lims(y = c(0,1)) +
       ggplot2::coord_flip() +
       ggplot2::scale_fill_manual(values = c(ggplot2::alpha(color, .8))) +
-      biPOD:::my_ggplot_theme() +
+      my_ggplot_theme() +
       ggplot2::theme(legend.position = "none") +
       ggplot2::scale_y_continuous(
         name = expression(omega),
@@ -57,7 +57,7 @@ plot_mixture_model_omega = function(x, plot_type = "hist", color="maroon") {
       ggplot2::lims(y = c(0,1)) +
       ggplot2::coord_flip() +
       ggplot2::scale_fill_manual(values = c(ggplot2::alpha(color, .8))) +
-      biPOD:::my_ggplot_theme() +
+      my_ggplot_theme() +
       ggplot2::theme(legend.position = "none") +
       ggplot2::scale_y_continuous(
         name = expression(omega),

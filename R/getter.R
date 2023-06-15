@@ -1,11 +1,10 @@
 get_model <- function(model_name) {
   all_paths <- list(
     "exponential" = "exponential.stan",
-    "exponential_changepoints" = "exponential_changepoints.stan",
     "exponential_no_t0" = "exponential_no_t0.stan",
     "logistic" = "logistic.stan",
-    "logistic_changepoints" = "logistic_changepoints.stan",
     "logistic_no_t0" = "logistic_no_t0.stan",
+    "infer_changepoints" = "infer_changepoints.stan",
     "exp_log_mixture" = "exp_log_mixture.stan"
   )
 
@@ -26,7 +25,7 @@ get_parameter <- function(fit, par_name) {
 get_parameters <- function(fit, par_list) {
   d <- dplyr::tibble()
   for (p in par_list) {
-    d <- dplyr::bind_rows(d, biPOD:::get_parameter(fit, p))
+    d <- dplyr::bind_rows(d, get_parameter(fit, p))
   }
   d
 }

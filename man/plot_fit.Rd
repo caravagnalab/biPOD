@@ -11,7 +11,9 @@ plot_fit(
   legend_title = "group",
   zoom_limits = NULL,
   sec_axis_breaks = NULL,
-  sec_axis_labels = NULL
+  sec_axis_labels = NULL,
+  t0_posterior_color = "darkorange",
+  shadows_colors = NULL
 )
 }
 \arguments{
@@ -28,6 +30,10 @@ plot_fit(
 \item{sec_axis_breaks}{Vector containing values in which secondary x axis' breaks will be}
 
 \item{sec_axis_labels}{Vector containing labels for the secondary x axis}
+
+\item{t0_posterior_color}{color to use for the posterior of t0}
+
+\item{shadows_colors}{colors to use for the different time windows}
 }
 \value{
 A plot of the fit over the input data.

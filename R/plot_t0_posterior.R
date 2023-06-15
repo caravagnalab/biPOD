@@ -17,7 +17,7 @@ plot_t0_posterior <- function(x, add_prior = F) {
   if (t0_lower_bound == x$counts$time[1]) {
     stop("t0 has been set manually as the first time step. Posterior distribution not available.")
   } else {
-    p <- biPOD:::plot_posterior(x, x$fit, "t0", "darkorange")
+    p <- plot_posterior(x, x$fit, "t0", "darkorange")
   }
 
   if (add_prior) {
@@ -37,7 +37,7 @@ plot_t0_posterior <- function(x, add_prior = F) {
   # Add style
   p <- p +
     ggplot2::labs(y = "density", x = "") +
-    biPOD:::my_ggplot_theme() +
+    my_ggplot_theme() +
     ggplot2::theme(strip.background = ggplot2::element_rect(fill = ggplot2::alpha("darkorange", .8)))
 
   p

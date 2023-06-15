@@ -19,7 +19,7 @@ get_group_colors <- function() {
   color
 }
 
-add_shadow_to_plot <- function(x, base_plot) {
+add_shadow_to_plot <- function(x, base_plot, colors) {
   if (is.null(x$metadata$breakpoints)) {
     highlights <- dplyr::tibble(
       group = 0,
@@ -35,6 +35,10 @@ add_shadow_to_plot <- function(x, base_plot) {
     )
   }
 
+  if (is.null(colors)) {
+    colors = get_group_colors()
+  }
+
   g <- as.character(highlights$group)
   base_plot <- base_plot +
     ggplot2::geom_rect(
@@ -48,7 +52,7 @@ add_shadow_to_plot <- function(x, base_plot) {
       ),
       alpha = .2
     ) +
-    ggplot2::scale_fill_manual(values = get_group_colors()) +
+    ggplot2::scale_fill_manual(values = colors) +
     ggplot2::guides(fill = ggplot2::guide_legend("", override.aes = list(alpha = 1)))
 
   base_plot
@@ -84,14 +88,14 @@ get_data_for_plot <- function(x, alpha) {
     median_t0 <- as.array(t0_lower_bound)
     n0 <- x$counts$count[1] / factor_size
   } else {
-    median_t0 <- biPOD:::get_parameter(x$fit, "t0") %>%
+    median_t0 <- get_parameter(x$fit, "t0") %>%
       dplyr::pull(.data$value) %>%
       stats::median()
     n0 <- 1
   }
 
   # Produce ro quantiles
-  rho_samples <- biPOD:::get_parameters(x$fit, par_list = paste0("rho[", 1:(length(x$metadata$breakpoints) + 1), "]"))
+  rho_samples <- get_parameters(x$fit, par_list = paste0("rho[", 1:(length(x$metadata$breakpoints) + 1), "]"))
 
   rho_quantiles <- rho_samples %>%
     dplyr::group_by(.data$parameter) %>%
@@ -100,15 +104,15 @@ get_data_for_plot <- function(x, alpha) {
   xs <- seq(median_t0, max(x$counts$time), length = 1000)
 
   if (x$metadata$growth_type == "logistic") {
-    K <- biPOD:::get_parameter(x$fit, "K") %>%
+    K <- get_parameter(x$fit, "K") %>%
       dplyr::pull(.data$value) %>%
       stats::median()
-    func <- biPOD:::log_growth_multiple
+    func <- log_growth_multiple
     ylow <- lapply(xs, func, t0 = median_t0, t_array = as.array(breakpoints), rho_array = rho_quantiles$low, K = K, n0 = n0) %>% unlist()
     ymid <- lapply(xs, func, t0 = median_t0, t_array = as.array(breakpoints), rho_array = rho_quantiles$mid, K = K, n0 = n0) %>% unlist()
     yhigh <- lapply(xs, func, t0 = median_t0, t_array = as.array(breakpoints), rho_array = rho_quantiles$high, K = K, n0 = n0) %>% unlist()
   } else {
-    func <- biPOD:::exp_growth
+    func <- exp_growth
     ylow <- lapply(xs, func, t0 = median_t0, t_array = as.array(breakpoints), rho_array = rho_quantiles$low, n0 = n0) %>% unlist()
     ymid <- lapply(xs, func, t0 = median_t0, t_array = as.array(breakpoints), rho_array = rho_quantiles$mid, n0 = n0) %>% unlist()
     yhigh <- lapply(xs, func, t0 = median_t0, t_array = as.array(breakpoints), rho_array = rho_quantiles$high, n0 = n0) %>% unlist()
@@ -124,22 +128,20 @@ get_data_for_plot <- function(x, alpha) {
   return(fitted_data)
 }
 
-add_t0_posterior <- function(base_plot, x) {
+add_t0_posterior <- function(base_plot, x, color) {
   t0_lower_bound <- x$metadata$t0_lower_bound
 
   # Plot model with t0
   if (t0_lower_bound == x$counts$time[1]) {
-    base_plot <- base_plot +
-      ggplot2::geom_segment(data = data.frame(x = t0_lower_bound, ymin = 0, ymax = max(x$counts$count)), mapping = ggplot2::aes(x = .data$x, xend = .data$x, y = .data$ymin, yend = .data$ymax), col = "darkorange")
+    return(base_plot)
   } else {
-    values <- biPOD:::get_parameter(x$fit, "t0") %>% dplyr::pull(.data$value)
+    values <- get_parameter(x$fit, "t0") %>% dplyr::pull(.data$value)
 
     # Add t0 posterior
-    df <- biPOD:::get_normalized_density(values, max_value = max(x$counts$count))
+    df <- get_normalized_density(values, max_value = max(x$counts$count))
 
     base_plot <- base_plot +
-      ggplot2::geom_line(data = df, mapping = ggplot2::aes(x = .data$x, y = .data$y), col = "mediumpurple") +
-      ggplot2::geom_ribbon(data = df, mapping = ggplot2::aes(x = .data$x, ymin = 0, ymax = .data$y), fill = "mediumpurple", alpha = .5)
+      ggplot2::geom_line(data = df, mapping = ggplot2::aes(x = .data$x, y = .data$y), col = color) +
+      ggplot2::geom_ribbon(data = df, mapping = ggplot2::aes(x = .data$x, ymin = 0, ymax = .data$y), fill = color, alpha = .5)
   }
-  base_plot
 }

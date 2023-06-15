@@ -9,7 +9,8 @@ plot_normalized_growth_rate_posteriors(
   x,
   add_prior = F,
   legend_labels = NULL,
-  legend_title = "group"
+  legend_title = "group",
+  colors = NULL
 )
 }
 \arguments{
@@ -20,6 +21,8 @@ plot_normalized_growth_rate_posteriors(
 \item{legend_labels}{Vector containing a name for each unique fitted parameters. Default is 'rho'}
 
 \item{legend_title}{Title for the legend. Default is "group"}
+
+\item{colors}{colors to use for the different growth rates posteriors}
 }
 \value{
 A ggplot object containing the posterior density plots of the growth rates and the prior density plot

@@ -6,7 +6,7 @@ fit_with_mixture_model <- function(x,
                                    chains = 4, iter = 4000, cores = 4) {
   input_data <- prep_data_fit(x = x, factor_size = factor_size, prior_K = prior_K, t0_lower_bound = t0_lower_bound)
 
-  model <- biPOD:::get_model(model_name = "exp_log_mixture")
+  model <- get_model(model_name = "exp_log_mixture")
 
   tmp <- utils::capture.output(suppressMessages(fit <- model$sample(input_data, chains = chains, iter_warmup = iter, iter_sampling = iter, parallel_chains = cores)))
 

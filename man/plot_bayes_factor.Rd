@@ -4,10 +4,13 @@
 \alias{plot_bayes_factor}
 \title{Plot the fit over the input data.}
 \usage{
-plot_bayes_factor(x)
+plot_bayes_factor(x, with_categories = F)
 }
 \arguments{
 \item{x}{A biPOD object of class \code{bipod}. Must contains 'fit' and must have been fitted with model selection.}
+
+\item{with_categories}{Boolean. If TRUE it will plot the bayes factor according
+to the categories proposed by Jeffreys in 'The Theory of Probability'}
 }
 \value{
 A plot of the Bayes Factor with its significance.
