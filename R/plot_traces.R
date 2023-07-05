@@ -10,7 +10,7 @@
 #' @export
 plot_traces <- function(x, fit, pars = c(), diagnose = FALSE) {
   if (!(inherits(x, "bipod"))) stop("Input 'x' must be a 'bipod' object")
-  if (!(x$metadata$sampling == "mcmc")) stop("'plot_traces' accepts only biPOD objects that have been fitted using MCMC")
+  # if (!(x$metadata$sampling == "mcmc")) stop("'plot_traces' accepts only biPOD objects that have been fitted using MCMC")
 
   all_pars <- colnames(fit$draws(format = "matrix"))
   if (!(length(pars) > 0)) {

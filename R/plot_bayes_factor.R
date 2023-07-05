@@ -26,10 +26,10 @@ plot_bayes_factor <- function(x, with_categories = F) {
 
   if (with_categories) {
     p <- empty_bayes_factor_plot_with_categories() +
-      ggplot2::geom_point(data = NULL, mapping = ggplot2::aes(x = logBF, y = 0), size = 5)
+      ggplot2::geom_point(data = NULL, mapping = ggplot2::aes(x = logBF, y = 0), size = 2)
   } else {
     p <- empty_bayes_factor_plot() +
-      ggplot2::geom_point(data = NULL, mapping = ggplot2::aes(x = logBF, y = 0), size = 5)
+      ggplot2::geom_point(data = NULL, mapping = ggplot2::aes(x = logBF, y = 0), size = 2)
   }
 
   p
@@ -104,19 +104,22 @@ empty_bayes_factor_plot <- function() {
     ggplot2::geom_vline(xintercept = 0, color = "darkgray", linetype = "dashed") +
     ggplot2::theme_classic() +
     ggplot2::scale_x_continuous(
-      name = "Exponential                                               log10(BF)                                               Logistic",
+      name = "log10(BF)",
       breaks = seq(-max_value, max_value, by = 1),
       labels = abs(seq(-max_value, max_value, by = 1)),
       limits = c(-max_value, max_value)
     ) +
+    ggplot2::scale_y_continuous(
+      name = "Exponential",
+      sec.axis = ggplot2::sec_axis(trans=~.*1, name="Logistic")
+    ) +
     ggplot2::theme(
       axis.text.y = ggplot2::element_blank(),
-      axis.title.y = ggplot2::element_blank(),
       axis.ticks.y = ggplot2::element_blank(),
       axis.line.y = ggplot2::element_blank(),
       axis.line.x = ggplot2::element_line(arrow = ggplot2::arrow(type = "closed", length = ggplot2::unit(10, "pt"), ends = "both"))
     ) +
     ggplot2::scale_fill_manual(values = palette) +
-    ggplot2::labs(fill = "") +
+    ggplot2::labs(fill = "", y="pippo") +
     ggplot2::theme(legend.position = "none")
 }

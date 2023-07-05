@@ -10,6 +10,7 @@ plot_simple_fit(
   full_process = F,
   legend_labels = NULL,
   legend_title = "group",
+  t0_posterior_color = "darkorange",
   shadows_colors = NULL
 )
 }
@@ -23,6 +24,8 @@ plot_simple_fit(
 \item{legend_labels}{Vector containing a name for each unique group in x$counts$group}
 
 \item{legend_title}{Title for the legend. Default is "group"}
+
+\item{t0_posterior_color}{.}
 
 \item{shadows_colors}{colors to use for the different time windows}
 }

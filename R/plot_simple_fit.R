@@ -6,6 +6,7 @@
 #' @param full_process Boolean, indicating whether to plot the process starting from t0 or not.
 #' @param CI confidence interval for the growth rate to plot
 #' @param shadows_colors colors to use for the different time windows
+#' @param t0_posterior_color .
 #'
 #' @returns A plot of the fit over the input data.
 #' @export
@@ -14,7 +15,9 @@ plot_simple_fit <- function(x,
                             full_process = F,
                             legend_labels = NULL,
                             legend_title = "group",
-                            shadows_colors = NULL) {
+                            t0_posterior_color = "darkorange",
+                            shadows_colors = NULL
+                            ) {
   # Check input
   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
   if (!("fit" %in% names(x))) stop("Input must contain a 'fits' field")
@@ -43,7 +46,7 @@ plot_simple_fit <- function(x,
   p <- add_shadow_to_plot(x, base_plot = p, colors = shadows_colors)
 
   # add t0 posterior
-  if (full_process) p <- add_t0_posterior(base_plot = p, x = x)
+  if (full_process) p <- add_t0_posterior(base_plot = p, x = x, color=t0_posterior_color)
 
   # change legend
   if (!(is.null(legend_labels))) {

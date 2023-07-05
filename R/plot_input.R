@@ -23,7 +23,7 @@ plot_input <- function(x, log_scale = F, add_highlights = F) {
     my_ggplot_theme()
 
   if (add_highlights) {
-    p <- add_shadow_to_plot(x, base_plot = p)
+    p <- add_shadow_to_plot(x, base_plot = p, colors = NULL)
   }
 
   # add style

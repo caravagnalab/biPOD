@@ -10,10 +10,8 @@
 #' @export
 plot_elbo <- function(x, elbo_data, diagnose = TRUE) {
   if (!(inherits(x, "bipod"))) stop("The input 'x' must be a 'bipod' object")
-  if (!(x$metadata$sampling == "variational")) stop("'plot_elbo' accepts only biPOD objects that have been fitted using variational inference")
 
   elbo_converged <- all(elbo_data$convergence)
-  pareto_k <- elbo_data$pareto_k[1]
 
   if (elbo_converged) {
     qc <- line_color <- "forestgreen"

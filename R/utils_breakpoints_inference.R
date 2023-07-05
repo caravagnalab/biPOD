@@ -14,7 +14,11 @@ prep_data_bp_inference <- function(x, factor_size = 1, dt = NULL, lambda = .5, n
   }
 
   if (is.null(dt)) {
-    dt <- min(diff(change_x)) / 2
+    if (length(change_x) >= 2) {
+      dt <- min(diff(change_x)) / 2
+    } else {
+      dt <- (max(xs) - min(xs)) / 10
+    }
   }
 
   # Prepare input data list
