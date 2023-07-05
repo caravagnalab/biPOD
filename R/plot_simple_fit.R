@@ -16,8 +16,7 @@ plot_simple_fit <- function(x,
                             legend_labels = NULL,
                             legend_title = "group",
                             t0_posterior_color = "darkorange",
-                            shadows_colors = NULL
-                            ) {
+                            shadows_colors = NULL) {
   # Check input
   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
   if (!("fit" %in% names(x))) stop("Input must contain a 'fits' field")
@@ -46,7 +45,7 @@ plot_simple_fit <- function(x,
   p <- add_shadow_to_plot(x, base_plot = p, colors = shadows_colors)
 
   # add t0 posterior
-  if (full_process) p <- add_t0_posterior(base_plot = p, x = x, color=t0_posterior_color)
+  if (full_process) p <- add_t0_posterior(base_plot = p, x = x, color = t0_posterior_color)
 
   # change legend
   if (!(is.null(legend_labels))) {

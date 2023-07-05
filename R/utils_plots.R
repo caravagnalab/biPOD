@@ -145,3 +145,73 @@ add_t0_posterior <- function(base_plot, x, color) {
       ggplot2::geom_ribbon(data = df, mapping = ggplot2::aes(x = .data$x, ymin = 0, ymax = .data$y), fill = color, alpha = .5)
   }
 }
+
+add_posterior <- function(base_plot, param, x, x_fit, color) {
+  values <- get_parameter(x_fit, param) %>% dplyr::pull(.data$value)
+
+  # Add t0 posterior
+  df <- get_normalized_density(values, max_value = max(x$counts$count))
+
+  base_plot <- base_plot +
+    ggplot2::geom_line(data = df, mapping = ggplot2::aes(x = .data$x, y = .data$y), col = color) +
+    ggplot2::geom_ribbon(data = df, mapping = ggplot2::aes(x = .data$x, ymin = 0, ymax = .data$y), fill = color, alpha = .5)
+}
+
+get_data_for_two_pop_plot <- function(x, alpha) {
+  fit <- x$two_pop_fit
+
+  factor_size <- x$metadata$factor_size # factor size
+
+  # Produce ro quantiles
+  rho_samples <- get_parameters(fit, par_list = c("rho_s", "rho_r"))
+
+  rho_quantiles <- rho_samples %>%
+    dplyr::group_by(.data$parameter) %>%
+    dplyr::summarise(low = stats::quantile(.data$value, alpha / 2), mid = stats::quantile(.data$value, .5), high = stats::quantile(.data$value, 1 - alpha / 2))
+  rho_s_quantiles <- rho_quantiles %>% dplyr::filter(.data$parameter == "rho_s")
+  rho_r_quantiles <- rho_quantiles %>% dplyr::filter(.data$parameter == "rho_r")
+
+  median_t0_r <- get_parameter(fit, "t0_r") %>%
+    dplyr::pull(.data$value) %>%
+    stats::median()
+
+  min_t <- min(median_t0_r, min(x$counts$time))
+
+  xs <- seq(min_t, max(x$counts$time), length = 1000)
+
+  median_ns <- get_parameter(fit, "ns") %>%
+    dplyr::pull(.data$value) %>%
+    stats::median()
+
+  func <- two_pops_evo
+
+  ylow <- lapply(xs, two_pops_evo, ns = median_ns, t0_r = median_t0_r, rho_s = -rho_s_quantiles$low, rho_r = rho_r_quantiles$low)
+  ymid <- lapply(xs, two_pops_evo, ns = median_ns, t0_r = median_t0_r, rho_s = -rho_s_quantiles$mid, rho_r = rho_r_quantiles$mid)
+  yhigh <- lapply(xs, two_pops_evo, ns = median_ns, t0_r = median_t0_r, rho_s = -rho_s_quantiles$high, rho_r = rho_r_quantiles$high)
+
+  ylow_r <- lapply(ylow, function(y) {
+    y$r_pop
+  }) %>% unlist()
+  ylow_s <- lapply(ylow, function(y) {
+    y$s_pop
+  }) %>% unlist()
+  ymid_r <- lapply(ymid, function(y) {
+    y$r_pop
+  }) %>% unlist()
+  ymid_s <- lapply(ymid, function(y) {
+    y$s_pop
+  }) %>% unlist()
+  yhigh_r <- lapply(yhigh, function(y) {
+    y$r_pop
+  }) %>% unlist()
+  yhigh_s <- lapply(yhigh, function(y) {
+    y$s_pop
+  }) %>% unlist()
+
+  r_data <- dplyr::tibble(x = xs, y = factor_size * ymid_r, ylow = factor_size * ylow_r, yhigh = factor_size * yhigh_r, group = "resistant")
+  s_data <- dplyr::tibble(x = xs, y = factor_size * ymid_s, ylow = factor_size * ylow_s, yhigh = factor_size * yhigh_s, group = "sensible")
+
+  fitted_data <- dplyr::bind_rows(r_data, s_data)
+
+  return(fitted_data)
+}

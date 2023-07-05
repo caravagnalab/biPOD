@@ -61,3 +61,18 @@ log_growth_multiple <- function(t, t0, t_array, rho_array, K, n0) {
   dt <- t - t_array[length(t_array)]
   return(log_growth(dt, current_n0, rho_array[length(rho_array)], K))
 }
+
+
+two_pops_evo <- function(t, ns, t0_r, rho_s, rho_r) {
+  s_pop <- ns * exp(rho_s * (t))
+  if (t > t0_r) {
+    r_pop <- 1 * exp(rho_r * (t - t0_r))
+  } else {
+    r_pop <- 0
+  }
+
+  list(
+    r_pop = r_pop,
+    s_pop = s_pop
+  )
+}

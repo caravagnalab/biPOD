@@ -14,6 +14,7 @@ reference:
   - init
   - breakpoints_inference
   - fit
+  - fit_two_pop_model
 
 - title: Plot data
   desc:  Function to visualize data and results.
@@ -30,6 +31,8 @@ reference:
   - plot_t0_posterior
   - plot_traces
   - plots_of_growth_rate_posteriors
+  - plot_two_pop_fit
+  - plot_report
 
 - title: Simulate data
   desc:  Function to produce synthetic data.

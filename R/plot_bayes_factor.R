@@ -111,7 +111,7 @@ empty_bayes_factor_plot <- function() {
     ) +
     ggplot2::scale_y_continuous(
       name = "Exponential",
-      sec.axis = ggplot2::sec_axis(trans=~.*1, name="Logistic")
+      sec.axis = ggplot2::sec_axis(trans = ~ . * 1, name = "Logistic")
     ) +
     ggplot2::theme(
       axis.text.y = ggplot2::element_blank(),
@@ -120,6 +120,6 @@ empty_bayes_factor_plot <- function() {
       axis.line.x = ggplot2::element_line(arrow = ggplot2::arrow(type = "closed", length = ggplot2::unit(10, "pt"), ends = "both"))
     ) +
     ggplot2::scale_fill_manual(values = palette) +
-    ggplot2::labs(fill = "", y="pippo") +
+    ggplot2::labs(fill = "", y = "pippo") +
     ggplot2::theme(legend.position = "none")
 }
