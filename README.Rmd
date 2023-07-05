@@ -22,7 +22,7 @@ knitr::opts_chunk$set(
 [![Codecov test coverage](https://codecov.io/gh/caravagnalab/biPOD/branch/main/graph/badge.svg)](https://app.codecov.io/gh/caravagnalab/biPOD?branch=main)
 <!-- badges: end -->
 
-biPOD is a package to infer kinetic parameters of an evolving population whose size is observed at discrete intervals of time. The tool is able ...
+biPOD is a package to infer kinetic parameters of an evolving population whose size is observed at discrete intervals of time. The tool is able to ...
 
 #### Help and support
 

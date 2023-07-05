@@ -13,7 +13,8 @@ coverage](https://codecov.io/gh/caravagnalab/biPOD/branch/main/graph/badge.svg)]
 <!-- badges: end -->
 
 biPOD is a package to infer kinetic parameters of an evolving population
-whose size is observed at discrete intervals of time. The tool is able …
+whose size is observed at discrete intervals of time. The tool is able
+to …
 
 #### Help and support
 
