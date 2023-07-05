@@ -40,3 +40,5 @@ jobs:
       - uses: r-lib/actions/check-r-package@v2
         with:
           error-on: '"error"'
+        run: |
+          install.packages("rcmdcheck", repos='http://cran.us.r-project.org')
