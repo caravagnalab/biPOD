@@ -7,3 +7,4 @@
 ^LICENSE\.md$
 ^vignettes/articles$
 ^\.github$
+^codecov\.yml$

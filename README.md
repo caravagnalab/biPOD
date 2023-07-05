@@ -7,6 +7,9 @@
 
 [![R-CMD-check](https://github.com/caravagnalab/biPOD/workflows/R-CMD-check/badge.svg)](https://github.com/caravagnalab/biPOD/actions)
 [![pkgdown](https://github.com/caravagnalab/biPOD/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/caravagnalab/biPOD/actions/workflows/pkgdown.yaml)
+[![R-CMD-check](https://github.com/caravagnalab/biPOD/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/caravagnalab/biPOD/actions/workflows/R-CMD-check.yaml)
+[![Codecov test
+coverage](https://codecov.io/gh/caravagnalab/biPOD/branch/main/graph/badge.svg)](https://app.codecov.io/gh/caravagnalab/biPOD?branch=main)
 <!-- badges: end -->
 
 biPOD is a package to infer kinetic parameters of an evolving population

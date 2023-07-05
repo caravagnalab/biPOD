@@ -1,36 +1,37 @@
-Package: biPOD
 Type: Package
+Package: biPOD
 Title: biPOD
 Version: 0.1
+Authors@R: 
+    person("Giovanni", "Santacatterina", , "santacatterinagiovanni@gmail.com", role = c("aut", "cre"))
 Author: Giovanni Santacatterina
-Authors@R: person("Giovanni", "Santacatterina", role=c("aut", "cre"), email="santacatterinagiovanni@gmail.com")
 Description: biPOD does.
 License: GPL (>= 3)
+URL: https://caravagnalab.github.io/biPOD/
 Depends: 
     R (>= 3.4.0)
 Imports: 
     cli,
     dplyr,
+    ggforce,
     ggplot2,
     ggpubr,
-    ggforce,
     glue,
-    tidyr,
     magrittr,
+    patchwork,
+    posterior,
     reshape2,
     rlang,
     stats,
-    posterior,
-    patchwork
+    tidyr
+Suggests: 
+    cmdstanr,
+    knitr,
+    rmarkdown
+VignetteBuilder: 
+    knitr
+Additional_repositories:https://mc-stan.org/r-packages/
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
-Suggests: 
-    knitr,
-    cmdstanr,
-    rmarkdown
 SystemRequirements: GNU make
-Additional_repositories:
-    https://mc-stan.org/r-packages/
-VignetteBuilder: knitr
-URL: https://caravagnalab.github.io/biPOD/
