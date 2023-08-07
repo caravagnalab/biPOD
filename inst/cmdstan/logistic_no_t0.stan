@@ -52,6 +52,7 @@ data {
 }
 
 parameters {
+  real<lower=1> n0;
   real rho[G];
   // real<lower=prior_K, upper=100 * prior_K> K; // carrying capacity
   real<lower=prior_K> K; // carrying capacity
@@ -64,8 +65,10 @@ model {
     target += normal_lpdf(rho[i] | 0, 1); // sample the growth rates
   }
 
+  target += normal_lpdf(n0 | N[1], N[1] / 20.0);
+
   for (i in 2:S) {
-    target += poisson_lpmf(N[i] | mean_t(T[i], T[1], N[1], t_array, rho, K));
+    target += poisson_lpmf(N[i] | mean_t(T[i], T[1], n0, t_array, rho, K));
   }
 }
 

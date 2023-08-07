@@ -85,8 +85,11 @@ get_data_for_plot <- function(x, alpha) {
 
   # Plot model with t0
   if (t0_lower_bound == x$counts$time[1]) {
-    median_t0 <- as.array(t0_lower_bound)
-    n0 <- x$counts$count[1] / factor_size
+    median_t0 <- t0_lower_bound
+    n0 <- get_parameter(x$fit, "n0") %>%
+      dplyr::pull(.data$value) %>%
+      stats::median()
+    n0 <- n0
   } else {
     median_t0 <- get_parameter(x$fit, "t0") %>%
       dplyr::pull(.data$value) %>%

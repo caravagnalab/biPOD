@@ -34,6 +34,7 @@ data {
 }
 
 parameters {
+  real n0;
   real rho[G];
 }
 
@@ -42,8 +43,10 @@ model {
     target += normal_lpdf(rho[i] | 0, 1);
   }
 
+  target += normal_lpdf(n0 | N[1], N[1] / 20.0);
+
   for (i in 2:S) {
-    target += poisson_lpmf(N[i] | mean_t(T[i], T[1], N[1], t_array, rho));
+    target += poisson_lpmf(N[i] | mean_t(T[i], T[1], n0, t_array, rho));
   }
 }
 

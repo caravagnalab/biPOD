@@ -21,6 +21,13 @@ jobs:
         with:
           use-public-rspm: true
 
+      - name: Build Cmdstan
+        run: |
+          install.packages("cmdstanr", repos = c("https://mc-stan.org/r-packages/", getOption("repos")))
+          cmdstanr::check_cmdstan_toolchain(fix = TRUE)
+          cmdstanr::install_cmdstan(cores = parallel::detectCores())
+        shell: Rscript {0}
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::covr

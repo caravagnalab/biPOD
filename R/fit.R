@@ -63,6 +63,8 @@ fit <- function(
   x$fit <- res$fit
 
   # Add metadata
+  x$metadata$status <- diagnose_fit(res$fit)
+
   x$metadata$sampling <- res$fit_info$sampling
   x$metadata$factor_size <- res$fit_info$factor_size
   x$metadata$growth_type <- res$fit_info$growth_type

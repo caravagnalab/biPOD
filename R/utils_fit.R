@@ -80,3 +80,21 @@ fit_data <- function(x,
 
   return(res)
 }
+
+
+diagnose_fit <- function(fit) {
+  all_pars <- colnames(fit$draws(format = "matrix"))
+
+  n_chains <- ncol(fit$draws("lp__"))
+
+  status <- "PASS"
+  for (par in all_pars) {
+    rhat <- posterior::rhat(fit$draws(par))
+    if (rhat > 1.01) {
+      status <- "FAIL"
+      break()
+    }
+  }
+
+  status
+}
