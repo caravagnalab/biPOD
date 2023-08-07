@@ -21,18 +21,18 @@ reference:
 - contents:
   - plot_bayes_factor
   - plot_breakpoints_posterior
-  - plot_carrying_capacity_posterior
   - plot_elbo
   - plot_fit
   - plot_input
   - plot_mixture_model_omega
   - plot_normalized_growth_rate_posteriors
-  - plot_simple_fit
+  - plot_posterior
+  - plot_posteriors
+  - plot_report
   - plot_t0_posterior
   - plot_traces
-  - plots_of_growth_rate_posteriors
   - plot_two_pop_fit
-  - plot_report
+
 
 - title: Simulate data
   desc:  Function to produce synthetic data.

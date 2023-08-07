@@ -29,10 +29,11 @@ plot_report <- function(x,
       ggplot2::theme(legend.position = "none") +
       ggplot2::labs(title = "Fit", x = "time (year)")
   } else {
-    plots$fit <- plot_simple_fit(x,
-      shadows_colors = shadows_colors,
-      full_process = full_process,
-      t0_posterior_color = t0_posterior_color
+    plots$fit <- plot_fit(x,
+                          full_process = full_process,
+                          zoom = FALSE,
+                          shadows_colors = shadows_colors,
+                          t0_posterior_color = t0_posterior_color
     ) +
       ggplot2::theme(legend.position = "none") +
       ggplot2::labs(title = "Fit", x = "time (year)")
