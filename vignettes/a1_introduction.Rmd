@@ -18,4 +18,41 @@ options(crayon.enabled = F)
 
 ```{r setup, warning=FALSE}
 library(biPOD)
+require(dplyr)
 ```
+
+## Input format
+
+The input for `biPOD` is a tibble with two columns:
+
+- `time` denotes the instant of time in which each observation is collected
+- `count` contains the values of the observations which should be a proxy of a population size (e.g. number of cells, volume, ...)
+
+`biPOD` comes with a template dataset.
+
+```{r}
+# Load template data
+data("xenografts", package = "biPOD")
+```
+
+## Initialisation of a new dataset
+
+To use `biPOD` you need to initialize a `bipod` object with the initialisation function `init`.
+
+When you create a new object it is required to explicit the sample name.
+
+Additionally, since `biPOD` might deal with longitudinal observations coming from different time windows (e.g Natural evolution, Treatment, Relapse,...) divided by a set of `breakpoints`, the user should also input them if known. (see below)
+
+## Example biPOD object
+
+Let's use one of the sample coming from the `xenograft` data along with a made up set of breakpoints.
+
+```{r}
+mouse_id <- 529
+biPOD::init(
+  counts = xenografts %>% dplyr::filter(mouse == mouse_id) %>% dplyr::mutate(count = tumour_volume),
+  sample = mouse_id,
+  break_points = c(0, 5)
+)
+```
+If you look at the modified counts you will see that the observations have been grouped

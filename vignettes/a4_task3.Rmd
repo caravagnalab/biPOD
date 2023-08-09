@@ -1,0 +1,19 @@
+---
+title: "a4_task3"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{a4_task3}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(biPOD)
+```

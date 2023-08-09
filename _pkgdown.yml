@@ -39,3 +39,8 @@ reference:
 - contents:
   - sim_stochastic_exponential
   - sim_stochastic_logistic
+
+- title: Data
+  desc:  Example dataset to perform analysis.
+- contents:
+  - xenografts

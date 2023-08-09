@@ -1,0 +1,92 @@
+---
+title: "a3_task2"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{a3_task2}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(biPOD)
+require(dplyr)
+```
+
+In the previous task we assumed that the break points, i.e. the instant of time in which the latent dynamics changes abruptly, were know a priori. However, this is often not the case and one might be interested in inferring them.
+
+## Input data
+
+We take the `xenografts` data and we make it ready for inference by preparing the `count` column and by dividing the `time` column by a factor of 7 (in order to work with a unit of time of a week).
+
+We select the sample 543, already presented in the previous vignette.
+
+```{r}
+data("xenografts", package = "biPOD")
+mouse_id <- 543
+d <- xenografts %>%
+  dplyr::rename(count = tumour_volume) %>%
+  dplyr::mutate(time = time / 7) %>%
+  dplyr::filter(mouse == mouse_id)
+```
+
+## Breakpoints inference
+
+You can infer the breakpoints in the following way. After having initialized a `bipod` object with no breakpoints you can use the function `breakpoints_inference`. 
+
+You can tune the inference in two way:
+
+- if you know that the number of breakpoints will be a given `n` you should pass that value to the `desired_changepoints` parameter
+- if you are agnostic of the number of points you have to choose the parameter `lambda`, between 0 and 1, which control how smooth the approximation made by the algorithm in `biPOD` will be. This, consequently, will produce different number of break points, with the maximum for $\lambda = 0$ and the minimum for $\lambda = 1$.
+
+```{r}
+x <- biPOD::init(d, sample = mouse_id, break_points = NULL)
+x_using_desired <- biPOD::breakpoints_inference(x, desired_changepoints = 2, variational = T)
+x_using_lambda <- biPOD::breakpoints_inference(x, lambda = .5, variational = T)
+```
+
+The inferred breakpoints are now stored in the `metadata$breakpoints` field.
+
+```{r}
+print(x_using_desired$metadata$breakpoints)
+print(x_using_lambda$metadata$breakpoints)
+```
+
+## Breakpoints posteriors
+
+The posteriors of the inferred breakpoints can be seen using the `plot_breakpoints_posterior` function.
+
+```{r}
+biPOD::plot_breakpoints_posterior(x_using_desired) + ggplot2::ggtitle("desired changepoints = 2")
+biPOD::plot_breakpoints_posterior(x_using_lambda) + ggplot2::ggtitle("lambda = 0.5")
+```
+
+## Re-fit task 1
+
+Now that the breakpoints have been inferred one can fit the data according to the first taks simply using the `fit` function.
+Let's see how it works on one example.
+
+```{r, message=F, warning=FALSE}
+x_using_lambda <- biPOD::fit(
+  x_using_lambda,
+  t0_lower_bound = min(x_using_lambda$counts$time),
+  model_selection = T
+)
+```
+
+And let's look at the final result.
+
+```{r}
+biPOD::plot_fit(x_using_lambda)
+biPOD::plot_posteriors(
+  x_using_lambda,
+  x_fit = x_using_lambda$fit,
+  par_list = c("rho[1]", "rho[2]", "rho[3]")
+)
+```
