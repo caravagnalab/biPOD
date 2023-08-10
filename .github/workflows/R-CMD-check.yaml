@@ -54,7 +54,7 @@ jobs:
 
       - name: Add cmdstan repo
         run: |
-          writeLines('options(repos = c(cmdstanr = ""https://mc-stan.org/r-packages/"", getOption(\"repos\")))', file("~/.Rprofile", "ab"))
+          writeLines('options(repos = c(cmdstanr = "https://mc-stan.org/r-packages/", getOption(\"repos\")))', file("~/.Rprofile", "ab"))
         shell: Rscript {0}
 
       - uses: r-lib/actions/setup-r-dependencies@v2
