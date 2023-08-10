@@ -48,39 +48,24 @@ data {
 
   real t_array[G - 1];
 
-  real<upper=T[1]> t0_lower_bound;
   real<lower=0> prior_K;
 }
 
 parameters {
   real rho[G];
   real<upper=T[1]> t0; // t0 will be smaller or equal than the first time point we have
-  // real<lower=prior_K, upper=100 * prior_K> K; // carrying capacity
   real<lower=prior_K> K; // carrying capacity
 }
 
 model {
-  // target += uniform_lpdf(K | prior_K, 100 * prior_K); // sample the carrying capacity
   target += normal_lpdf(K | prior_K, prior_K); // sample the carrying capacity
   for (i in 1:G) {
     target += normal_lpdf(rho[i] | 0, 1); // sample the growth rates
   }
 
-  // target += normal_lpdf(t0 | - (1 / rho[1]) * log((K - 1 - N[1]) / (N[1] * (K - 1))), 1);// sample t0
-  target += uniform_lpdf(t0 | t0_lower_bound, T[1]);
+  target += normal_lpdf(t0 | T[1], 100);
 
   for (i in 1:S) {
     target += poisson_lpmf(N[i] | mean_t(T[i], t0, t_array, rho, K));
   }
 }
-
-// generated quantities {
-//   int <lower=0> N_rep[S];
-//   real log_lik[S];
-//
-//   for (i in 1:S) {
-//     log_lik[i] = poisson_lpmf(N[i] | mean_t(T[i], t0, t_array, rho, K));
-//     N_rep[i] = poisson_rng(mean_t(T[i], t0, t_array, rho, K));
-//   }
-// }
-

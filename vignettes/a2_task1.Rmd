@@ -56,22 +56,21 @@ biPOD::plot_input(x, log_scale = F, add_highlights = T)
 
 Now, to fit the data for the first task one has to use the `fit` function. 
 
-If you want to fit one specific type of growth (`exponential` or `logistic`) you have to pass one of the two to the parameter `growth_type`. Otherwise, if you want to test both of them and choose the best one you have to set the `model_selection` parameter to `TRUE`.
+If you want to fit one specific type of growth (`exponential` or `logistic`) you have to pass one of the two to the parameter `growth_type`. Otherwise, if you want to test both of them and choose the best one you have to set the `growth_type` parameter to `both`.
 
 Sometimes it might be helpful to scale the input data by a `factor_size`, so that all the counts will be divided by it.
 
-Another important parameter is `t0_lower_bound` which sets the lower bound for the instant of time in which the population was born. If the inserted value is smaller than the minimal x-coordinate in the input dataset a so called $t_0$ will be inferred; if not, this additional parameter will not be inferred. This might be useful when the observed population is decreasing or growing extremely slowly (growth rate near 0).
+When a population is decreasing or growing extremely slowly ($\rho \sim 0$) the instant of time in which the population was born might be impossible to infer. To deal with such situations, or when $t_0$ is of no interest, just set the `infer_t0` parameter to `FALSE`. 
 
 In order to use a Variational Inference algorithm it suffice to set the `variational` parameter to `TRUE`.
 
 
-```{r, warning=FALSE, message=F}
+```{r}
 x <- biPOD::fit(
   x,
-  model_selection = TRUE,
+  growth_type = "both",
   model_selection_algo = "mixture_model",
   factor_size = 1,
-  t0_lower_bound = min(x$counts$time) - 50,
   variational = T
 )
 ```
@@ -151,9 +150,8 @@ Moreover, we are going to use `bayes_factor` as a model selection algorithm.
 ```{r, warning=FALSE, message=F}
 x <- biPOD::fit(
   x,
-  model_selection = TRUE,
+  growth_type = "both",
   model_selection_algo = "bayes_factor",
-  t0_lower_bound = min(x$counts$time) - 50,
   variational = FALSE
 )
 ```
@@ -180,7 +178,7 @@ biPOD::plot_fit(x = x, legend_labels = c("Natural growth", "Treatment", "Relapse
 
 ### Plot of posteriors
 
-Let's use `plot_posteriors` function to plot all the growth rates one agains each other.
+Let's use `plot_posteriors` function to plot all the growth rates one against each other.
 
 ```{r}
 biPOD::plot_posteriors(

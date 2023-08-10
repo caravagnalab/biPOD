@@ -31,8 +31,6 @@ data {
   real T[S];      // observations
 
   real t_array[G - 1];
-
-  real<upper=T[1]> t0_lower_bound;
 }
 
 parameters {
@@ -45,20 +43,9 @@ model {
     target += normal_lpdf(rho[i] | 0, 1);
   }
 
-  // target += normal_lpdf(t0 | - (log(N[1] / (rho[1]))), 1);
-  target += uniform_lpdf(t0 | t0_lower_bound, T[1]);
+  target += normal_lpdf(t0 | T[1], 100);
 
   for (i in 1:S) {
     target += poisson_lpmf(N[i] | mean_t(T[i], t0, t_array, rho));
   }
 }
-
-// generated quantities {
-//   int <lower=0> N_rep[S];
-//   real log_lik[S];
-//
-//   for (i in 1:S) {
-//     log_lik[i] = poisson_lpmf(N[i] | mean_t(T[i], t0, t_array, rho));
-//     N_rep[i] = poisson_rng(mean_t(T[i], t0, t_array, rho));
-//   }
-// }

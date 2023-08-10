@@ -72,11 +72,10 @@ biPOD::plot_breakpoints_posterior(x_using_lambda) + ggplot2::ggtitle("lambda = 0
 Now that the breakpoints have been inferred one can fit the data according to the first taks simply using the `fit` function.
 Let's see how it works on one example.
 
-```{r, message=F, warning=FALSE}
+```{r}
 x_using_lambda <- biPOD::fit(
   x_using_lambda,
-  t0_lower_bound = min(x_using_lambda$counts$time),
-  model_selection = T
+  growth_type = "both"
 )
 ```
 

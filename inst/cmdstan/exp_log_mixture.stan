@@ -70,47 +70,35 @@ data {
 
   real t_array[G - 1];
 
-  real<upper=T[1]> t0_lower_bound;
   real<lower=0> prior_K;
-
 }
 
 parameters {
   real omega;
   real rho_exp[G];
   real rho_log[G];
-  real<lower=t0_lower_bound, upper=T[1]> t0_exp;
-  real<lower=t0_lower_bound, upper=T[1]> t0_log;
+  real<upper=T[1]> t0_exp;
+  real<upper=T[1]> t0_log;
   real<lower=prior_K> K; // carrying capacity
-
-
-  // real<upper=T[1]> t0; // t0 will be smaller or equal than the first time point we have
-
-
 }
 
 model {
   target += beta_lpdf(omega | 5, 5);
   target += normal_lpdf(K | prior_K, prior_K); // sample the carrying capacity
 
-
-
   for (i in 1:G) {
     target += normal_lpdf(rho_exp[i] | 0, 1);
     target += normal_lpdf(rho_log[i] | 0, 1);
   }
 
-  target += normal_lpdf(t0_exp | (t0_lower_bound + T[1]) / 2, abs(t0_lower_bound));
-  target += normal_lpdf(t0_log | (t0_lower_bound + T[1]) / 2, abs(t0_lower_bound));
-
-  // target += normal_lpdf(t0 | - (log(N[1] / (rho[1]))), 1);
-
+  target += normal_lpdf(t0_exp | T[1], 100);
+  target += normal_lpdf(t0_log | T[1], 100);
 
   for (i in 1:S) {
-    // target += poisson_lpmf(N[i] | mean_t(T[i], t0, t_array, rho));
-    target += log_mix(omega,
-                      poisson_lpmf(N[i] | mean_exp(T[i], t0_exp, t_array, rho_exp)),
-                      poisson_lpmf(N[i] | mean_log(T[i], t0_log, t_array, rho_log, K))
-                      );
+    target += log_mix(
+      omega,
+      poisson_lpmf(N[i] | mean_exp(T[i], t0_exp, t_array, rho_exp)),
+      poisson_lpmf(N[i] | mean_log(T[i], t0_log, t_array, rho_log, K))
+    );
   }
 }

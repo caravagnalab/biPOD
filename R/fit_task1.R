@@ -2,77 +2,65 @@
 #'
 #' @param x a bipod object
 #' @param growth_type character string specifying the type of growth assumed,
-#'  one of "exponential", "logistic".
+#'  one of 'exponential', 'logistic', or 'both'. If 'both' is selected model selection will be performed.
 #'
-#' @param variational Boolean specifying whether using variational as opposed to mcmc sampling
 #' @param factor_size numeric factor by which to divide counts in the bipod object
-#' @param t0_lower_bound lower bound of t0, which is the instant of time in which the population is born
-#' @param prior_K Prior mean for the carrying capacity.
-#' @param model_selection Boolean, if TRUE the best model between exponential and logistic will be used
+#' @param infer_t0 Boolean, if TRUE an estimate of the instant of time in which the population is born will be inferred
 #' @param model_selection_algo Algorithm to use for model selection, either 'bayes_factor' or 'mixture_model'
+#' @param variational Boolean specifying whether using variational as opposed to mcmc sampling
+#'
 #' @param chains integer number of chains to run in the Markov Chain Monte Carlo (MCMC) algorithm
-#' @param iter integer number of iterations to run in the MCMC algorithm
 #' @param cores integer number of cores to use in parallel processing
+#' @param iter integer number of iterations to run in the MCMC algorithm
 #'
 #' @return the input bipod object with an added 'fit' slot containing the fitted model and an added 'fit_info' slot containing information about the fit
 #' @export
 fit <- function(
     x,
     growth_type = "exponential",
+    infer_t0 = TRUE,
     variational = FALSE,
-    t0_lower_bound = -10,
     factor_size = 1,
-    prior_K = NULL,
-    model_selection = FALSE,
     model_selection_algo = "bayes_factor",
     chains = 4,
     iter = 5000,
     cores = 4) {
   # Check input
   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
-  if (!(growth_type %in% c("exponential", "logistic"))) stop("growth_type must be one of 'exponential' and 'logistic'")
+  if (!(growth_type %in% c("exponential", "logistic", "both"))) stop("growth_type must be one of 'exponential' and 'logistic'")
   if (!(factor_size > 0)) stop("factor_size must be positive")
   sampling_type <- if (variational) "variational inference" else "MCMC sampling"
 
-  if (model_selection) {
+  if (growth_type == "both") {
     if (!(model_selection_algo %in% c("bayes_factor", "mixture_model"))) stop("model_selection_algo must be one of 'bayes_factor' and 'mixture_model'")
     cli::cli_alert_info(paste("Fitting with model selection."))
     cat("\n")
 
     if (model_selection_algo == "bayes_factor") {
-      res <- fit_with_bayes_factor(
-        x = x,
-        factor_size = factor_size,
-        variational = variational,
-        t0_lower_bound = t0_lower_bound,
-        prior_K = prior_K,
-        chains = chains,
-        iter = iter,
-        cores = cores
-      )
+      func <- fit_with_bayes_factor
     } else {
-      res <- fit_with_mixture_model(
-        x = x,
-        factor_size = factor_size,
-        variational = variational,
-        t0_lower_bound = t0_lower_bound,
-        prior_K = prior_K,
-        chains = chains,
-        iter = iter,
-        cores = cores
-      )
+      func <- fit_with_mixture_model
     }
+
+    res <- func(
+      x = x,
+      factor_size = factor_size,
+      infer_t0 = infer_t0,
+      variational = variational,
+      chains = chains,
+      cores = cores,
+      iter = iter
+    )
   } else {
     cli::cli_alert_info(paste("Fitting", growth_type, "growth using", sampling_type, "..."))
     cat("\n")
 
     res <- fit_data(
       x = x,
+      infer_t0 = infer_t0,
       growth_type = growth_type,
       factor_size = factor_size,
       variational = variational,
-      t0_lower_bound = t0_lower_bound,
-      prior_K = prior_K,
       chains = chains,
       iter = iter,
       cores = cores
@@ -93,8 +81,7 @@ fit <- function(
   x$metadata$sampling <- res$fit_info$sampling
   x$metadata$factor_size <- res$fit_info$factor_size
   x$metadata$growth_type <- res$fit_info$growth_type
-  x$metadata$t0_lower_bound <- res$fit_info$t0_lower_bound
-  x$metadata$prior_K <- res$fit_info$prior_K
+  x$metadata$t0_inferred <- res$fit_info$t0_inferred
 
   x$metadata$best_growth <- res$fit_info$best_growth
   x$metadata$bayes_factor <- res$fit_info$bayes_factor
@@ -109,15 +96,7 @@ fit <- function(
 
 ## Utils fot fitting
 
-prep_data_fit <- function(x, factor_size, prior_K, t0_lower_bound) {
-  # Parameters check
-  if (is.null(prior_K)) {
-    prior_K <- max(x$counts$count) / factor_size
-  } else {
-    prior_K <- prior_K / factor_size
-    if (prior_K <= 0) stop("'prior_K' should eiter be NULL or positive")
-  }
-
+prep_data_fit <- function(x, factor_size) {
   # Prepare data
   if (is.null(x$metadata$breakpoints)) {
     G <- 1
@@ -134,35 +113,20 @@ prep_data_fit <- function(x, factor_size, prior_K, t0_lower_bound) {
     N = as.array(as.integer(x$counts$count / factor_size)),
     T = as.array(x$counts$time),
     t_array = as.array(breakpoints),
-    t0_lower_bound = t0_lower_bound,
-    prior_K = prior_K
+    prior_K = max(x$counts$count) / factor_size
   )
 
   return(input_data)
 }
 
-fit_data <- function(
-    x,
-    growth_type = "exponential",
-    factor_size = 1,
-    variational = FALSE,
-    t0_lower_bound = -10,
-    prior_K = NULL,
-    chains = 4,
-    iter = 4000,
-    cores = 4) {
-  input_data <- prep_data_fit(
-    x = x,
-    factor_size = factor_size,
-    prior_K = prior_K,
-    t0_lower_bound = t0_lower_bound
-  )
+fit_data <- function(x, growth_type, factor_size, infer_t0, variational, chains, cores, iter) {
+  input_data <- prep_data_fit(x = x, factor_size = factor_size)
 
   # Get the model
-  if (t0_lower_bound == x$counts$time[1]) {
-    model_name <- paste0(growth_type, "_no_t0")
-  } else {
+  if (infer_t0) {
     model_name <- growth_type
+  } else {
+    model_name <- paste0(growth_type, "_no_t0")
   }
   model <- get_model(model_name = model_name)
 
@@ -190,8 +154,7 @@ fit_data <- function(
     sampling = sampling,
     growth_type = growth_type,
     factor_size = factor_size,
-    t0_lower_bound = t0_lower_bound,
-    prior_K = input_data$prior_K
+    t0_inferred = infer_t0
   )
 
   res <- list(
@@ -205,28 +168,25 @@ fit_data <- function(
 
 ## Bayes factors utils
 
-fit_with_bayes_factor <- function(x,
-                                  factor_size = 1,
-                                  variational = FALSE,
-                                  t0_lower_bound = -10,
-                                  prior_K = NULL,
-                                  chains = 4, iter = 4000, cores = 4) {
-  input_data <- prep_data_fit(x = x, factor_size = factor_size, prior_K = prior_K, t0_lower_bound = t0_lower_bound)
+fit_with_bayes_factor <- function(x, factor_size, infer_t0, variational, chains, cores, iter) {
+  input_data <- prep_data_fit(x = x, factor_size = factor_size)
 
-  res_exp <- fit_data(
-    x = x, growth_type = "exponential", factor_size = factor_size,
-    variational = variational, t0_lower_bound = t0_lower_bound, prior_K = prior_K,
-    chains = chains, iter = iter, cores = cores
-  )
+  results <- lapply(c("exponential", "logistic"), function(g) {
+    fit_data(
+      x = x,
+      growth_type = g,
+      factor_size = factor_size,
+      infer_t0 = infer_t0,
+      variational = variational,
+      chains = chains,
+      cores = cores,
+      iter = iter
+    )
+  })
 
-  res_log <- fit_data(
-    x = x, growth_type = "logistic", factor_size = factor_size,
-    variational = variational, t0_lower_bound = t0_lower_bound, prior_K = prior_K,
-    chains = chains, iter = iter, cores = cores
-  )
-
-  fits <- list(res_exp$fit, res_log$fit)
-
+  fits <- lapply(results, function(r) {
+    r$fit
+  })
   # Compute Marginal Likelihoods for every model
 
   # Approximated version
@@ -252,12 +212,12 @@ fit_with_bayes_factor <- function(x,
     K <- bayes_factors[1, 2]
     best_growth <- "Exponential"
     evidence <- bayes_factor_evidence(K)
-    res <- res_exp
+    res <- results[[1]]
   } else {
     K <- bayes_factors[2, 1]
     best_growth <- "Logistic"
     evidence <- bayes_factor_evidence(K)
-    res <- res_log
+    res <- results[[2]]
   }
 
   res$fit_info$best_growth <- best_growth
@@ -289,20 +249,16 @@ bayes_factor_evidence <- function(K) {
 }
 
 ## Mixture model utils
+fit_with_mixture_model <- function(x, factor_size, infer_t0, variational, chains, cores, iter) {
+  input_data <- prep_data_fit(x = x, factor_size = factor_size)
 
-fit_with_mixture_model <- function(
-    x,
-    factor_size = 1,
-    variational = FALSE,
-    t0_lower_bound = -10,
-    prior_K = NULL,
-    chains = 4,
-    iter = 4000,
-    cores = 4) {
-  input_data <- prep_data_fit(x = x, factor_size = factor_size, prior_K = prior_K, t0_lower_bound = t0_lower_bound)
+  if (infer_t0) {
+    model <- get_model(model_name = "exp_log_mixture")
+  } else {
+    stop("Mixture model not ready without the inference of t0!")
+  }
 
-  model <- get_model(model_name = "exp_log_mixture")
-
+  if (variational) cli::cli_alert_warning("The first step of the inference will be performed using MCMC...")
   tmp <- utils::capture.output(suppressMessages(fit <- model$sample(input_data, chains = chains, iter_warmup = iter, iter_sampling = iter, parallel_chains = cores)))
 
   # extract omega draws and compute probability of log and of exp
@@ -314,34 +270,23 @@ fit_with_mixture_model <- function(
   p_log <- 1 - p_exp
 
   if (p_exp >= p_log) {
-    best_growth <- "Exponential"
+    best_growth <- "exponential"
     odds <- p_exp / p_log
-    res <- fit_data(
-      x = x,
-      growth_type = "exponential",
-      factor_size = factor_size,
-      variational = variational,
-      t0_lower_bound = t0_lower_bound,
-      prior_K = prior_K,
-      chains = chains,
-      iter = iter,
-      cores = cores
-    )
   } else {
-    best_growth <- "Logistic"
+    best_growth <- "logistic"
     odds <- p_log / p_exp
-    res <- fit_data(
-      x = x,
-      growth_type = "logistic",
-      factor_size = factor_size,
-      variational = variational,
-      t0_lower_bound = t0_lower_bound,
-      prior_K = prior_K,
-      chains = chains,
-      iter = iter,
-      cores = cores
-    )
   }
+
+  res <- fit_data(
+    x = x,
+    growth_type = best_growth,
+    factor_size = factor_size,
+    infer_t0 = infer_t0,
+    variational = variational,
+    chains = chains,
+    cores = cores,
+    iter = iter
+  )
 
   res$fit_info$best_growth <- best_growth
   res$fit_info$odds <- odds

@@ -11,7 +11,9 @@ plot_posterior(x, x_fit, par_name, color = "black")
 
 \item{x_fit}{The fit which contain the desired parameter. It should be inside x.}
 
-\item{par_name}{Name of the desired parameter}
+\item{par_name}{Name of the desired parameter.}
+
+\item{color}{Color for the density plot.}
 }
 \value{
 A plot of the Bayes Factor with its significance.

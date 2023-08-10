@@ -12,7 +12,9 @@ get_model <- function(model_name) {
   if (!(model_name) %in% names(all_paths)) stop("model_name not recognized")
 
   model_path <- system.file("cmdstan", all_paths[[model_name]], package = "biPOD", mustWork = T)
-  cmdstanr::cmdstan_model(model_path)
+
+  tmp <- utils::capture.output(suppressMessages(model <- cmdstanr::cmdstan_model(model_path)))
+  model
 }
 
 get_parameter <- function(fit, par_name) {

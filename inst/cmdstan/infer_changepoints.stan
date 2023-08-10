@@ -20,7 +20,6 @@ functions {
       res = res * exp(rho_array[J+1] * (t - changing_times[J]));
       return(res);
     }
-
   }
 }
 
@@ -54,7 +53,6 @@ model {
   }
 
   for (i in 2:G) {
-    // target += uniform_lpdf(changing_times_unit[i-1] | -dt, dt);
     target += normal_lpdf(changing_times_unit[i-1] | 0, dt);
   }
 
@@ -62,13 +60,3 @@ model {
     target += poisson_lpmf(N[i] | mean_t(N[1], T[1], T[i], changing_times, rho));
   }
 }
-
-// generated quantities {
-//   int <lower=0> N_rep[S];
-//   real log_lik[S];
-//
-//   for (i in 1:S) {
-//     log_lik[i] = poisson_lpmf(N[i] | mean_t(T[i], t0, changing_times, rho));
-//     N_rep[i] = poisson_rng(mean_t(T[i], t0, changing_times, rho));
-//   }
-// }

@@ -69,10 +69,8 @@ get_normalized_density <- function(values, max_value = 1) {
 }
 
 add_t0_posterior <- function(base_plot, x, color) {
-  t0_lower_bound <- x$metadata$t0_lower_bound
-
   # Plot model with t0
-  if (t0_lower_bound == x$counts$time[1]) {
+  if (!(x$metadata$t0_inferred)) {
     return(base_plot)
   } else {
     values <- get_parameter(x$fit, "t0") %>% dplyr::pull(.data$value)

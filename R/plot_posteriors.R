@@ -2,7 +2,8 @@
 #'
 #' @param x A biPOD object of class `bipod`. Must contains 'fit' and must have been fitted with model selection.
 #' @param x_fit The fit which contain the desired parameter. It should be inside x.
-#' @param par_name Name of the desired parameter
+#' @param par_name Name of the desired parameter.
+#' @param color Color for the density plot.
 #'
 #' @returns A plot of the Bayes Factor with its significance.
 #' @export

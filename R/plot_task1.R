@@ -161,20 +161,18 @@ plot_t0_posterior <- function(x, add_prior = F) {
   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
   if (!("fit" %in% names(x))) stop("Input must contain a 'fits' field")
 
-  t0_lower_bound <- x$metadata$t0_lower_bound
-
   # Plot model with t0
-  if (t0_lower_bound == x$counts$time[1]) {
-    stop("t0 has been set manually as the first time step. Posterior distribution not available.")
-  } else {
+  if (x$metadata$t0_inferred) {
     p <- plot_posterior(x, x$fit, "t0", "darkorange")
+  } else {
+    stop("t0 has not been inferred. Posterior distribution not available.")
   }
 
   if (add_prior) {
-    xmin <- x$metadata$t0_lower_bound - 0.1
+    xmin <- 100
     xmax <- min(x$counts$time) + 0.1
     xs <- seq(xmin, xmax, length = 500)
-    ys <- stats::dunif(xs, x$metadata$t0_lower_bound, min(x$counts$time))
+    ys <- stats::dnorm(xs, min(x$counts$time), 100)
     prior_data <- dplyr::tibble(x = xs, y = ys)
     p <- p + ggplot2::geom_line(
       data = prior_data,
@@ -208,11 +206,10 @@ get_data_for_plot <- function(x, alpha) {
   }
 
   factor_size <- x$metadata$factor_size # factor size
-  t0_lower_bound <- x$metadata$t0_lower_bound
 
   # Plot model with t0
-  if (t0_lower_bound == x$counts$time[1]) {
-    median_t0 <- t0_lower_bound
+  if (!(x$metadata$t0_inferred)) {
+    median_t0 <- min(x$counts$time)
     n0 <- get_parameter(x$fit, "n0") %>%
       dplyr::pull(.data$value) %>%
       stats::median()

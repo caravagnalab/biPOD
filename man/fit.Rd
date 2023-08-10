@@ -7,11 +7,9 @@
 fit(
   x,
   growth_type = "exponential",
+  infer_t0 = TRUE,
   variational = FALSE,
-  t0_lower_bound = -10,
   factor_size = 1,
-  prior_K = NULL,
-  model_selection = FALSE,
   model_selection_algo = "bayes_factor",
   chains = 4,
   iter = 5000,
@@ -22,17 +20,13 @@ fit(
 \item{x}{a bipod object}
 
 \item{growth_type}{character string specifying the type of growth assumed,
-one of "exponential", "logistic".}
+one of 'exponential', 'logistic', or 'both'. If 'both' is selected model selection will be performed.}
+
+\item{infer_t0}{Boolean, if TRUE an estimate of the instant of time in which the population is born will be inferred}
 
 \item{variational}{Boolean specifying whether using variational as opposed to mcmc sampling}
 
-\item{t0_lower_bound}{lower bound of t0, which is the instant of time in which the population is born}
-
 \item{factor_size}{numeric factor by which to divide counts in the bipod object}
-
-\item{prior_K}{Prior mean for the carrying capacity.}
-
-\item{model_selection}{Boolean, if TRUE the best model between exponential and logistic will be used}
 
 \item{model_selection_algo}{Algorithm to use for model selection, either 'bayes_factor' or 'mixture_model'}
 

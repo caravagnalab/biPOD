@@ -54,12 +54,10 @@ data {
 parameters {
   real<lower=1> n0;
   real rho[G];
-  // real<lower=prior_K, upper=100 * prior_K> K; // carrying capacity
   real<lower=prior_K> K; // carrying capacity
 }
 
 model {
-  // target += uniform_lpdf(K | prior_K, 100 * prior_K); // sample the carrying capacity
   target += normal_lpdf(K | prior_K, prior_K); // sample the carrying capacity
   for (i in 1:G) {
     target += normal_lpdf(rho[i] | 0, 1); // sample the growth rates
@@ -71,14 +69,3 @@ model {
     target += poisson_lpmf(N[i] | mean_t(T[i], T[1], n0, t_array, rho, K));
   }
 }
-
-// generated quantities {
-//   int <lower=0> N_rep[S-1];
-//   real log_lik[S-1];
-//
-//   for (i in 2:S) {
-//     log_lik[i-1] = poisson_lpmf(N[i] | mean_t(T[i], T[1], N[1], t_array, rho, K));
-//     N_rep[i-1] = poisson_rng(mean_t(T[i], T[1], N[1], t_array, rho, K));
-//   }
-// }
-
