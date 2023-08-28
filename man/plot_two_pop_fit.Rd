@@ -4,7 +4,7 @@
 \alias{plot_two_pop_fit}
 \title{Plot the fit over the input data.}
 \usage{
-plot_two_pop_fit(x, CI = 0.95, add_posteriors = TRUE)
+plot_two_pop_fit(x, CI = 0.95, add_posteriors = F, split_process = F)
 }
 \arguments{
 \item{x}{A bipod object of class \code{bipod}. Must contains 'fit'}
@@ -14,6 +14,9 @@ plot_two_pop_fit(x, CI = 0.95, add_posteriors = TRUE)
 \item{add_posteriors}{Boolean. If TRUE, posteriors regarding
 the time of origin of the resistant population and the time of death
 of the sensitive popultation will be added}
+
+\item{split_process}{Boolean. If TRUE, the dynamics of the two populations
+will be divided.}
 }
 \value{
 A plot of the fit over the input data.

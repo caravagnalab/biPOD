@@ -5,28 +5,48 @@
 #' @param add_posteriors Boolean. If TRUE, posteriors regarding
 #' the time of origin of the resistant population and the time of death
 #' of the sensitive popultation will be added
+#' @param split_process Boolean. If TRUE, the dynamics of the two populations
+#' will be divided.
 #'
 #' @returns A plot of the fit over the input data.
 #' @export
-plot_two_pop_fit <- function(x, CI = .95, add_posteriors = TRUE) {
+plot_two_pop_fit <- function(x, CI = .95, add_posteriors = F, split_process = F) {
   # Check input
   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
   if (!("two_pop_fit" %in% names(x))) stop("Input must contain a 'two_pop_fit' field")
+  if (add_posteriors & !(split_process)) stop("Posteriors can be only added if 'split_process' = TRUE")
 
   alpha <- 1 - CI
   fitted_data <- get_data_for_two_pop_plot(x, alpha = alpha)
 
+  fitted_data <- dplyr::bind_rows(fitted_data,
+                                  fitted_data %>%
+                                    dplyr::select(x, .data$ylow, .data$yhigh, .data$y) %>%
+                                    dplyr::group_by(x) %>%
+                                    dplyr::summarise_all(sum) %>%
+                                    dplyr::mutate(group = 'total'))
+
+  times <- x$counts$time
+
   # Plot data
   p <- ggplot2::ggplot() +
     ggplot2::geom_point(x$counts, mapping = ggplot2::aes(x = .data$time, y = .data$count)) + # original points
-    ggplot2::geom_line(fitted_data %>% dplyr::filter(.data$group == "resistant"), mapping = ggplot2::aes(x = .data$x, y = .data$y), col = "forestgreen") +
-    ggplot2::geom_ribbon(fitted_data %>% dplyr::filter(.data$group == "resistant"), mapping = ggplot2::aes(x = .data$x, y = .data$y, ymin = .data$ylow, ymax = .data$yhigh), fill = "forestgreen", alpha = .3) +
-    ggplot2::geom_line(fitted_data %>% dplyr::filter(.data$group == "sensible"), mapping = ggplot2::aes(x = .data$x, y = .data$y), col = "indianred") +
-    ggplot2::geom_ribbon(fitted_data %>% dplyr::filter(.data$group == "sensible"), mapping = ggplot2::aes(x = .data$x, y = .data$y, ymin = .data$ylow, ymax = .data$yhigh), fill = "indianred", alpha = .3) +
+    ggplot2::geom_line(fitted_data %>%
+                         dplyr::filter(.data$group == "total", .data$x >= min(times), .data$x <= max(times)), mapping = ggplot2::aes(x = .data$x, y = .data$y), col = "black") +
     my_ggplot_theme()
 
-  p <- add_posterior(base_plot = p, param = "t0_r", x = x, x_fit = x$two_pop_fit, color = "forestgreen")
-  p <- add_posterior(base_plot = p, param = "t_end", x = x, x_fit = x$two_pop_fit, color = "indianred")
+  if (split_process) {
+    p <- p +
+      ggplot2::geom_line(fitted_data %>% dplyr::filter(.data$group == "resistant", .data$x <= max(times)), mapping = ggplot2::aes(x = .data$x, y = .data$y), col = "forestgreen") +
+      ggplot2::geom_ribbon(fitted_data %>% dplyr::filter(.data$group == "resistant", .data$x <= max(times)), mapping = ggplot2::aes(x = .data$x, y = .data$y, ymin = .data$ylow, ymax = .data$yhigh), fill = "forestgreen", alpha = .3) +
+      ggplot2::geom_line(fitted_data %>% dplyr::filter(.data$group == "sensible", .data$x >= min(times)), mapping = ggplot2::aes(x = .data$x, y = .data$y), col = "indianred") +
+      ggplot2::geom_ribbon(fitted_data %>% dplyr::filter(.data$group == "sensible", .data$x >= min(times)), mapping = ggplot2::aes(x = .data$x, y = .data$y, ymin = .data$ylow, ymax = .data$yhigh), fill = "indianred", alpha = .3)
+  }
+
+  if (add_posteriors) {
+    p <- add_posterior(base_plot = p, param = "t0_r", x = x, x_fit = x$two_pop_fit, color = "forestgreen")
+    p <- add_posterior(base_plot = p, param = "t_end", x = x, x_fit = x$two_pop_fit, color = "indianred")
+  }
 
   return(p)
 }
@@ -51,9 +71,14 @@ get_data_for_two_pop_plot <- function(x, alpha) {
     dplyr::pull(.data$value) %>%
     stats::median()
 
-  min_t <- min(median_t0_r, min(x$counts$time))
+  median_t_end <- get_parameter(fit, "t_end") %>%
+    dplyr::pull(.data$value) %>%
+    stats::median()
 
-  xs <- seq(min_t, max(x$counts$time), length = 1000)
+  min_t <- min(median_t0_r, min(x$counts$time))
+  max_t <- max(median_t_end, max(x$counts$time))
+
+  xs <- seq(min_t, max_t, length = 2000)
 
   median_ns <- get_parameter(fit, "ns") %>%
     dplyr::pull(.data$value) %>%
