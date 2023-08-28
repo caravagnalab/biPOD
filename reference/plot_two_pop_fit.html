@@ -55,7 +55,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">plot_two_pop_fit</span><span class="op">(</span><span class="va">x</span>, CI <span class="op">=</span> <span class="fl">0.95</span>, add_posteriors <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">plot_two_pop_fit</span><span class="op">(</span><span class="va">x</span>, CI <span class="op">=</span> <span class="fl">0.95</span>, add_posteriors <span class="op">=</span> <span class="cn">F</span>, split_process <span class="op">=</span> <span class="cn">F</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -72,6 +72,11 @@
 <dd><p>Boolean. If TRUE, posteriors regarding
 the time of origin of the resistant population and the time of death
 of the sensitive popultation will be added</p></dd>
+
+
+<dt>split_process</dt>
+<dd><p>Boolean. If TRUE, the dynamics of the two populations
+will be divided.</p></dd>
 
 </dl></div>
     <div class="section level2">

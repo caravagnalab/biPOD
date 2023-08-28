@@ -142,7 +142,6 @@ minimum for <span class="math inline">\(\lambda = 1\)</span>.</li>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Using sample named: <span style="color: #00BB00;">543</span>.</span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> No group column present in input dataframe! A column will be added.</span></span>
 <span><span class="va">x_using_desired</span> <span class="op">&lt;-</span> <span class="fu">biPOD</span><span class="fu">::</span><span class="fu"><a href="../reference/breakpoints_inference.html">breakpoints_inference</a></span><span class="op">(</span><span class="va">x</span>, desired_changepoints <span class="op">=</span> <span class="fl">2</span>, variational <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Chain 1 stan::variational::normal_meanfield::calc_grad: The number of dropped evaluations has reached its maximum amount (10). Your model may be either severely ill-conditioned or misspecified.</span></span>
 <span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Breakpoints have been inferred. Inspect the results using the <span style="color: #00BB00;">plot_breakpoints_posterior</span> function.</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Median of the inferred breakpoints have been succesfully stored.</span></span>
 <span><span class="va">x_using_lambda</span> <span class="op">&lt;-</span> <span class="fu">biPOD</span><span class="fu">::</span><span class="fu"><a href="../reference/breakpoints_inference.html">breakpoints_inference</a></span><span class="op">(</span><span class="va">x</span>, lambda <span class="op">=</span> <span class="fl">.5</span>, variational <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span>
@@ -152,9 +151,9 @@ minimum for <span class="math inline">\(\lambda = 1\)</span>.</li>
 <code>metadata$breakpoints</code> field.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">x_using_desired</span><span class="op">$</span><span class="va">metadata</span><span class="op">$</span><span class="va">breakpoints</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 0.118936 6.703840</span></span>
+<span><span class="co">#&gt; [1] 1.395735 3.589680</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">x_using_lambda</span><span class="op">$</span><span class="va">metadata</span><span class="op">$</span><span class="va">breakpoints</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] -4.64257  3.57721</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 0.1270685 6.7023350</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="breakpoints-posteriors">Breakpoints posteriors<a class="anchor" aria-label="anchor" href="#breakpoints-posteriors"></a>
@@ -181,7 +180,7 @@ Let’s see how it works on one example.</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Fitting with model selection.</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Model selection finished!</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Model with <span style="color: #0000BB;">"Logistic"</span> growth deemed better with <span style="color: #0000BB;">"Decisive"</span> evidence. (BF = <span style="color: #0000BB;">1.62971471547795e+54</span>)</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Model with <span style="color: #0000BB;">"Logistic"</span> growth deemed better with <span style="color: #0000BB;">"Decisive"</span> evidence. (BF = <span style="color: #0000BB;">8008303044938.62</span>)</span></span></code></pre></div>
 <p>And let’s look at the final result.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">biPOD</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_fit.html">plot_fit</a></span><span class="op">(</span><span class="va">x_using_lambda</span><span class="op">)</span></span></code></pre></div>
