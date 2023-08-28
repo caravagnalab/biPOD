@@ -6,8 +6,9 @@ articles:
   a2_task1: a2_task1.html
   a3_task2: a3_task2.html
   a4_task3: a4_task3.html
+  a5_supplementary_materials: a5_supplementary_materials.html
   biPOD: biPOD.html
-last_built: 2023-08-10T10:22Z
+last_built: 2023-08-28T08:00Z
 urls:
   reference: https://caravagnalab.github.io/biPOD/reference
   article: https://caravagnalab.github.io/biPOD/articles

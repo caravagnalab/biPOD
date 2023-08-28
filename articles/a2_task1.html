@@ -53,8 +53,9 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/a1_introduction.html">1. Introduction</a>
     <a class="dropdown-item" href="../articles/a2_task1.html">2. Task 1</a>
-    <a class="dropdown-item" href="../articles/a3_task2.html">a3_task2</a>
-    <a class="dropdown-item" href="../articles/a4_task3.html">a4_task3</a>
+    <a class="dropdown-item" href="../articles/a3_task2.html">3. Task 2</a>
+    <a class="dropdown-item" href="../articles/a4_task3.html">4. Task 3</a>
+    <a class="dropdown-item" href="../articles/a5_supplementary_materials.html">5. biPOD Supplementary Materials and Methods</a>
   </div>
 </li>
       </ul>
@@ -205,7 +206,7 @@ objects inside the <code>bipod</code> object. For example in this case
 let’s plot <span class="math inline">\(t_0\)</span>.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">fit</span><span class="op">$</span><span class="fu">summary</span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">variable</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "lp__"        "lp_approx__" "rho[1]"      "t0"</span></span>
+<span><span class="co">#&gt; [1] "lp__"        "lp_approx__" "rho[1]"      "t0"          "K"</span></span>
 <span><span class="fu">biPOD</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_posterior.html">plot_posterior</a></span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
 <span>  x_fit <span class="op">=</span> <span class="va">x</span><span class="op">$</span><span class="va">fit</span>,</span>
