@@ -1,5 +1,5 @@
 ---
-title: "a3_task2"
+title: "3. Task 2"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{a3_task2}

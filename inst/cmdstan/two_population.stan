@@ -40,7 +40,7 @@ model {
   target += inv_gamma_lpdf(rho_s | 1, 1);
 
   target += normal_lpdf(ns | (1 + N[1]) / 2.0, N[1]);
-  target += normal_lpdf(t0_r | T[1], (T[1] + T[S]) / 2.0);
+  target += normal_lpdf(t0_r | T[1], 100);
 
   for (i in 1:S) {
     target += poisson_lpmf(N[i] | mean_t(T[i], T[1], t0_r, ns, rho_s, rho_r));

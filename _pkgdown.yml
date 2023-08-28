@@ -1,23 +1,17 @@
-
 destination: docs
-
-url:
-  https://caravagnalab.github.io/biPOD/
-
+url: https://caravagnalab.github.io/biPOD/
 template:
   bootstrap: 5
-
 reference:
 - title: Fit data
-  desc:  Functions to initialize data and fit them.
+  desc: Functions to initialize data and fit them.
 - contents:
   - init
   - breakpoints_inference
   - fit
   - fit_two_pop_model
-
 - title: Plot data
-  desc:  Function to visualize data and results.
+  desc: Function to visualize data and results.
 - contents:
   - plot_bayes_factor
   - plot_breakpoints_posterior
@@ -32,15 +26,12 @@ reference:
   - plot_t0_posterior
   - plot_traces
   - plot_two_pop_fit
-
-
 - title: Simulate data
-  desc:  Function to produce synthetic data.
+  desc: Function to produce synthetic data.
 - contents:
   - sim_stochastic_exponential
   - sim_stochastic_logistic
-
 - title: Data
-  desc:  Example dataset to perform analysis.
-- contents:
-  - xenografts
+  desc: Example dataset to perform analysis.
+- contents: xenografts
+
