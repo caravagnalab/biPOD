@@ -39,8 +39,7 @@ Hence, we are not going to consider any breakpoints for this sample.
 
 ```{r}
 mouse_id <- 537
-d <- xenografts %>%
-  dplyr::filter(mouse == mouse_id)
+d <- xenografts %>% dplyr::filter(mouse == mouse_id)
 x <- biPOD::init(
   counts = d,
   sample = mouse_id,
@@ -126,8 +125,7 @@ Let's now consider a sample that undergoes treatment and should therefore exhibi
 
 ```{r}
 mouse_id <- 543
-d <- xenografts %>%
-  dplyr::filter(mouse == mouse_id)
+d <- xenografts %>% dplyr::filter(mouse == mouse_id)
 x <- biPOD::init(
   counts = d,
   sample = mouse_id,

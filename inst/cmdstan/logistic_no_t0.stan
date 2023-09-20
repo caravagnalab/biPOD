@@ -6,7 +6,7 @@ functions {
     return(num/den);
   }
 
-  real mean_t (real t, real t0, real n0, real[] t_array, real[] rho_array, real K) {
+  real mean_t (real t, real t0, real n0, vector t_array, vector rho_array, real K) {
     real current_n0 = n0;
     real dt;
     int n_t = num_elements(t_array);
@@ -41,19 +41,19 @@ functions {
 
 data {
   int<lower=1> S; // Number of steps
-  int<lower=1> G; // Number of wondows
+  int<lower=1> G; // Number of windows
 
-  int <lower=0> N[S];      // observations
-  real T[S];      // observations
+  array[S] int<lower=0> N; // observations
+  array[S] real T;         // observations
 
-  real t_array[G - 1];
+  vector[G-1] t_array;
 
   real<lower=0> prior_K;
 }
 
 parameters {
   real<lower=1> n0;
-  real rho[G];
+  vector[G] rho;
   real<lower=prior_K> K; // carrying capacity
 }
 

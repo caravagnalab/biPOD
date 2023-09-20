@@ -1,6 +1,6 @@
 
 functions {
-  real mean_exp (real t, real t0, real[] t_array, real[] rho_array) {
+  real mean_exp (real t, real t0, vector t_array, vector rho_array) {
     real res;
     int n_t = num_elements(t_array);
     int n_rho = num_elements(rho_array);
@@ -28,7 +28,7 @@ functions {
     return(num/den);
   }
 
-  real mean_log (real t, real t0, real[] t_array, real[] rho_array, real K) {
+  real mean_log (real t, real t0, vector t_array, vector rho_array, real K) {
     real current_n0 = 1;
     real dt;
     int n_t = num_elements(t_array);
@@ -65,18 +65,18 @@ data {
   int<lower=1> S; // Number of steps
   int<lower=1> G; // Number of wondows
 
-  int <lower=0> N[S];      // observations
-  real T[S];      // observations
+  array[S] int<lower=0> N; // observations
+  array[S] real T;         // observations
 
-  real t_array[G - 1];
+  vector[G-1] t_array;
 
   real<lower=0> prior_K;
 }
 
 parameters {
   real omega;
-  real rho_exp[G];
-  real rho_log[G];
+  vector[G] rho_exp;
+  vector[G] rho_log;
   real<upper=T[1]> t0_exp;
   real<upper=T[1]> t0_log;
   real<lower=prior_K> K; // carrying capacity

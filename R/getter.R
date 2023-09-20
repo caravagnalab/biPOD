@@ -6,7 +6,8 @@ get_model <- function(model_name) {
     "logistic_no_t0" = "logistic_no_t0.stan",
     "infer_changepoints" = "infer_changepoints.stan",
     "exp_log_mixture" = "exp_log_mixture.stan",
-    "two_pop" = "two_population.stan"
+    "two_pop" = "two_population.stan",
+    "piecewise_changepoints" = "piecewise_linear_regression.stan"
   )
 
   if (!(model_name) %in% names(all_paths)) stop("model_name not recognized")

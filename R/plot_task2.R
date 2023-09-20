@@ -19,7 +19,7 @@ plot_breakpoints_posterior <- function(x, with_histogram = F, alpha = .6, colors
 
   n_changepoints <- length(x$metadata$breakpoints)
   breakpoints_names <- lapply(1:n_changepoints, function(i) {
-    paste0("changing_times[", i, "]")
+    paste0("b[", i, "]")
   }) %>% unlist()
 
   plot_posteriors(x, x$breakpoints_fit,

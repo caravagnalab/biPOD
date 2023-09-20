@@ -6,34 +6,19 @@
 \usage{
 breakpoints_inference(
   x,
-  dt = NULL,
-  variational = FALSE,
-  lambda = 0.5,
-  desired_changepoints = NULL,
   factor_size = 1,
-  chains = 4,
-  iter = 5000,
-  cores = 4
+  available_changepoints = c(0:3),
+  max_iter = 20
 )
 }
 \arguments{
 \item{x}{a bipod object}
 
-\item{dt}{half-size of the interval to consider for each proposed breakpoints}
-
-\item{variational}{Boolean specifying whether using variational as opposed to mcmc sampling}
-
-\item{lambda}{degree of smoothness of the spline to use}
-
-\item{desired_changepoints}{.}
-
 \item{factor_size}{numeric factor by which to divide counts in the bipod object}
 
-\item{chains}{integer number of chains to run in the Markov Chain Monte Carlo (MCMC) algorithm}
+\item{available_changepoints}{.}
 
-\item{iter}{integer number of iterations to run in the MCMC algorithm}
-
-\item{cores}{integer number of cores to use in parallel processing}
+\item{max_iter}{.}
 }
 \value{
 the input bipod object with an added 'breakpoints_fit' slot containing the fitted model for the breakpoints

@@ -40,22 +40,17 @@ d <- xenografts %>%
 
 You can infer the breakpoints in the following way. After having initialized a `bipod` object with no breakpoints you can use the function `breakpoints_inference`. 
 
-You can tune the inference in two way:
-
-- if you know that the number of breakpoints will be a given `n` you should pass that value to the `desired_changepoints` parameter
-- if you are agnostic of the number of points you have to choose the parameter `lambda`, between 0 and 1, which control how smooth the approximation made by the algorithm in `biPOD` will be. This, consequently, will produce different number of break points, with the maximum for $\lambda = 0$ and the minimum for $\lambda = 1$.
+If you reasonably know the possible number of breakpoints, you should pass a vector to the `available_changepoints`
 
 ```{r}
 x <- biPOD::init(d, sample = mouse_id, break_points = NULL)
-x_using_desired <- biPOD::breakpoints_inference(x, desired_changepoints = 2, variational = T)
-x_using_lambda <- biPOD::breakpoints_inference(x, lambda = .5, variational = T)
+x <- biPOD::breakpoints_inference(x, available_changepoints = c(0,2), max_iter = 50)
 ```
 
 The inferred breakpoints are now stored in the `metadata$breakpoints` field.
 
 ```{r}
-print(x_using_desired$metadata$breakpoints)
-print(x_using_lambda$metadata$breakpoints)
+print(x$metadata$breakpoints)
 ```
 
 ## Breakpoints posteriors
@@ -63,18 +58,17 @@ print(x_using_lambda$metadata$breakpoints)
 The posteriors of the inferred breakpoints can be seen using the `plot_breakpoints_posterior` function.
 
 ```{r}
-biPOD::plot_breakpoints_posterior(x_using_desired) + ggplot2::ggtitle("desired changepoints = 2")
-biPOD::plot_breakpoints_posterior(x_using_lambda) + ggplot2::ggtitle("lambda = 0.5")
+biPOD::plot_breakpoints_posterior(x)
 ```
 
 ## Re-fit task 1
 
-Now that the breakpoints have been inferred one can fit the data according to the first taks simply using the `fit` function.
+Now that the breakpoints have been inferred one can fit the data according to the first task simply using the `fit` function.
 Let's see how it works on one example.
 
 ```{r}
-x_using_lambda <- biPOD::fit(
-  x_using_lambda,
+x <- biPOD::fit(
+  x,
   growth_type = "both"
 )
 ```
@@ -82,10 +76,10 @@ x_using_lambda <- biPOD::fit(
 And let's look at the final result.
 
 ```{r}
-biPOD::plot_fit(x_using_lambda)
+biPOD::plot_fit(x)
 biPOD::plot_posteriors(
-  x_using_lambda,
-  x_fit = x_using_lambda$fit,
+  x,
+  x_fit = x$fit,
   par_list = c("rho[1]", "rho[2]", "rho[3]")
 )
 ```

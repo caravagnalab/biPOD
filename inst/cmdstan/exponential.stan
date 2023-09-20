@@ -1,6 +1,6 @@
 
 functions {
-  real mean_t (real t, real t0, real[] t_array, real[] rho_array) {
+  real mean_t (real t, real t0, vector t_array, vector rho_array) {
     real res;
     int n_t = num_elements(t_array);
     int n_rho = num_elements(rho_array);
@@ -25,16 +25,16 @@ functions {
 
 data {
   int<lower=1> S; // Number of steps
-  int<lower=1> G; // Number of wondows
+  int<lower=1> G; // Number of windows
 
-  int <lower=0> N[S];      // observations
-  real T[S];      // observations
+  array[S] int<lower=0> N; // observations
+  array[S] real T;         // observations
 
-  real t_array[G - 1];
+  vector[G-1] t_array;
 }
 
 parameters {
-  real rho[G];
+  vector[G] rho;
   real<upper=T[1]> t0; // t0 will be smaller or equal than the first time point we have
 }
 

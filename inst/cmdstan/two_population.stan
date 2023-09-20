@@ -18,8 +18,8 @@ functions {
 data {
   int<lower=1> S; // Number of steps
 
-  int <lower=0> N[S];      // observations
-  real T[S];      // observations
+  array[S] int<lower=0> N; // observations
+  array[S] real T;         // observations
 }
 
 parameters {
