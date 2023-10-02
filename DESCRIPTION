@@ -12,6 +12,7 @@ Depends:
     R (>= 3.4.0)
 Imports: 
     cli,
+    data.table,
     dplyr,
     ggforce,
     ggplot2,
@@ -20,9 +21,11 @@ Imports:
     magrittr,
     patchwork,
     posterior,
+    processx,
     reshape2,
     rlang,
     stats,
+    stringr,
     tidyr
 Suggests: 
     cmdstanr,

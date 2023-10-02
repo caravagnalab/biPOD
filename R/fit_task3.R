@@ -35,7 +35,7 @@ fit_two_pop_model <- function(
 
   # Add results to bipod object
   x$two_pop_fit_elbo <- res$elbo_data
-  x$two_pop_fit <- res$fit
+  x$two_pop_fit <- convert_mcmc_fit_to_biPOD(res$fit)
 
   if (sampling_type == "mcmc") {
     x$metadata$status <- diagnose_mcmc_fit(res$fit)

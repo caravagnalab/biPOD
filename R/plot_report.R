@@ -47,15 +47,15 @@ plot_report <- function(x,
       ggplot2::labs(x = "time (year)", y = "density", title = "Inferred breakpoints") +
       ggplot2::theme(legend.position = "none")
 
-    cli::cli_alert_info("Preparing breakpoints posterior diagnostic plot...")
-    if ("breakpoints_elbo" %in% names(x)) {
-      plots$breakpoints_diagnostic <- biPOD::plot_elbo(x, x$breakpoints_elbo, diagnose = F) +
-        ggplot2::labs(title = "ELBO - breakpoints inference")
-    } else {
-      pars <- paste0("changing_times[", 1:length(x$metadata$breakpoints), "]")
-      plots$breakpoints_diagnostic <- biPOD::plot_traces(x, fit = x$breakpoints_fit, pars = pars)
-      plots$breakpoints_diagnostic <- ggpubr::annotate_figure(plots$breakpoints_diagnostic, top = ggpubr::text_grob("MCMC traces - breakpoints inference"))
-    }
+    # cli::cli_alert_info("Preparing breakpoints posterior diagnostic plot...")
+    # if ("breakpoints_elbo" %in% names(x)) {
+    #   plots$breakpoints_diagnostic <- biPOD::plot_elbo(x, x$breakpoints_elbo, diagnose = F) +
+    #     ggplot2::labs(title = "ELBO - breakpoints inference")
+    # } else {
+    #   pars <- paste0("changing_times[", 1:length(x$metadata$breakpoints), "]")
+    #   plots$breakpoints_diagnostic <- biPOD::plot_traces(x, fit = x$breakpoints_fit, pars = pars)
+    #   plots$breakpoints_diagnostic <- ggpubr::annotate_figure(plots$breakpoints_diagnostic, top = ggpubr::text_grob("MCMC traces - breakpoints inference"))
+    # }
   }
 
   # Get rho inference
@@ -66,14 +66,14 @@ plot_report <- function(x,
     ggplot2::geom_vline(xintercept = 0, color = "black")
 
   # Get diagnostic
-  cli::cli_alert_info("Preparing growth rates posterior diagnostic plot...")
-  if ("fit_elbo" %in% names(x)) {
-    plots$fit_diagnostic <- biPOD::plot_elbo(x, x$fit_elbo, diagnose = F) +
-      ggplot2::labs(title = "ELBO - fit inference")
-  } else {
-    plots$fit_diagnostic <- biPOD::plot_traces(x, x$fit)
-    plots$fit_diagnostic <- ggpubr::annotate_figure(plots$fit_diagnostic, top = ggpubr::text_grob("MCMC traces - fit inference"))
-  }
+  # cli::cli_alert_info("Preparing growth rates posterior diagnostic plot...")
+  # if ("fit_elbo" %in% names(x)) {
+  #   plots$fit_diagnostic <- biPOD::plot_elbo(x, x$fit_elbo, diagnose = F) +
+  #     ggplot2::labs(title = "ELBO - fit inference")
+  # } else {
+  #   plots$fit_diagnostic <- biPOD::plot_traces(x, x$fit)
+  #   plots$fit_diagnostic <- ggpubr::annotate_figure(plots$fit_diagnostic, top = ggpubr::text_grob("MCMC traces - fit inference"))
+  # }
 
   # Get model selection plot
   if (!(is.null(x$metadata$model_selection_algo))) {

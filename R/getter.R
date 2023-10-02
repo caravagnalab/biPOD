@@ -19,11 +19,14 @@ get_model <- function(model_name) {
 }
 
 get_parameter <- function(fit, par_name) {
-  fit$draws(par_name, format = "matrix") %>%
-    dplyr::as_tibble() %>%
-    dplyr::mutate(par_name = par_name) %>%
-    dplyr::rename("value" = 1, "parameter" = 2) %>%
-    dplyr::mutate(value = as.numeric(.data$value))
+  v <- fit$draws[,grepl(par_name, colnames(fit$draws), fixed = T)] %>% unlist() %>% unname()
+  dplyr::tibble(value = v, parameter = par_name)
+
+  # fit$draws[[par_name]]
+  #   dplyr::as_tibble() %>%
+  #   dplyr::mutate(par_name = par_name) %>%
+  #   dplyr::rename("value" = 1, "parameter" = 2) %>%
+  #   dplyr::mutate(value = as.numeric(.data$value))
 }
 
 get_parameters <- function(fit, par_list) {

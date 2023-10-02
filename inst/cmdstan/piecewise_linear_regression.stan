@@ -22,7 +22,7 @@ data {
   int<lower=1> S; // Number of steps
   int<lower=0> G; // Number of windows
 
-  array[S] int<lower=0> N; // observations
+  array[S] real<lower=0> N; // observations
   array[S] real T;         // observations
 
   array[G] real b_prior;

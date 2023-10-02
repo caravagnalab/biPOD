@@ -183,3 +183,40 @@ parse_pareto_warning <- function(w) {
   pareto_k <- as.numeric(w[6])
   pareto_k
 }
+
+
+convert_mcmc_fit_to_biPOD <- function(mcmc_fit) {
+  # convert mcmc fit into dplyr::tibble
+  parameters <- mcmc_fit$metadata()$model_params
+  draws <- mcmc_fit$draws() %>% dplyr::as_tibble() %>% dplyr::mutate_all(as.numeric)
+
+  rhats <- lapply(parameters, function(p) { compute_rhat(draws, p) })
+  names(rhats) <- parameters
+  rhats
+
+  list(parameters = parameters, draws = draws, rhat = rhats)
+}
+
+compute_rhat <- function(draws, par_name) {
+  X <- draws[grepl(par_name, colnames(draws), fixed = T)] %>% as.matrix()
+
+  N <- nrow(X)
+  M <- ncol(X)
+
+  sm_squared <- function(x) {
+    x.mean = mean(x)
+    s <- sum((x - x.mean)**2)
+    return(s / (length(x) - 1))
+  }
+
+  sms <- lapply(1:ncol(X), function(m) {
+    sm_squared(X[,m])
+  }) %>% unlist()
+
+  W <- sum(sms) / M
+  B <- sum((colMeans(X) - mean(X))**2) * N / (M - 1)
+
+  V <- W * (N - 1) / N + B * (M + 1) / (N * M)
+
+  sqrt(V / W)
+}

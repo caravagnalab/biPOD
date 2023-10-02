@@ -102,7 +102,7 @@ The names of the available parameters can be found in one of the fit objects ins
 For example in this case let's plot $t_0$.
 
 ```{r, warning=F}
-print(x$fit$summary() %>% dplyr::pull(variable))
+print(x$fit$parameters)
 biPOD::plot_posterior(
   x,
   x_fit = x$fit,

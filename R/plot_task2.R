@@ -9,23 +9,23 @@
 #' @export
 #'
 plot_breakpoints_posterior <- function(x, with_histogram = F, alpha = .6, colors = NULL) {
-  x <- x
-
-  # FUN
   # plot_breakpoints_posterior function
   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
   if (!("breakpoints_fit" %in% names(x))) stop("Input must contain a 'breakpoints_fit' field")
 
-
   n_changepoints <- length(x$metadata$breakpoints)
-  breakpoints_names <- lapply(1:n_changepoints, function(i) {
+  par_list <- lapply(1:n_changepoints, function(i) {
     paste0("b[", i, "]")
   }) %>% unlist()
 
-  plot_posteriors(x, x$breakpoints_fit,
-    par_list = breakpoints_names,
-    with_histogram = with_histogram,
-    alpha = alpha,
-    colors = colors
-  )
+  samples <- biPOD:::get_parameters(x$breakpoints_fit, par_list = par_list)
+  samples$value <- samples$value + min(x$counts$time)
+
+  colors = rep('darkgray', length(x$metadata$breakpoints))
+
+  ggplot2::ggplot() +
+    ggplot2::geom_density(data = samples, mapping = ggplot2::aes(x = .data$value, fill = .data$parameter, col = .data$parameter), alpha = alpha) +
+    ggplot2::scale_fill_manual(values = colors) +
+    ggplot2::scale_color_manual(values = colors) +
+    biPOD:::my_ggplot_theme()
 }

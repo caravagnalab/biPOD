@@ -51,8 +51,10 @@ breakpoints_inference <- function(
       lp <- -Inf
 
       out <- tryCatch({
-        out <- utils::capture.output(suppressMessages(f_pf <- m$pathfinder(input_data, algorithm = 'single', num_draws = 2000)))
-        lp <- f_pf$draws("lp__", format = 'matrix') %>% as.vector() %>% stats::median()
+        # out <- utils::capture.output(suppressMessages(f_pf <- m$pathfinder(input_data, algorithm = 'single', num_draws = 2000)))
+        out <- utils::capture.output(suppressMessages(f_pf <- run_pathfinder(input_data, m)))
+
+        lp <- f_pf$`lp__` %>% stats::median()
         f_pf
       }, error = function(cond) {
         lp <- Inf
@@ -75,25 +77,26 @@ breakpoints_inference <- function(
     stats::na.omit()
 
   status <- 'FAIL'
+
   while (status == 'FAIL') {
     best_res <- res %>% dplyr::filter(lp == max(lp))
+
     best_fit <- fits[[paste0(best_res$J, " _ ", best_res$iter)]]
 
     if (best_res$J == 0) {
       status <- 'PASS'
     } else {
-      median_breakpoints <- best_fit$draws(variables = 'b', format = 'matrix') %>%
-        dplyr::as_tibble() %>%
+      b_draws <- best_fit[,grepl("b", colnames(best_fit))]
+
+      median_breakpoints <- b_draws %>%
         dplyr::summarise_all(stats::median) %>%
         as.numeric()
 
-      low_bp <- best_fit$draws(variables = 'b', format = 'matrix') %>%
-        dplyr::as_tibble() %>%
+      low_bp <- b_draws %>%
         dplyr::summarise_all(low_quant) %>%
         as.numeric()
 
-      high_bp <- best_fit$draws(variables = 'b', format = 'matrix') %>%
-        dplyr::as_tibble() %>%
+      high_bp <- b_draws %>%
         dplyr::summarise_all(high_quant) %>%
         as.numeric()
 
@@ -118,13 +121,13 @@ breakpoints_inference <- function(
 
   # Prep final fit
   if (best_res$J >= 1) {
-    median_breakpoints <- best_fit$draws(variables = 'b', format = 'matrix') %>%
-      dplyr::as_tibble() %>%
+    b_draws <- best_fit[,grepl("b", colnames(best_fit))]
+
+    median_breakpoints <- b_draws %>%
       dplyr::summarise_all(stats::median) %>%
       as.numeric()
 
-    sd_breakpoints <- best_fit$draws(variables = 'b', format = 'matrix') %>%
-      dplyr::as_tibble() %>%
+    sd_breakpoints <- b_draws %>%
       dplyr::summarise_all(stats::sd) %>%
       as.numeric()
 
@@ -155,7 +158,7 @@ breakpoints_inference <- function(
 
   # Add results to bipod object
   x$breakpoints_elbo <- elbo_data
-  x$breakpoints_fit <- best_fit
+  x$breakpoints_fit <- convert_mcmc_fit_to_biPOD(best_fit)
 
   # Write fit info
   # x$metadata$sampling <- sampling
@@ -230,3 +233,51 @@ find_equispaced_points <- function(start, end, N) {
 
 low_quant = function(x) { stats::quantile(x, 0.05) }
 high_quant = function(x) { stats::quantile(x, 0.95) }
+
+
+run_pathfinder = function(data,mod){
+  data_file = tempfile(fileext='.json')
+  output_file = tempfile(fileext='.csv')
+  cmdstanr::write_stan_json(data,file=data_file)
+  processx::run(
+    command = mod$exe_file()
+    , args = c(
+      'pathfinder'
+      , 'data'
+      , paste0('file=',data_file)
+      , 'output'
+      , paste0('file=',output_file)
+    )
+    , echo_cmd = T
+    , stdout = ""
+    , stderr = "2>&1"
+  )
+
+  (
+    paste0("grep '^[#l]' '",output_file,"'")
+    %>% system(intern=T)
+    %>% strsplit('\n')
+    %>% unlist()
+  ) -> header
+  header_nlines = which(stringr::str_starts(header,'lp'))
+  found_samples_col_names = unlist(strsplit(header[header_nlines],','))
+  (
+    data.table::fread(
+      cmd = paste0(
+        "tail -n+"
+        , header_nlines + 1
+        , " '"
+        , output_file
+        , "' | grep -v '^[#]' --color=never"
+      )
+      , data.table = FALSE
+      , sep = ','
+      , header = F
+      , col.names = found_samples_col_names
+      , colClasses = list(numeric=1:length(found_samples_col_names))
+    )
+    %>% dplyr::as_tibble()
+  ) ->
+    out
+  return(out)
+}
