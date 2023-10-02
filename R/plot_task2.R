@@ -18,7 +18,7 @@ plot_breakpoints_posterior <- function(x, with_histogram = F, alpha = .6, colors
     paste0("b[", i, "]")
   }) %>% unlist()
 
-  samples <- biPOD:::get_parameters(x$breakpoints_fit, par_list = par_list)
+  samples <- get_parameters(x$breakpoints_fit, par_list = par_list)
   samples$value <- samples$value + min(x$counts$time)
 
   colors = rep('darkgray', length(x$metadata$breakpoints))
@@ -27,5 +27,5 @@ plot_breakpoints_posterior <- function(x, with_histogram = F, alpha = .6, colors
     ggplot2::geom_density(data = samples, mapping = ggplot2::aes(x = .data$value, fill = .data$parameter, col = .data$parameter), alpha = alpha) +
     ggplot2::scale_fill_manual(values = colors) +
     ggplot2::scale_color_manual(values = colors) +
-    biPOD:::my_ggplot_theme()
+    my_ggplot_theme()
 }

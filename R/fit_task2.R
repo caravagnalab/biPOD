@@ -51,8 +51,8 @@ breakpoints_inference <- function(
       lp <- -Inf
 
       out <- tryCatch({
-        # out <- utils::capture.output(suppressMessages(f_pf <- m$pathfinder(input_data, algorithm = 'single', num_draws = 2000)))
-        out <- utils::capture.output(suppressMessages(f_pf <- run_pathfinder(input_data, m)))
+        out <- utils::capture.output(suppressMessages(f_pf <- m$pathfinder(input_data, algorithm = 'single', num_draws = 2000)))
+        # out <- utils::capture.output(suppressMessages(f_pf <- run_pathfinder(input_data, m)))
 
         lp <- f_pf$`lp__` %>% stats::median()
         f_pf
