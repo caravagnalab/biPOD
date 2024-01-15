@@ -113,7 +113,7 @@ prep_data_fit <- function(x, factor_size) {
     N = as.array(as.integer(x$counts$count / factor_size)),
     T = as.array(x$counts$time),
     t_array = as.array(breakpoints),
-    prior_K = max(x$counts$count) / factor_size
+    prior_K = .85 * max(x$counts$count) / factor_size
   )
 
   return(input_data)

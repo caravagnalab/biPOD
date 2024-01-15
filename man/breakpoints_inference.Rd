@@ -8,6 +8,7 @@ breakpoints_inference(
   x,
   factor_size = 1,
   available_changepoints = c(0:3),
+  min_support_points = 2,
   max_iter = 20
 )
 }
@@ -17,6 +18,8 @@ breakpoints_inference(
 \item{factor_size}{numeric factor by which to divide counts in the bipod object}
 
 \item{available_changepoints}{.}
+
+\item{min_support_points}{.}
 
 \item{max_iter}{.}
 }

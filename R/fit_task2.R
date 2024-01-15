@@ -4,13 +4,15 @@
 #' @param factor_size numeric factor by which to divide counts in the bipod object
 #' @param available_changepoints .
 #' @param max_iter .
+#' @param min_support_points .
 #'
 #' @return the input bipod object with an added 'breakpoints_fit' slot containing the fitted model for the breakpoints
 #' @export
 breakpoints_inference <- function(
     x,
     factor_size = 1,
-    available_changepoints = c(0:3),
+    available_changepoints = c(0:2),
+    min_support_points = 2,
     max_iter = 20) {
   # Check input
   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
@@ -33,7 +35,7 @@ breakpoints_inference <- function(
         G = J,
         N = x$counts$count / factor_size,
         T = x$counts$time - min(x$counts$time),
-        b_prior = find_equispaced_points(min(x$counts$time - min(x$counts$time)), max(x$counts$time - min(x$counts$time)), N = J),
+        b_prior = array(find_equispaced_points(min(x$counts$time - min(x$counts$time)), max(x$counts$time - min(x$counts$time)), N = J), dim = c(J)),
         sigma_changepoints = 10
       )
     } else {
@@ -50,11 +52,16 @@ breakpoints_inference <- function(
     for (i in 1:max_iter) {
       lp <- -Inf
 
-      out <- tryCatch({
-        out <- utils::capture.output(suppressMessages(f_pf <- m$pathfinder(input_data, algorithm = 'single', num_draws = 2000)))
-        # out <- utils::capture.output(suppressMessages(f_pf <- run_pathfinder(input_data, m)))
+      out <- utils::capture.output(suppressMessages(f_pf <- m$pathfinder(input_data)))
 
-        lp <- f_pf$`lp__` %>% stats::median()
+      out <- tryCatch({
+        # out <- utils::capture.output(suppressMessages(f_pf <- m$pathfinder(input_data, algorithm = 'single', num_draws = 2000)))
+        #out <- utils::capture.output(suppressMessages(f_pf <- run_pathfinder(input_data, m)))
+        out <- utils::capture.output(suppressMessages(f_pf <- m$pathfinder(input_data)))
+
+
+
+        lp <- f_pf$draws("lp__") %>% stats::median()
         f_pf
       }, error = function(cond) {
         lp <- Inf
@@ -86,7 +93,8 @@ breakpoints_inference <- function(
     if (best_res$J == 0) {
       status <- 'PASS'
     } else {
-      b_draws <- best_fit[,grepl("b", colnames(best_fit))]
+      draws <- best_fit$draws(format = "matrix")
+      b_draws <- draws[,grepl("b", colnames(draws))] %>% dplyr::as_tibble()
 
       median_breakpoints <- b_draws %>%
         dplyr::summarise_all(stats::median) %>%
@@ -111,7 +119,7 @@ breakpoints_inference <- function(
         dplyr::pull(.data$n) %>%
         min()
 
-      if (all(high_bp <= max(x$counts$time)) & all(low_bp >= min(x$counts$time)) & (min_group_numerosity > 2)) {
+      if (all(high_bp <= max(x$counts$time)) & all(low_bp >= min(x$counts$time)) & (min_group_numerosity > min_support_points)) {
         status <- 'PASS'
       } else {
         res <- res %>% dplyr::filter(lp != max(lp))
@@ -121,7 +129,8 @@ breakpoints_inference <- function(
 
   # Prep final fit
   if (best_res$J >= 1) {
-    b_draws <- best_fit[,grepl("b", colnames(best_fit))]
+    draws <- best_fit$draws(format = "matrix")
+    b_draws <- draws[,grepl("b", colnames(draws))] %>% dplyr::as_tibble()
 
     median_breakpoints <- b_draws %>%
       dplyr::summarise_all(stats::median) %>%

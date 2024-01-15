@@ -37,7 +37,7 @@ parameters {
 }
 
 model {
-  target += normal_lpdf(q | N[1], N[1]);
+  target += normal_lpdf(q | log(N[1]), N[1]);
   target += inv_gamma_lpdf(sigma | .001, .001);
 
   for (g in 1:(G+1)) {
