@@ -26,6 +26,7 @@ reference:
   - plot_t0_posterior
   - plot_traces
   - plot_two_pop_fit
+  - print.bipod
 - title: Simulate data
   desc: Function to produce synthetic data.
 - contents:
