@@ -52,7 +52,7 @@ mouse_id <- 529
 biPOD::init(
   counts = xenografts %>% dplyr::filter(mouse == mouse_id) %>% dplyr::mutate(count = tumour_volume),
   sample = mouse_id,
-  break_points = c(0, 5)
+  break_points = c(0, 20)
 )
 ```
 If you look at the modified counts you will see that the observations have been grouped

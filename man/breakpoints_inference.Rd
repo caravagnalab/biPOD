@@ -7,7 +7,7 @@
 breakpoints_inference(
   x,
   factor_size = 1,
-  available_changepoints = c(0:3),
+  available_changepoints = c(0:2),
   min_support_points = 2,
   max_iter = 20
 )

@@ -12,6 +12,7 @@ Depends:
     R (>= 3.4.0)
 Imports: 
     cli,
+    crayon,
     data.table,
     dplyr,
     ggforce,
@@ -36,6 +37,6 @@ VignetteBuilder:
 Additional_repositories: https://mc-stan.org/r-packages/
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 SystemRequirements: GNU make
 LazyData: true

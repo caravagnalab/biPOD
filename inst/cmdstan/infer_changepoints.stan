@@ -1,7 +1,7 @@
 
 functions {
 
-  real mean_t (int n0, real t0, real t, real[] changing_times, real[] rho_array) {
+  real mean_t (int n0, real t0, real t, vector changing_times, vector rho_array) {
     real res = n0;
     int J = num_elements(changing_times);
 
@@ -27,20 +27,20 @@ data {
   int<lower=1> S; // Number of steps
   int<lower=1> G; // Number of wondows
 
-  int <lower=0> N[S];      // observations
-  real T[S];      // observations
+  array[S] int<lower=0> N; // observations
+  array[S] real T;         // observations
 
-  real changing_times_prior[G - 1];
+  array[G-1] real changing_times_prior;
   real dt;
 }
 
 parameters {
-  real rho[G];
-  real<lower=-dt, upper=dt> changing_times_unit[G-1];
+  vector[G] rho;
+  array[G-1] real<lower=-dt, upper=dt> changing_times_unit;
 }
 
 transformed parameters {
-  real changing_times[G-1];
+  vector[G-1] changing_times;
 
   for (i in 2:G) {
     changing_times[i-1] = changing_times_prior[i-1] + changing_times_unit[i-1];

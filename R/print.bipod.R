@@ -59,7 +59,7 @@ print.bipod = function(x, ...) {
         dplyr::tibble(
           Parameter = p,
           Mean = mean(draws),
-          Sd = sd(draws),
+          Sd = stats::sd(draws),
           p05 = stats::quantile(draws, .05),
           p50 = stats::quantile(draws, .50),
           p95 = stats::quantile(draws, .95),
@@ -112,7 +112,7 @@ print.bipod = function(x, ...) {
 
     par_tibble <- lapply(x$two_pop_fit$parameters, function(p) {
       draws <- x$two_pop_fit$draws[,grepl(p, colnames(x$two_pop_fit$draws), fixed = T)] %>% as.vector() %>% unlist()
-      dplyr::tibble(Parameter = p, Mean = mean(draws), Sd = sd(draws), p05 = stats::quantile(draws, .05), p50 = stats::quantile(draws, .50), p95 = stats::quantile(draws, .95))
+      dplyr::tibble(Parameter = p, Mean = mean(draws), Sd = stats::sd(draws), p05 = stats::quantile(draws, .05), p50 = stats::quantile(draws, .50), p95 = stats::quantile(draws, .95))
     }) %>% do.call("bind_rows", .)
     print(par_tibble)
   }
@@ -156,7 +156,7 @@ print.bipod = function(x, ...) {
 
     par_tibble <- lapply(x$fit$parameters, function(p) {
       draws <- x$fit$draws[,grepl(p, colnames(x$fit$draws), fixed = T)] %>% as.vector() %>% unlist()
-      dplyr::tibble(Parameter = p, Mean = mean(draws), Sd = sd(draws), p05 = stats::quantile(draws, .05), p50 = stats::quantile(draws, .50), p95 = stats::quantile(draws, .95))
+      dplyr::tibble(Parameter = p, Mean = mean(draws), Sd = stats::sd(draws), p05 = stats::quantile(draws, .05), p50 = stats::quantile(draws, .50), p95 = stats::quantile(draws, .95))
     }) %>% do.call("bind_rows", .)
     print(par_tibble)
   }

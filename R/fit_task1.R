@@ -29,6 +29,7 @@ fit <- function(
   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
   if (!(growth_type %in% c("exponential", "logistic", "both"))) stop("growth_type must be one of 'exponential' and 'logistic'")
   if (!(factor_size > 0)) stop("factor_size must be positive")
+  if (factor_size > min(x$counts$count)) stop(paste0("given the input, factor_size must be smaller or equal to ", min(x$counts$count)))
   sampling_type <- if (variational) "variational inference" else "MCMC sampling"
 
   if (growth_type == "both") {
