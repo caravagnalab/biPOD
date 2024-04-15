@@ -84,8 +84,7 @@ breakpoints_inference <- function(
     stats::na.omit()
 
   status <- 'FAIL'
-
-  while (status == 'FAIL') {
+  while ((status == 'FAIL') & (nrow(res) > 0)) {
     best_res <- res %>% dplyr::filter(lp == max(lp))
 
     best_fit <- fits[[paste0(best_res$J, " _ ", best_res$iter)]]
