@@ -29,7 +29,7 @@
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
     
 
-    <nav class="navbar fixed-top navbar-light navbar-expand-lg bg-light"><div class="container">
+    <nav class="navbar fixed-top navbar-light navbar-expand-lg bg-light" data-bs-theme="light"><div class="container">
     
     <a class="navbar-brand me-2" href="../index.html">biPOD</a>
 
@@ -205,7 +205,7 @@ objects inside the <code>bipod</code> object. For example in this case
 let’s plot <span class="math inline">\(t_0\)</span>.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">fit</span><span class="op">$</span><span class="va">parameters</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "lp__"        "lp_approx__" "rho[1]"      "t0"</span></span>
+<span><span class="co">#&gt; [1] "lp__"        "lp_approx__" "rho[1]"      "t0"          "K"</span></span>
 <span><span class="fu">biPOD</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_posterior.html">plot_posterior</a></span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
 <span>  x_fit <span class="op">=</span> <span class="va">x</span><span class="op">$</span><span class="va">fit</span>,</span>
@@ -326,7 +326,7 @@ growth rates one against each other.</p>
 
 <div class="pkgdown-footer-right">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.8.</p>
 </div>
 
     </footer>

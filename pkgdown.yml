@@ -1,5 +1,5 @@
 pandoc: 3.1.11
-pkgdown: 2.0.7
+pkgdown: 2.0.8
 pkgdown_sha: ~
 articles:
   a1_introduction: a1_introduction.html
@@ -8,7 +8,7 @@ articles:
   a4_task3: a4_task3.html
   a5_supplementary_materials: a5_supplementary_materials.html
   biPOD: biPOD.html
-last_built: 2024-04-08T13:41Z
+last_built: 2024-04-18T13:24Z
 urls:
   reference: https://caravagnalab.github.io/biPOD/reference
   article: https://caravagnalab.github.io/biPOD/articles
