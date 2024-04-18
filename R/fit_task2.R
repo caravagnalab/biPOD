@@ -52,14 +52,11 @@ breakpoints_inference <- function(
     for (i in 1:max_iter) {
       lp <- -Inf
 
-      out <- utils::capture.output(suppressMessages(f_pf <- m$pathfinder(input_data)))
+      #out <- utils::capture.output(suppressMessages(f_pf <- m$pathfinder(input_data)))
+      #f_pf$output()
 
       out <- tryCatch({
-        # out <- utils::capture.output(suppressMessages(f_pf <- m$pathfinder(input_data, algorithm = 'single', num_draws = 2000)))
-        #out <- utils::capture.output(suppressMessages(f_pf <- run_pathfinder(input_data, m)))
         out <- utils::capture.output(suppressMessages(f_pf <- m$pathfinder(input_data)))
-
-
 
         lp <- f_pf$draws("lp__") %>% stats::median()
         f_pf
@@ -157,7 +154,7 @@ breakpoints_inference <- function(
       sigma_changepoints = .01
     )
   }
-  best_fit <- final_fit <- m$sample(data=input_data, chains=4, parallel_chains=4, iter_warmup = 2000, iter_sampling = 2000)
+  tmp <- utils::capture.output(suppressMessages(best_fit <- final_fit <- m$sample(data=input_data, chains=4, parallel_chains=4, iter_warmup = 4000, iter_sampling = 4000)))
 
   # Store results
   elbo_data <- c()
