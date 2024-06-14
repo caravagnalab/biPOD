@@ -36,7 +36,7 @@ breakpoints_inference <- function(
         N = x$counts$count / factor_size,
         T = x$counts$time - min(x$counts$time),
         b_prior = array(find_equispaced_points(min(x$counts$time - min(x$counts$time)), max(x$counts$time - min(x$counts$time)), N = J), dim = c(J)),
-        sigma_changepoints = 10
+        sigma_changepoints = 1
       )
     } else {
       input_data <- list(
@@ -45,7 +45,7 @@ breakpoints_inference <- function(
         N = x$counts$count / factor_size,
         T = x$counts$time - min(x$counts$time),
         b_prior = array(0, dim = c(0)),
-        sigma_changepoints = 10
+        sigma_changepoints = 1
       )
     }
 
