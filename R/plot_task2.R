@@ -19,7 +19,7 @@ plot_breakpoints_posterior <- function(x, with_histogram = F, alpha = .6, colors
   }) %>% unlist()
 
   samples <- get_parameters(x$breakpoints_fit, par_list = par_list)
-  samples$value <- samples$value + min(x$counts$time)
+  #samples$value <- samples$value + min(x$counts$time)
 
   colors = rep('darkgray', length(x$metadata$breakpoints))
 

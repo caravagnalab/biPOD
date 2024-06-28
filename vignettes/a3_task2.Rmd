@@ -1,5 +1,5 @@
 ---
-title: "3. Task 2"
+title: "3. Task 0"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{a3_task2}
@@ -44,7 +44,9 @@ If you reasonably know the possible number of breakpoints, you should pass a vec
 
 ```{r}
 x <- biPOD::init(d, sample = mouse_id, break_points = NULL)
-x <- biPOD::breakpoints_inference(x, available_changepoints = c(0,2), max_iter = 50)
+biPOD::plot_input(x)
+x <- biPOD::fit_breakpoints(x, min_points = 3, available_breakpoints = c(0,2), n_trials = 10000, norm = F)
+#x <- biPOD::breakpoints_inference(x, available_changepoints = c(0,2), max_iter = 50)
 ```
 
 The inferred breakpoints are now stored in the `metadata$breakpoints` field.

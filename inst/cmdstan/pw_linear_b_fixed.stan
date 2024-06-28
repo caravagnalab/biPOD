@@ -24,14 +24,12 @@ data {
   array[S] real N; // observations
   array[S] real T;         // observations
 
-  array[G] real b_prior;
-  real sigma_changepoints;
+  vector[G] b;
 }
 
 parameters {
   real q; // intercept
   vector[G+1] s; // slopes
-  ordered[G] b;
   real<lower=0> sigma;
 }
 
@@ -41,12 +39,6 @@ model {
 
   for (g in 1:(G+1)) {
     target += normal_lpdf(s[g] | 0, 1);
-  }
-
-  if (G >= 1) {
-    for (g in 1:G) {
-      target += normal_lpdf(b[g] | b_prior[g], sigma_changepoints);
-    }
   }
 
   for (i in 1:S) {
@@ -60,4 +52,3 @@ generated quantities {
     log_lik[i] = normal_lpdf(N[i] | expected_mean(T[i], q, s, b), sigma);
   }
 }
-

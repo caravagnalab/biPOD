@@ -20,7 +20,7 @@ breakpoints_inference <- function(
 
   # Get the model
   model_name <- "piecewise_changepoints"
-  m <- get_model(model_name = model_name)
+  m <- biPOD:::get_model(model_name = model_name)
 
   # Loop
   res <- dplyr::tibble()
@@ -35,8 +35,8 @@ breakpoints_inference <- function(
         G = J,
         N = x$counts$count / factor_size,
         T = x$counts$time - min(x$counts$time),
-        b_prior = array(find_equispaced_points(min(x$counts$time - min(x$counts$time)), max(x$counts$time - min(x$counts$time)), N = J), dim = c(J)),
-        sigma_changepoints = 1
+        b_prior = array(biPOD:::find_equispaced_points(min(x$counts$time - min(x$counts$time)), max(x$counts$time - min(x$counts$time)), N = J), dim = c(J)),
+        sigma_changepoints = max(x$counts$time) - min(x$counts$time)
       )
     } else {
       input_data <- list(
@@ -45,7 +45,7 @@ breakpoints_inference <- function(
         N = x$counts$count / factor_size,
         T = x$counts$time - min(x$counts$time),
         b_prior = array(0, dim = c(0)),
-        sigma_changepoints = 1
+        sigma_changepoints = max(x$counts$time) - min(x$counts$time)
       )
     }
 
@@ -57,19 +57,23 @@ breakpoints_inference <- function(
 
       out <- tryCatch({
         out <- utils::capture.output(suppressMessages(f_pf <- m$pathfinder(input_data)))
-
+        k <- ncol(f_pf$draws()) - 3 # number of parameters
+        n <- nrow(x$counts)         # number of obs
         lp <- f_pf$draws("lp__") %>% stats::median()
+        bic <- k * log(n) - 2 * lp
         f_pf
       }, error = function(cond) {
         lp <- Inf
+        bic <- Inf
         return(NA)
       }, warning = function(warn) {
         lp <- Inf
+        bic <- Inf
         return(NA)
       }
       )
 
-      res <- dplyr::bind_rows(res, dplyr::tibble(J = J, iter = i, lp = lp))
+      res <- dplyr::bind_rows(res, dplyr::tibble(J = J, iter = i, lp = lp, bic = bic))
       fits[[paste0(J, " _ ", i)]] <- out
 
       cli::cli_progress_update()
@@ -77,12 +81,12 @@ breakpoints_inference <- function(
   }
 
   res <- res %>%
-    dplyr::filter(lp != Inf) %>%
+    dplyr::filter(bic != Inf) %>%
     stats::na.omit()
 
   status <- 'FAIL'
   while ((status == 'FAIL') & (nrow(res) > 0)) {
-    best_res <- res %>% dplyr::filter(lp == max(lp))
+    best_res <- res %>% dplyr::filter(bic == min(bic))
 
     best_fit <- fits[[paste0(best_res$J, " _ ", best_res$iter)]]
 

@@ -19,6 +19,8 @@ Imports:
     ggplot2,
     ggpubr,
     glue,
+    lhs,
+    loo,
     magrittr,
     patchwork,
     posterior,
