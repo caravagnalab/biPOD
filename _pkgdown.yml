@@ -7,7 +7,7 @@ reference:
   desc: Functions to initialize data and fit them.
 - contents:
   - init
-  - breakpoints_inference
+  - fit_breakpoints
   - fit
   - fit_two_pop_model
 - title: Plot data

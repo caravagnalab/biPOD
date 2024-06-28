@@ -12,7 +12,7 @@
 fit_breakpoints <- function(
     x,
     norm=F,
-    n_trials=1000,
+    n_trials=5000,
     min_points=3,
     available_breakpoints=c(1:5),
     constrain_bp_on_x=F
@@ -142,6 +142,11 @@ find_breakpoints_v3 <- function(d, norm=T, n_trials=1000, min_points=3, availabl
     }
   }) %>% do.call("bind_rows", .) %>% dplyr::distinct()
 
+  if (nrow(proposed_breakpoints) == 0) {
+    message("Zero models with breakpoints has been found")
+    return(list(best_bp=NULL, best_fit=NULL))
+  }
+
   #tmp <- utils::capture.output(suppressMessages(m <- cmdstanr::cmdstan_model("piecewise_fixed_breakpoints.stan")))
 
   if (constrain_bp_on_x == T) {
@@ -193,7 +198,7 @@ find_breakpoints_v3 <- function(d, norm=T, n_trials=1000, min_points=3, availabl
 
   if (length(loos) == 1) {
     message("Zero models with breakpoints has been found")
-    return(NULL)
+    return(list(best_bp=NULL, best_fit=NULL))
   }
 
   suppressWarnings(loo_comp <- loo::loo_compare(loos))
