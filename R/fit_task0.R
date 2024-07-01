@@ -104,17 +104,22 @@ find_breakpoints_v3 <- function(d, norm=T, n_trials=1000, min_points=3, availabl
 
   message("Initial proposals")
   proposed_breakpoints <- lapply(available_breakpoints, function(n_breakpoints) {
-    if (constrain_bp_on_x) {
-      random_starts <- lapply(1:(n_trials * n_breakpoints), function(j) {sample(x, n_breakpoints, replace = F)}) %>% do.call("rbind", .)
-    } else {
-      random_starts <- lhs::randomLHS(n_trials * n_breakpoints, n_breakpoints)
-      random_starts <- random_starts * (max(x) - min(x)) + min(x)
-    }
+    min_rmse <- Inf
+    best_starts <- NULL
+    j_proposed <- 0
+    j_iter <- 0
+    while (j_proposed < n_trials & j_iter < n_breakpoints * n_trials) {
+      j_iter <- j_iter + 1
+      if (constrain_bp_on_x) {
+        random_starts <- sample(x, n_breakpoints, replace = F)
+      } else {
+        random_starts <- lhs::randomLHS(1, n_breakpoints)
+        random_starts <- random_starts * (max(x) - min(x)) + min(x)
+      }
 
-    res <- lapply(1:n_trials, function(j) {
-      bp <- sort(random_starts[j,])
+      bp <- sort(random_starts)
       n_per_window <- biPOD:::bp_to_groups(dplyr::tibble(time=x, count=y), bp) %>% table()
-      if (any(n_per_window < min_points) | length(n_per_window) != ncol(random_starts) + 1) {return(NULL)}
+      if (any(n_per_window < min_points) | length(n_per_window) != ncol(random_starts) + 1) {next}
 
       # build design matrix
       n_params = n_breakpoints + 2
@@ -128,15 +133,16 @@ find_breakpoints_v3 <- function(d, norm=T, n_trials=1000, min_points=3, availabl
       params <- c(solve(t(X) %*% X) %*% t(X) %*% y)
       ypred = expected_mean(x, params[1], params[2:length(params)], bp)
       rmse = sqrt(mean((y - ypred)**2))
-      return(dplyr::tibble(j = j, rmse=rmse))
-    }) %>% do.call('bind_rows', .)
 
-    if (nrow(res) > 0) {
-      best <- res %>% dplyr::filter(.data$rmse == min(.data$rmse)) %>% dplyr::slice_head(n=1)
-      best_rmse <- best$rmse
-      best_j <- best$j
-      best_bp <- random_starts[best_j,]
-      dplyr::tibble(rmse = best_rmse, bp = list(best_bp), n_breakpoints=n_breakpoints)
+      if (rmse < min_rmse) {
+        min_rmse <- rmse
+        best_starts <- bp
+      }
+      j_proposed <- j_proposed + 1
+    }
+
+    if (min_rmse < Inf) {
+      return(dplyr::tibble(rmse = min_rmse, bp = list(best_starts), n_breakpoints=n_breakpoints))
     } else {
       return(NULL)
     }
@@ -181,7 +187,7 @@ find_breakpoints_v3 <- function(d, norm=T, n_trials=1000, min_points=3, availabl
         N = y,
         T = x,
         b_prior = bp,
-        sigma_changepoints = (max(x) - min(x)) / 10
+        sigma_changepoints = 1
       )
     }
 
