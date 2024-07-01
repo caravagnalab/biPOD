@@ -13,7 +13,6 @@ Depends:
 Imports: 
     cli,
     crayon,
-    data.table,
     dplyr,
     ggforce,
     ggplot2,
@@ -24,7 +23,6 @@ Imports:
     magrittr,
     patchwork,
     posterior,
-    processx,
     reshape2,
     rlang,
     stats,

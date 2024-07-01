@@ -212,7 +212,7 @@ find_breakpoints_v3 <- function(d, norm=T, n_trials=1000, min_points=3, availabl
 
   if (constrain_bp_on_x) {
     if (best_j == 1) { return(NULL) }
-    best_bp <- proposed_breakpoints %>% dplyr::filter(idx == best_j) %>% pull(bp) %>% unlist() %>% sort()
+    best_bp <- proposed_breakpoints %>% dplyr::filter(.data$idx == best_j) %>% dplyr::pull(.data$bp) %>% unlist() %>% sort()
     best_fit <- NULL
   } else {
     best_fit <- fits[[best_j]]

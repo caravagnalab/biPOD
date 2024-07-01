@@ -7,7 +7,7 @@
 fit_breakpoints(
   x,
   norm = F,
-  n_trials = 1000,
+  n_trials = 5000,
   min_points = 3,
   available_breakpoints = c(1:5),
   constrain_bp_on_x = F
