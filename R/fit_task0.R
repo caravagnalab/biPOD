@@ -119,14 +119,14 @@ find_breakpoints_v3 <- function(d, norm=T, n_trials=1000, min_points=3, availabl
 
       bp <- sort(random_starts)
       n_per_window <- biPOD:::bp_to_groups(dplyr::tibble(time=x, count=y), bp) %>% table()
-      if (any(n_per_window < min_points) | length(n_per_window) != ncol(random_starts) + 1) {next}
+      if (any(n_per_window < min_points) | length(n_per_window) != (length(random_starts) + 1)) {next}
 
       # build design matrix
       n_params = n_breakpoints + 2
       X = matrix(0, nrow = length(x), ncol = n_params)
       X[,1] = 1
       X[,2] = x
-      tmp <- lapply(1:ncol(random_starts), function(k) {
+      tmp <- lapply(1:length(random_starts), function(k) {
         X[,k+2] <<- ifelse(x > bp[k], x - bp[k], 0)
       })
 
