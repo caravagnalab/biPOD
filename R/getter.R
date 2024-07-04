@@ -8,7 +8,8 @@ get_model <- function(model_name) {
     "exp_log_mixture" = "exp_log_mixture.stan",
     "two_pop" = "two_population.stan",
     "piecewise_changepoints" = "piecewise_linear_regression.stan",
-    "pw_lin_fixed_b" = "pw_linear_b_fixed.stan"
+    "pw_lin_fixed_b" = "pw_linear_b_fixed.stan",
+    "fit_breakpoints" = "fit_breakpoints.stan"
   )
 
   if (!(model_name) %in% names(all_paths)) stop("model_name not recognized")

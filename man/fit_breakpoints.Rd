@@ -6,11 +6,10 @@
 \usage{
 fit_breakpoints(
   x,
-  norm = F,
-  n_trials = 5000,
-  min_points = 3,
-  available_breakpoints = c(1:5),
-  constrain_bp_on_x = F
+  norm = TRUE,
+  n_trials = 500,
+  avg_points_per_window = 3,
+  max_breakpoints = 10
 )
 }
 \arguments{
@@ -20,11 +19,9 @@ fit_breakpoints(
 
 \item{n_trials}{.}
 
-\item{min_points}{.}
+\item{avg_points_per_window}{.}
 
-\item{available_breakpoints}{.}
-
-\item{constrain_bp_on_x}{.}
+\item{max_breakpoints}{.}
 }
 \value{
 the input bipod object with an added 'breakpoints_fit' slot containing the fitted model for the breakpoints

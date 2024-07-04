@@ -45,8 +45,7 @@ If you reasonably know the possible number of breakpoints, you should pass a vec
 ```{r}
 x <- biPOD::init(d, sample = mouse_id, break_points = NULL)
 biPOD::plot_input(x)
-x <- biPOD::fit_breakpoints(x, min_points = 3, available_breakpoints = c(0,2), n_trials = 10000, norm = F)
-#x <- biPOD::breakpoints_inference(x, available_changepoints = c(0,2), max_iter = 50)
+x <- biPOD::fit_breakpoints(x, norm = F, n_trials = 200, avg_points_per_window = 4, max_breakpoints = 3)
 ```
 
 The inferred breakpoints are now stored in the `metadata$breakpoints` field.
@@ -55,12 +54,13 @@ The inferred breakpoints are now stored in the `metadata$breakpoints` field.
 print(x$metadata$breakpoints)
 ```
 
-## Breakpoints posteriors
+## Breakpoints
 
-The posteriors of the inferred breakpoints can be seen using the `plot_breakpoints_posterior` function.
+The the inferred breakpoints can be found in the `metadata` of the biPOD object.
 
 ```{r}
-biPOD::plot_breakpoints_posterior(x)
+biPOD::plot_input(x) +
+  ggplot2::geom_vline(xintercept = x$metadata$breakpoints)
 ```
 
 ## Re-fit task 1
@@ -71,7 +71,8 @@ Let's see how it works on one example.
 ```{r}
 x <- biPOD::fit(
   x,
-  growth_type = "both"
+  growth_type = "both",
+  infer_t0 = F
 )
 ```
 
@@ -82,6 +83,6 @@ biPOD::plot_fit(x)
 biPOD::plot_posteriors(
   x,
   x_fit = x$fit,
-  par_list = c("rho[1]", "rho[2]", "rho[3]")
+  par_list = c("rho[1]", "rho[2]", "rho[3]", "rho[4]")
 )
 ```
