@@ -1,105 +1,37 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://caravagnalab.github.io/biPOD/404.html</loc>
-  </url>
-  <url>
-    <loc>https://caravagnalab.github.io/biPOD/LICENSE.html</loc>
-  </url>
-  <url>
-    <loc>https://caravagnalab.github.io/biPOD/articles/a1_introduction.html</loc>
-  </url>
-  <url>
-    <loc>https://caravagnalab.github.io/biPOD/articles/a2_task1.html</loc>
-  </url>
-  <url>
-    <loc>https://caravagnalab.github.io/biPOD/articles/a3_task2.html</loc>
-  </url>
-  <url>
-    <loc>https://caravagnalab.github.io/biPOD/articles/a4_task3.html</loc>
-  </url>
-  <url>
-    <loc>https://caravagnalab.github.io/biPOD/articles/a5_supplementary_materials.html</loc>
-  </url>
-  <url>
-    <loc>https://caravagnalab.github.io/biPOD/articles/biPOD.html</loc>
-  </url>
-  <url>
-    <loc>https://caravagnalab.github.io/biPOD/articles/index.html</loc>
-  </url>
-  <url>
-    <loc>https://caravagnalab.github.io/biPOD/authors.html</loc>
-  </url>
-  <url>
-    <loc>https://caravagnalab.github.io/biPOD/index.html</loc>
-  </url>
-  <url>
-    <loc>https://caravagnalab.github.io/biPOD/reference/biPOD-package.html</loc>
-  </url>
-  <url>
-    <loc>https://caravagnalab.github.io/biPOD/reference/fit.html</loc>
-  </url>
-  <url>
-    <loc>https://caravagnalab.github.io/biPOD/reference/fit_breakpoints.html</loc>
-  </url>
-  <url>
-    <loc>https://caravagnalab.github.io/biPOD/reference/fit_two_pop_model.html</loc>
-  </url>
-  <url>
-    <loc>https://caravagnalab.github.io/biPOD/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>https://caravagnalab.github.io/biPOD/reference/init.html</loc>
-  </url>
-  <url>
-    <loc>https://caravagnalab.github.io/biPOD/reference/plot_bayes_factor.html</loc>
-  </url>
-  <url>
-    <loc>https://caravagnalab.github.io/biPOD/reference/plot_breakpoints_posterior.html</loc>
-  </url>
-  <url>
-    <loc>https://caravagnalab.github.io/biPOD/reference/plot_elbo.html</loc>
-  </url>
-  <url>
-    <loc>https://caravagnalab.github.io/biPOD/reference/plot_fit.html</loc>
-  </url>
-  <url>
-    <loc>https://caravagnalab.github.io/biPOD/reference/plot_input.html</loc>
-  </url>
-  <url>
-    <loc>https://caravagnalab.github.io/biPOD/reference/plot_mixture_model_omega.html</loc>
-  </url>
-  <url>
-    <loc>https://caravagnalab.github.io/biPOD/reference/plot_normalized_growth_rate_posteriors.html</loc>
-  </url>
-  <url>
-    <loc>https://caravagnalab.github.io/biPOD/reference/plot_posterior.html</loc>
-  </url>
-  <url>
-    <loc>https://caravagnalab.github.io/biPOD/reference/plot_posteriors.html</loc>
-  </url>
-  <url>
-    <loc>https://caravagnalab.github.io/biPOD/reference/plot_report.html</loc>
-  </url>
-  <url>
-    <loc>https://caravagnalab.github.io/biPOD/reference/plot_t0_posterior.html</loc>
-  </url>
-  <url>
-    <loc>https://caravagnalab.github.io/biPOD/reference/plot_traces.html</loc>
-  </url>
-  <url>
-    <loc>https://caravagnalab.github.io/biPOD/reference/plot_two_pop_fit.html</loc>
-  </url>
-  <url>
-    <loc>https://caravagnalab.github.io/biPOD/reference/print.bipod.html</loc>
-  </url>
-  <url>
-    <loc>https://caravagnalab.github.io/biPOD/reference/sim_stochastic_exponential.html</loc>
-  </url>
-  <url>
-    <loc>https://caravagnalab.github.io/biPOD/reference/sim_stochastic_logistic.html</loc>
-  </url>
-  <url>
-    <loc>https://caravagnalab.github.io/biPOD/reference/xenografts.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>https://caravagnalab.github.io/biPOD/404.html</loc></url>
+<url><loc>https://caravagnalab.github.io/biPOD/LICENSE.html</loc></url>
+<url><loc>https://caravagnalab.github.io/biPOD/articles/a1_introduction.html</loc></url>
+<url><loc>https://caravagnalab.github.io/biPOD/articles/a2_task1.html</loc></url>
+<url><loc>https://caravagnalab.github.io/biPOD/articles/a3_task2.html</loc></url>
+<url><loc>https://caravagnalab.github.io/biPOD/articles/a4_task3.html</loc></url>
+<url><loc>https://caravagnalab.github.io/biPOD/articles/a5_supplementary_materials.html</loc></url>
+<url><loc>https://caravagnalab.github.io/biPOD/articles/biPOD.html</loc></url>
+<url><loc>https://caravagnalab.github.io/biPOD/articles/index.html</loc></url>
+<url><loc>https://caravagnalab.github.io/biPOD/authors.html</loc></url>
+<url><loc>https://caravagnalab.github.io/biPOD/index.html</loc></url>
+<url><loc>https://caravagnalab.github.io/biPOD/reference/biPOD-package.html</loc></url>
+<url><loc>https://caravagnalab.github.io/biPOD/reference/fit.html</loc></url>
+<url><loc>https://caravagnalab.github.io/biPOD/reference/fit_breakpoints.html</loc></url>
+<url><loc>https://caravagnalab.github.io/biPOD/reference/fit_two_pop_model.html</loc></url>
+<url><loc>https://caravagnalab.github.io/biPOD/reference/index.html</loc></url>
+<url><loc>https://caravagnalab.github.io/biPOD/reference/init.html</loc></url>
+<url><loc>https://caravagnalab.github.io/biPOD/reference/plot_bayes_factor.html</loc></url>
+<url><loc>https://caravagnalab.github.io/biPOD/reference/plot_breakpoints_posterior.html</loc></url>
+<url><loc>https://caravagnalab.github.io/biPOD/reference/plot_elbo.html</loc></url>
+<url><loc>https://caravagnalab.github.io/biPOD/reference/plot_fit.html</loc></url>
+<url><loc>https://caravagnalab.github.io/biPOD/reference/plot_input.html</loc></url>
+<url><loc>https://caravagnalab.github.io/biPOD/reference/plot_mixture_model_omega.html</loc></url>
+<url><loc>https://caravagnalab.github.io/biPOD/reference/plot_normalized_growth_rate_posteriors.html</loc></url>
+<url><loc>https://caravagnalab.github.io/biPOD/reference/plot_posterior.html</loc></url>
+<url><loc>https://caravagnalab.github.io/biPOD/reference/plot_posteriors.html</loc></url>
+<url><loc>https://caravagnalab.github.io/biPOD/reference/plot_report.html</loc></url>
+<url><loc>https://caravagnalab.github.io/biPOD/reference/plot_t0_posterior.html</loc></url>
+<url><loc>https://caravagnalab.github.io/biPOD/reference/plot_traces.html</loc></url>
+<url><loc>https://caravagnalab.github.io/biPOD/reference/plot_two_pop_fit.html</loc></url>
+<url><loc>https://caravagnalab.github.io/biPOD/reference/print.bipod.html</loc></url>
+<url><loc>https://caravagnalab.github.io/biPOD/reference/sim_stochastic_exponential.html</loc></url>
+<url><loc>https://caravagnalab.github.io/biPOD/reference/sim_stochastic_logistic.html</loc></url>
+<url><loc>https://caravagnalab.github.io/biPOD/reference/xenografts.html</loc></url>
 </urlset>
+
