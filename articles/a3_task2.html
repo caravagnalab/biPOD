@@ -125,21 +125,14 @@ pass a vector to the <code>available_changepoints</code></p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">biPOD</span><span class="fu">::</span><span class="fu"><a href="../reference/fit_breakpoints.html">fit_breakpoints</a></span><span class="op">(</span><span class="va">x</span>, norm <span class="op">=</span> <span class="cn">F</span>, n_trials <span class="op">=</span> <span class="fl">200</span>, avg_points_per_window <span class="op">=</span> <span class="fl">4</span>, max_breakpoints <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Initial proposals</span></span>
-<span><span class="co">#&gt; [1] 1</span></span>
-<span><span class="co">#&gt; [1] 2</span></span>
-<span><span class="co">#&gt; [1] 3</span></span>
 <span><span class="co">#&gt; Proposals' optimization</span></span>
-<span><span class="co">#&gt; [1] 0</span></span>
-<span><span class="co">#&gt; [1] 1</span></span>
-<span><span class="co">#&gt; [1] 2</span></span>
-<span><span class="co">#&gt; [1] 3</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Median of the inferred breakpoints have been succesfully stored.</span></span></code></pre></div>
 <p>The inferred breakpoints are now stored in the
 <code>metadata$breakpoints</code> field.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">metadata</span><span class="op">$</span><span class="va">breakpoints</span><span class="op">)</span></span>
-<span><span class="co">#&gt;       par1       par2       par3 </span></span>
-<span><span class="co">#&gt;  0.2156842  7.1854773 14.8025570</span></span></code></pre></div>
+<span><span class="co">#&gt;     par1 </span></span>
+<span><span class="co">#&gt; 7.933023</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="breakpoints">Breakpoints<a class="anchor" aria-label="anchor" href="#breakpoints"></a>
@@ -165,7 +158,7 @@ Let’s see how it works on one example.</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Fitting with model selection.</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Model selection finished!</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Model with <span style="color: #0000BB;">"Exponential"</span> growth deemed better with <span style="color: #0000BB;">"Substantial"</span> evidence. (BF = <span style="color: #0000BB;">8.31033565709106</span>)</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Model with <span style="color: #0000BB;">"Logistic"</span> growth deemed better with <span style="color: #0000BB;">"Decisive"</span> evidence. (BF = <span style="color: #0000BB;">375023781.778561</span>)</span></span></code></pre></div>
 <p>And let’s look at the final result.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">biPOD</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_fit.html">plot_fit</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
@@ -175,7 +168,9 @@ Let’s see how it works on one example.</p>
 <span>  <span class="va">x</span>,</span>
 <span>  x_fit <span class="op">=</span> <span class="va">x</span><span class="op">$</span><span class="va">fit</span>,</span>
 <span>  par_list <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"rho[1]"</span>, <span class="st">"rho[2]"</span>, <span class="st">"rho[3]"</span>, <span class="st">"rho[4]"</span><span class="op">)</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: Removed 2 rows containing non-finite outside the scale range</span></span>
+<span><span class="co">#&gt; (`stat_density()`).</span></span></code></pre></div>
 <p><img src="a3_task2_files/figure-html/unnamed-chunk-7-2.png" width="700"></p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
