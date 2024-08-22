@@ -124,8 +124,9 @@ pass a vector to the <code>available_changepoints</code></p>
 <p><img src="a3_task2_files/figure-html/unnamed-chunk-3-1.png" width="700"></p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">biPOD</span><span class="fu">::</span><span class="fu"><a href="../reference/fit_breakpoints.html">fit_breakpoints</a></span><span class="op">(</span><span class="va">x</span>, norm <span class="op">=</span> <span class="cn">F</span>, n_trials <span class="op">=</span> <span class="fl">200</span>, avg_points_per_window <span class="op">=</span> <span class="fl">4</span>, max_breakpoints <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Initial proposals</span></span>
-<span><span class="co">#&gt; Proposals' optimization</span></span>
+<span><span class="co">#&gt; Intializing breakpoints</span></span>
+<span><span class="co">#&gt; Breakpoints optimization</span></span>
+<span><span class="co">#&gt; Choosing optimal breakpoints</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Median of the inferred breakpoints have been succesfully stored.</span></span></code></pre></div>
 <p>The inferred breakpoints are now stored in the
 <code>metadata$breakpoints</code> field.</p>
@@ -158,7 +159,7 @@ Let’s see how it works on one example.</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Fitting with model selection.</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Model selection finished!</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Model with <span style="color: #0000BB;">"Logistic"</span> growth deemed better with <span style="color: #0000BB;">"Decisive"</span> evidence. (BF = <span style="color: #0000BB;">375023781.778561</span>)</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Model with <span style="color: #0000BB;">"Logistic"</span> growth deemed better with <span style="color: #0000BB;">"Decisive"</span> evidence. (BF = <span style="color: #0000BB;">357984411.456748</span>)</span></span></code></pre></div>
 <p>And let’s look at the final result.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">biPOD</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_fit.html">plot_fit</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
