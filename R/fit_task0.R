@@ -161,7 +161,7 @@ find_breakpoints = function(d, avg_points_per_window, max_breakpoints, norm, n_t
 
   max_breakpoints = min(max_breakpoints, as.integer(length(x) / avg_points_per_window))
   available_breakpoints <- 1:max_breakpoints
-  message("Initial proposals")
+  message("Intializing breakpoints")
   proposed_breakpoints <- parallel::mclapply(available_breakpoints, FUN = function(n_breakpoints) {
     print(n_breakpoints)
     convergence <<- FALSE
@@ -200,10 +200,11 @@ find_breakpoints = function(d, avg_points_per_window, max_breakpoints, norm, n_t
   }
 
   m <- biPOD:::get_model("fit_breakpoints")
-  message("Proposals' optimization")
+  message("Breakpoints optimization")
   fits <- list()
   plots <- list()
   proposed_breakpoints$idx <- c(1:nrow(proposed_breakpoints)) + 1
+
 
   loos <- lapply(0:nrow(proposed_breakpoints), function(j) {
     #print(j)
@@ -267,6 +268,8 @@ find_breakpoints = function(d, avg_points_per_window, max_breakpoints, norm, n_t
     message("Zero models with breakpoints has been found")
     return(list(best_bp=NULL, best_fit=NULL))
   }
+
+  message("Choosing optimal breakpoints")
 
   bic_comp <- dplyr::tibble(bic = loos, n_breakpoints = 1:length(loos) - 1)
   best_j <- bic_comp %>%
