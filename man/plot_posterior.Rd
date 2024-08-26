@@ -2,22 +2,22 @@
 % Please edit documentation in R/plot_posteriors.R
 \name{plot_posterior}
 \alias{plot_posterior}
-\title{Plot the posterior density for a desired parameter.}
+\title{Plot Posterior Density for a Specific Parameter}
 \usage{
 plot_posterior(x, x_fit, par_name, color = "black")
 }
 \arguments{
-\item{x}{A biPOD object of class \code{bipod}. Must contains 'fit' and must have been fitted with model selection.}
+\item{x}{A \code{bipod} object of class \code{bipod}. Must contain a 'fit' field and should have been fitted with model selection.}
 
-\item{x_fit}{The fit which contain the desired parameter. It should be inside x.}
+\item{x_fit}{The fit object within \code{x} that contains the desired parameter.}
 
-\item{par_name}{Name of the desired parameter.}
+\item{par_name}{The name of the parameter whose posterior distribution is to be plotted.}
 
-\item{color}{Color for the density plot.}
+\item{color}{A character string specifying the color to use for the density plot. (default is 'black')}
 }
 \value{
-A plot of the Bayes Factor with its significance.
+A \code{ggplot2} object showing the density plot of the specified parameter.
 }
 \description{
-Plot the posterior density for a desired parameter.
+Creates a density plot of the posterior distribution for a specified parameter from a fitted model within a \code{bipod} object.
 }

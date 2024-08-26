@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_posteriors.R
 \name{plot_posteriors}
 \alias{plot_posteriors}
-\title{Plot posterior densities for a set of desired parameter.}
+\title{Plot Posterior Densities for Multiple Parameters}
 \usage{
 plot_posteriors(
   x,
@@ -14,21 +14,23 @@ plot_posteriors(
 )
 }
 \arguments{
-\item{x}{A biPOD object of class \code{bipod}. Must contains 'fit' and must have been fitted with model selection.}
+\item{x}{A \code{bipod} object of class \code{bipod}. Must contain a 'fit' field and should have been fitted with model selection.}
 
-\item{x_fit}{The fit which contain the desired parameter. It should be inside x.}
+\item{x_fit}{The fit object within \code{x} that contains the desired parameters.}
 
-\item{par_list}{Vector containing names of desired parameters}
+\item{par_list}{A character vector containing the names of the parameters whose posterior distributions are to be plotted.}
 
-\item{with_histogram}{Boolean. If density should overlay histogram of samples.}
+\item{with_histogram}{A logical value indicating whether to overlay histograms of the posterior samples on the density plots. (default is FALSE)}
 
-\item{alpha}{Alpha value for the plotted densities.}
+\item{alpha}{A numeric value between 0 and 1 specifying the transparency level of the density plots. (default is .6)}
 
-\item{colors}{Vector containing colors for each parameter.}
+\item{colors}{A character vector specifying the colors to use for the density plots of each parameter.
+If \code{NULL}, a default color scheme will be used. (default is NULL)}
 }
 \value{
-A plot of the Bayes Factor with its significance.
+A \code{ggplot2} object showing the density plots of the specified parameters. If \code{with_histogram} is \code{TRUE}, histograms will be overlaid on the density plots.
 }
 \description{
-Plot posterior densities for a set of desired parameter.
+Generates density plots for the posterior distributions of a set of parameters from a fitted model within a \code{bipod} object.
+Optionally overlays histograms on the density plots.
 }

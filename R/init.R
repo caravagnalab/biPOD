@@ -1,17 +1,21 @@
-#' Creates a biPOD object.
+#' Create a biPOD Object
 #'
-#' @description Creates a biPOD object from a table containing
-#' population counts ad different time points and sample name.
+#' Initializes a biPOD object from a data frame containing population counts at different time points, along with a sample name and optional breakpoints.
 #'
-#' @param counts A dataframe of counts with the following fields:
+#' @description This function creates a `bipod` object for Bayesian inference of population dynamics.
+#'  It takes in a data frame of population counts, a sample name, and optional breakpoints to define groups within the data.
 #'
-#' * `time` time step.
-#' * `count` population count, integer.
+#' @param counts A data frame with two columns:
+#' * `time`: Numeric or integer values representing the time steps at which population counts were recorded.
+#' * `count`: Integer values representing the population count at each time step.
 #'
-#' @param sample A string containing the sample name.
-#' @param break_points An array containing the changing points.
+#' @param sample A character string specifying the name of the sample. This name is stored in the metadata of the resulting biPOD object.
+#' @param break_points A numeric vector specifying the breakpoints that define changes in the population dynamics.
+#'  If provided, these breakpoints are used to group the time steps. If `NULL`, no grouping is applied. (default is NULL)
 #'
-#' @return A biPOD object of class `bipod`.
+#' @return A `bipod` object of class `bipod`, which includes:
+#' - A `metadata` list containing the sample name and breakpoints (if provided).
+#' - A `counts` data frame with an additional `group` column, which indicates the grouping of time steps based on the provided breakpoints.
 #'
 #' @export
 init <- function(counts, sample, break_points = NULL) {

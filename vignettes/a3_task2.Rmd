@@ -1,8 +1,8 @@
 ---
-title: "3. Task 0"
+title: "3. Inferring uknwokn breakpoints"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{a3_task2}
+  %\VignetteIndexEntry{3. Inferring uknwokn breakpoints}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -38,14 +38,15 @@ d <- xenografts %>%
 
 ## Breakpoints inference
 
-You can infer the breakpoints in the following way. After having initialized a `bipod` object with no breakpoints you can use the function `breakpoints_inference`. 
+You can infer the breakpoints in the following way. After having initialized a `bipod` object with no breakpoints you can use the function `fit_breakpoints`. 
 
-If you reasonably know the possible number of breakpoints, you should pass a vector to the `available_changepoints`
+If you reasonably know the possible number of breakpoints, you should pass a vector to the `available_changepoints`.
 
 ```{r}
 x <- biPOD::init(d, sample = mouse_id, break_points = NULL)
 biPOD::plot_input(x)
-x <- biPOD::fit_breakpoints(x, norm = F, n_trials = 200, avg_points_per_window = 4, max_breakpoints = 3)
+x <- biPOD::fit_breakpoints(x, norm = T, n_trials = 500, avg_points_per_window = 3, available_changepoints = c(0,2), model_selection = "LOO", n_core=1)
+x
 ```
 
 The inferred breakpoints are now stored in the `metadata$breakpoints` field.
@@ -54,13 +55,11 @@ The inferred breakpoints are now stored in the `metadata$breakpoints` field.
 print(x$metadata$breakpoints)
 ```
 
-## Breakpoints
+and their posterior distribution can be visualized using `plot_breakpoints_posterior` function
 
-The the inferred breakpoints can be found in the `metadata` of the biPOD object.
 
 ```{r}
-biPOD::plot_input(x) +
-  ggplot2::geom_vline(xintercept = x$metadata$breakpoints)
+biPOD::plot_breakpoints_posterior(x)
 ```
 
 ## Re-fit task 1
@@ -79,10 +78,5 @@ x <- biPOD::fit(
 And let's look at the final result.
 
 ```{r}
-biPOD::plot_fit(x)
-biPOD::plot_posteriors(
-  x,
-  x_fit = x$fit,
-  par_list = c("rho[1]", "rho[2]", "rho[3]", "rho[4]")
-)
+biPOD::plot_report(x, fit_type = 'simple')
 ```

@@ -1,19 +1,29 @@
-#' Fit growth model to bipod object
+#' Fit a Growth Model to a Bipod Object
 #'
-#' @param x a bipod object
-#' @param growth_type character string specifying the type of growth assumed,
-#'  one of 'exponential', 'logistic', or 'both'. If 'both' is selected model selection will be performed.
+#' This function fits a specified growth model to a bipod object.
+#' Depending on the input, it can fit an exponential or logistic growth model,
+#' or perform model selection to choose the best fit.
 #'
-#' @param factor_size numeric factor by which to divide counts in the bipod object
-#' @param infer_t0 Boolean, if TRUE an estimate of the instant of time in which the population is born will be inferred
-#' @param model_selection_algo Algorithm to use for model selection, either 'bayes_factor' or 'mixture_model'
-#' @param variational Boolean specifying whether using variational as opposed to mcmc sampling
+#' @param x A `bipod` object to which the growth model will be fitted.
+#' @param growth_type A character string specifying the type of growth model to fit.
+#'  Options are `'exponential'`, `'logistic'`, or `'both'`. If `'both'` is selected,
+#'  model selection will be performed to choose the best fit. (default is 'exponential')
+#' @param factor_size A numeric value representing the factor by which to divide counts in the bipod object.
+#'  Must be a positive number and less than or equal to the minimum count in the bipod object. (default is 1)
+#' @param infer_t0 A logical value indicating whether to infer the time of population origin (`t0`).
+#'  If `TRUE`, the function will estimate this value during model fitting. (default is TRUE)
+#' @param model_selection_algo A character string specifying the algorithm to use for model selection when `growth_type = "both"`.
+#'  Options are `'bayes_factor'` or `'mixture_model'`. (default is "bayes_factor")
+#' @param variational A logical value indicating whether to use variational inference instead of Markov Chain Monte Carlo (MCMC) sampling.
+#'  If `TRUE`, variational inference is used; otherwise, MCMC sampling is used. (default is FALSE)
+#' @param chains An integer specifying the number of chains to run in the MCMC algorithm. Ignored if `variational = TRUE`. (default is 4)
+#' @param cores An integer specifying the number of cores to use for parallel processing during model fitting. (default is 4)
+#' @param iter An integer specifying the number of iterations to run in the MCMC algorithm. Ignored if `variational = TRUE`. (default is 5000)
 #'
-#' @param chains integer number of chains to run in the Markov Chain Monte Carlo (MCMC) algorithm
-#' @param cores integer number of cores to use in parallel processing
-#' @param iter integer number of iterations to run in the MCMC algorithm
-#'
-#' @return the input bipod object with an added 'fit' slot containing the fitted model and an added 'fit_info' slot containing information about the fit
+#' @return The input `bipod` object with added slots:
+#' - `'fit'`: Contains the fitted model.
+#' - `'fit_info'`: Contains information about the fitting process, including metadata such as sampling type, factor size, growth type, and model selection details.
+#
 #' @export
 fit <- function(
     x,

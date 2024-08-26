@@ -1,14 +1,15 @@
-#' Plot the fit over the input data.
+#' Plot the Fit Over the Input Data for Two Populations
 #'
-#' @param x A bipod object of class `bipod`. Must contains 'fit'
-#' @param CI confidence interval for the growth rate to plot
-#' @param add_posteriors Boolean. If TRUE, posteriors regarding
-#' the time of origin of the resistant population and the time of death
-#' of the sensitive popultation will be added
-#' @param split_process Boolean. If TRUE, the dynamics of the two populations
-#' will be divided.
+#' Creates a plot of the fit over the input data for a model with two populations.
+#' The plot can display the fit for each population separately and optionally include posteriors for key parameters.
 #'
-#' @returns A plot of the fit over the input data.
+#' @param x A `bipod` object. Must contain a 'two_pop_fit' field.
+#' @param CI Numeric value representing the confidence interval for the growth rate to plot. (default is 0.95)
+#' @param add_posteriors Logical value indicating whether to add posteriors for the time of origin of the resistant population (`t0_r`)
+#'  and the time of death of the sensitive population (`t_end`). (default is FALSE)
+#' @param split_process Logical value indicating whether to plot the dynamics of the two populations separately. (default is FALSE)
+#'
+#' @return A `ggplot2` object showing the fit over the input data.
 #' @export
 plot_two_pop_fit <- function(x, CI = .95, add_posteriors = F, split_process = F) {
   # Check input

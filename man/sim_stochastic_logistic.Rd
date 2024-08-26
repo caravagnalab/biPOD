@@ -2,29 +2,35 @@
 % Please edit documentation in R/simulate.R
 \name{sim_stochastic_logistic}
 \alias{sim_stochastic_logistic}
-\title{Simulate population growth with logistic growth for multiple time steps}
+\title{Simulate Population Growth with Logistic Dynamics}
 \usage{
 sim_stochastic_logistic(n0, lambda, mu, K, steps, delta_t)
 }
 \arguments{
-\item{n0}{The initial population size.}
+\item{n0}{Numeric value indicating the initial population size. Must be a non-negative integer.}
 
-\item{lambda}{The rate at which births occur. Can be a single value or a vector
-of length \code{steps}.}
+\item{lambda}{Numeric vector of birth rates.
+This can be a single value (constant birth rate) or a vector of length \code{steps} specifying the birth rate at each time step.}
 
-\item{mu}{The rate at which deaths occur. Can be a single value or a vector
-of length \code{steps}.}
+\item{mu}{Numeric vector of death rates.
+This can be a single value (constant death rate) or a vector of length \code{steps} specifying the death rate at each time step.}
 
-\item{K}{Carrying capacity.}
+\item{K}{Numeric value representing the carrying capacity of the environment. Must be a non-negative integer.}
 
-\item{steps}{The number of time steps to simulate.}
+\item{steps}{Integer value specifying the number of time steps to simulate. Must be a non-negative integer.}
 
-\item{delta_t}{The size of the time step. Can be a single value or a vector
-of length \code{steps}.}
+\item{delta_t}{Numeric vector of time step sizes. This can be a single value (constant time step) or a vector of length \code{steps}.
+If a single value is provided, it is replicated for each time step.}
 }
 \value{
-A tibble with the time, population size.
+A \code{tibble} with columns:
+\itemize{
+\item \code{time}: The cumulative time at each step.
+\item \code{count}: The population size at each time step.
+\item \code{group}: A factor indicating the group of contiguous intervals where the birth and death rates are constant.
+}
 }
 \description{
-Simulate population growth with logistic growth for multiple time steps
+Simulates population growth over multiple time steps using a stochastic logistic growth model.
+This model incorporates both stochastic elements and a carrying capacity to describe population dynamics.
 }

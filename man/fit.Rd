@@ -2,7 +2,7 @@
 % Please edit documentation in R/fit_task1.R
 \name{fit}
 \alias{fit}
-\title{Fit growth model to bipod object}
+\title{Fit a Growth Model to a Bipod Object}
 \usage{
 fit(
   x,
@@ -17,28 +17,39 @@ fit(
 )
 }
 \arguments{
-\item{x}{a bipod object}
+\item{x}{A \code{bipod} object to which the growth model will be fitted.}
 
-\item{growth_type}{character string specifying the type of growth assumed,
-one of 'exponential', 'logistic', or 'both'. If 'both' is selected model selection will be performed.}
+\item{growth_type}{A character string specifying the type of growth model to fit.
+Options are \code{'exponential'}, \code{'logistic'}, or \code{'both'}. If \code{'both'} is selected,
+model selection will be performed to choose the best fit. (default is 'exponential')}
 
-\item{infer_t0}{Boolean, if TRUE an estimate of the instant of time in which the population is born will be inferred}
+\item{infer_t0}{A logical value indicating whether to infer the time of population origin (\code{t0}).
+If \code{TRUE}, the function will estimate this value during model fitting. (default is TRUE)}
 
-\item{variational}{Boolean specifying whether using variational as opposed to mcmc sampling}
+\item{variational}{A logical value indicating whether to use variational inference instead of Markov Chain Monte Carlo (MCMC) sampling.
+If \code{TRUE}, variational inference is used; otherwise, MCMC sampling is used. (default is FALSE)}
 
-\item{factor_size}{numeric factor by which to divide counts in the bipod object}
+\item{factor_size}{A numeric value representing the factor by which to divide counts in the bipod object.
+Must be a positive number and less than or equal to the minimum count in the bipod object. (default is 1)}
 
-\item{model_selection_algo}{Algorithm to use for model selection, either 'bayes_factor' or 'mixture_model'}
+\item{model_selection_algo}{A character string specifying the algorithm to use for model selection when \code{growth_type = "both"}.
+Options are \code{'bayes_factor'} or \code{'mixture_model'}. (default is "bayes_factor")}
 
-\item{chains}{integer number of chains to run in the Markov Chain Monte Carlo (MCMC) algorithm}
+\item{chains}{An integer specifying the number of chains to run in the MCMC algorithm. Ignored if \code{variational = TRUE}. (default is 4)}
 
-\item{iter}{integer number of iterations to run in the MCMC algorithm}
+\item{iter}{An integer specifying the number of iterations to run in the MCMC algorithm. Ignored if \code{variational = TRUE}. (default is 5000)}
 
-\item{cores}{integer number of cores to use in parallel processing}
+\item{cores}{An integer specifying the number of cores to use for parallel processing during model fitting. (default is 4)}
 }
 \value{
-the input bipod object with an added 'fit' slot containing the fitted model and an added 'fit_info' slot containing information about the fit
+The input \code{bipod} object with added slots:
+\itemize{
+\item \code{'fit'}: Contains the fitted model.
+\item \code{'fit_info'}: Contains information about the fitting process, including metadata such as sampling type, factor size, growth type, and model selection details.
+}
 }
 \description{
-Fit growth model to bipod object
+This function fits a specified growth model to a bipod object.
+Depending on the input, it can fit an exponential or logistic growth model,
+or perform model selection to choose the best fit.
 }

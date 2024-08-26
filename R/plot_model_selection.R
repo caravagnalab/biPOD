@@ -1,10 +1,12 @@
-#' Plot the fit over the input data.
+#' Plot Bayes Factor Over Input Data
 #'
-#' @param x A biPOD object of class `bipod`. Must contains 'fit' and must have been fitted with model selection.
-#' @param with_categories Boolean. If TRUE it will plot the bayes factor according
-#' to the categories proposed by Jeffreys in 'The Theory of Probability'
+#' Generates a plot of the Bayes Factor (BF) based on the fitted model from a `bipod` object. The plot can include categories for interpreting the Bayes Factor according to Jeffreys' scale of evidence.
 #'
-#' @returns A plot of the Bayes Factor with its significance.
+#' @param x A `bipod` object that contains the results of a fitted model, including Bayes Factor and best growth model metadata.
+#' @param with_categories A logical value indicating whether to include Bayes Factor significance categories based on Jeffreys' scale.
+#'  If `TRUE`, the plot will use categories to interpret the Bayes Factor. (default is F)
+#'
+#' @return A `ggplot2` object displaying the Bayes Factor with its significance, optionally categorized.
 #' @export
 plot_bayes_factor <- function(x, with_categories = F) {
   # Check input
@@ -125,13 +127,17 @@ empty_bayes_factor_plot <- function() {
 }
 
 
-#' Plot the fit over the input data.
+#' Plot Omega Values from Mixture Model Fit
 #'
-#' @param x A biPOD object of class `bipod`. Must contains 'fit' and must have been fitted with model selection.
-#' @param plot_type One between "hist", "violin" and "boxplot"
-#' @param color Main color of the figure
+#' Generates a plot of the omega values obtained from fitting a mixture model to the data in a `bipod` object.
+#' The plot type can be customized to show a histogram, violin plot, or boxplot.
 #'
-#' @returns A plot of the Bayes Factor with its significance.
+#' @param x A `bipod` object. Must contain a 'fit' field and the 'omega_mixture_model' field in its metadata.
+#' @param plot_type A character string specifying the type of plot to generate.
+#'  Options are "hist" for histogram, "violin" for violin plot, and "boxplot" for boxplot. (default is 'hist')
+#' @param color A character string specifying the color to use for the plot elements. (default is 'maroon')
+#'
+#' @return A `ggplot2` object displaying the plot of omega values.
 #' @export
 plot_mixture_model_omega <- function(x, plot_type = "hist", color = "maroon") {
   # Check input

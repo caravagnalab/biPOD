@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_task1.R
 \name{plot_fit}
 \alias{plot_fit}
-\title{Plot the fit over the input data.}
+\title{Plot the Fit Over the Input Data}
 \usage{
 plot_fit(
   x,
@@ -18,29 +18,31 @@ plot_fit(
 )
 }
 \arguments{
-\item{x}{A bipod object of class \code{bipod}. Must contains 'fit'}
+\item{x}{A \code{bipod} object that contains a 'fit' field.}
 
-\item{CI}{confidence interval for the growth rate to plot}
+\item{CI}{Numeric value between 0 and 1 representing the confidence interval for the fit. (default is 0.95)}
 
-\item{legend_labels}{Vector containing a name for each unique group in x$counts$group}
+\item{legend_labels}{Vector of labels for each unique group in \code{x$counts$group}. (default is NULL)}
 
-\item{legend_title}{Title for the legend. Default is "group"}
+\item{legend_title}{Title for the legend. (default is "group")}
 
-\item{zoom}{Boolean. If the plot should present a zoom focused on the observations}
+\item{zoom}{Logical value indicating whether to present a zoomed-in view of the observations. (default is TRUE)}
 
-\item{full_process}{Boolean. If the plot should also present the posterior for t0.}
+\item{full_process}{Logical value indicating whether to include the posterior for \code{t0} in the plot. (default is TRUE)}
 
-\item{sec_axis_breaks}{Vector containing values in which secondary x axis' breaks will be}
+\item{sec_axis_breaks}{Vector of values specifying where breaks should appear on the secondary x-axis. (default is NULL)}
 
-\item{sec_axis_labels}{Vector containing labels for the secondary x axis}
+\item{sec_axis_labels}{Vector of labels for the secondary x-axis. (default is NULL)}
 
-\item{t0_posterior_color}{color to use for the posterior of t0}
+\item{t0_posterior_color}{Color to use for the posterior distribution of \code{t0}. (default is 'darkorange')}
 
-\item{shadows_colors}{colors to use for the different time windows}
+\item{shadows_colors}{Colors to use for highlighting different time windows. (default is NULL)}
 }
 \value{
-A plot of the fit over the input data.
+A \code{ggplot2} object displaying the fit over the input data.
 }
 \description{
-Plot the fit over the input data.
+Creates a plot showing the fit of the model over the input data.
+The plot can include a zoomed-in view, a secondary x-axis, and highlights for different time windows.
+Optionally, it can also display the posterior distribution for the parameter \code{t0}.
 }

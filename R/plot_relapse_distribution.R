@@ -84,15 +84,7 @@
 #'   return(dplyr::as_tibble(relapse_times))
 #' }
 #'
-#' #' Plot the the posterior distribution of the 'relapse' times.
-#' #'
-#' #' @param x A biPOD object of class `bipod`. Must contains 'fit'
-#' #' @param n_thresh A positive value indicating the threshold for which
-#' #'  the posterior distribution must be computed
-#' #' @param add_title Boolean, indicating whether the plot should have a title
-#' #'
-#' #' @returns A posterior distribution plot.
-#' #' @export
+
 #' plot_relapse_time_distribution <- function(x, n_thresh, add_title = F) {
 #'   # Check input
 #'   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")

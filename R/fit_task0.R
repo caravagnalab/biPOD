@@ -1,20 +1,29 @@
-#' Fit growth model to bipod object
+#' Fit breakpoints to bipod object
 #'
-#' @param x a bipod object
-#' @param norm .
-#' @param n_trials .
-#' @param avg_points_per_window .
-#' @param max_breakpoints .
+#' @param x A bipod object.
+#' @param norm Logical value indicating whether to normalize the data.
+#'  If TRUE, the time and count data are standardized before fitting the model. (default is TRUE)
+#' @param n_trials Integer specifying the number of trials for the optimization algorithm.
+#'  This controls the number of iterations used to fit the breakpoints. (default is 500)
+#' @param avg_points_per_window Integer specifying the average number of data points per segment.
+#'  This parameter influences the granularity of the segments when searching for breakpoints. (default is 3)
+#' @param available_changepoints Integer vector specifying the range of available changepoints.
+#'  These values represent the possible number of breakpoints to be considered during model fitting. (default is 0:5)
+#' @param model_selection Character string specifying the model selection criterion.
+#'  Options include 'LOO' (Leave-One-Out cross-validation), 'AIC' (Akaike Information Criterion), and 'BIC' (Bayesian Information Criterion).  (default is "LOO")
+#' @param n_core Integer specifying the number of CPU cores to use for parallel processing. (default is 4)
 #'
-#' @return the input bipod object with an added 'breakpoints_fit' slot containing the fitted model for the breakpoints
+#' @return The input bipod object with an added 'breakpoints_fit' slot containing the fitted model for the breakpoints.
 #' @export
 fit_breakpoints = function(
-  x,
-  norm=TRUE,
-  n_trials=500,
-  avg_points_per_window = 3,
-  max_breakpoints = 10
-  ) {
+    x,
+    norm=TRUE,
+    n_trials=500,
+    avg_points_per_window = 3,
+    available_changepoints = c(0:5),
+    model_selection = "LOO",
+    n_core = 4
+) {
   # Check input
   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
   #if (!(factor_size > 0)) stop("factor_size must be positive")
@@ -23,9 +32,11 @@ fit_breakpoints = function(
   res <- find_breakpoints(
     d,
     avg_points_per_window=avg_points_per_window,
-    max_breakpoints=max_breakpoints,
+    available_changepoints=available_changepoints,
     norm=norm,
-    n_trials=n_trials
+    n_trials=n_trials,
+    model_selection=model_selection,
+    n_core=n_core
   )
 
   best_bp <- res$best_bp
@@ -52,7 +63,7 @@ fit_breakpoints = function(
 }
 
 
-find_breakpoints = function(d, avg_points_per_window, max_breakpoints, norm, n_trials) {
+find_breakpoints = function(d, avg_points_per_window, max_breakpoints, norm, n_trials,available_changepoints, model_selection, n_core) {
   x <- d$time
   y <- log(d$count)
 
@@ -63,18 +74,17 @@ find_breakpoints = function(d, avg_points_per_window, max_breakpoints, norm, n_t
 
   lstsq <- function(A) {
     # Perform the least squares fit
-    #beta <- try(solve(t(A) %*% A) %*% t(A) %*% y, silent = FALSE)
     tryCatch({
       # Least squares solver
       beta <- solve(t(A) %*% A) %*% t(A) %*% y
-      #utils::capture.output(bb <- fit(n_segments = 3))
     }, error = function(e) {
       ssr <<- Inf
+      #ssr <- Inf
       return(ssr)
     })
     y_hat <- A %*% beta
     e <- y_hat - y
-    ssr <<- sum(e^2)
+    ssr <- sum(e^2)
     return(ssr)
   }
 
@@ -125,13 +135,15 @@ find_breakpoints = function(d, avg_points_per_window, max_breakpoints, norm, n_t
     # Try to solve the regression problem
     tryCatch({
       # Least squares solver
-      ssr <<- lstsq(A)
+      ssr <- lstsq(A)
       if (is.null(ssr)) {
-        ssr <<- Inf
+        return(Inf)
+        #return(ssr)
       }
     }, error = function(e) {
       # The computation could not converge
-      ssr <<- Inf
+      #ssr <<- Inf
+      return(Inf)
     })
 
     return(ssr)
@@ -159,11 +171,11 @@ find_breakpoints = function(d, avg_points_per_window, max_breakpoints, norm, n_t
     return(A)
   }
 
-  max_breakpoints = min(max_breakpoints, as.integer(length(x) / avg_points_per_window))
-  available_breakpoints <- 1:max_breakpoints
-  message("Intializing breakpoints")
-  proposed_breakpoints <- parallel::mclapply(available_breakpoints, FUN = function(n_breakpoints) {
-    print(n_breakpoints)
+
+  max_breakpoints = min(max(available_changepoints), as.integer(length(x) / avg_points_per_window))
+  available_changepoints <- available_changepoints[available_changepoints <= max_breakpoints & available_changepoints > 0] %>% sort()
+  cli::cli_alert_info("Intializing breakpoints...")
+  proposed_breakpoints <- parallel::mclapply(available_changepoints, FUN = function(n_breakpoints) {
     convergence <<- FALSE
     iter <<- 1
     bb <<- NULL
@@ -184,7 +196,9 @@ find_breakpoints = function(d, avg_points_per_window, max_breakpoints, norm, n_t
     )
 
     dplyr::tibble(n_breakpoints = n_breakpoints, best_bp = list(bb), convergence = convergence)
-  }, mc.cores = parallel::detectCores()) %>% do.call("bind_rows", .) %>% dplyr::distinct()
+  }, mc.cores = min(parallel::detectCores(), n_core)) %>%
+    do.call(dplyr::bind_rows, .) %>%
+    dplyr::distinct()
 
   for (j in 1:nrow(proposed_breakpoints)) {
     if (!all((biPOD:::bp_to_groups(dplyr::tibble(time=x, count=y), unlist(proposed_breakpoints[j,]$best_bp)) %>% table()) >= avg_points_per_window)) {
@@ -192,21 +206,23 @@ find_breakpoints = function(d, avg_points_per_window, max_breakpoints, norm, n_t
     }
   }
 
-  proposed_breakpoints <- proposed_breakpoints %>% dplyr::filter(convergence)
+  proposed_breakpoints <- proposed_breakpoints %>%
+    dplyr::filter(.data$convergence == TRUE) %>%
+    dplyr::mutate(idx = dplyr::row_number())
 
   if (nrow(proposed_breakpoints) == 0) {
-    message("Zero models with breakpoints has been found")
+    cli::cli_alert_info("Zero models with breakpoints has been found!")
     return(list(best_bp=NULL, best_fit=NULL))
   }
 
   m <- biPOD:::get_model("fit_breakpoints")
-  message("Breakpoints optimization")
+  cli::cli_alert_info("Breakpoints optimization...")
   fits <- list()
   plots <- list()
-  proposed_breakpoints$idx <- c(1:nrow(proposed_breakpoints)) + 1
 
+  #proposed_breakpoints$idx <- c(1:nrow(proposed_breakpoints)) + 1
 
-  loos <- lapply(0:nrow(proposed_breakpoints), function(j) {
+  criterion <- lapply(0:nrow(proposed_breakpoints), function(j) {
     #print(j)
     if (j == 0) {
       bp = array(0, dim = c(0))
@@ -221,8 +237,8 @@ find_breakpoints = function(d, avg_points_per_window, max_breakpoints, norm, n_t
       T = x,
       b_prior = bp,
       b = bp,
-      #sigma_changepoints = (max(x) - min(x)) / length(bp)
-      sigma_changepoints = (max(x) - min(x))
+      sigma_changepoints = (max(x) - min(x)) / length(bp)
+      #sigma_changepoints = (max(x) - min(x))
     )
 
     tmp <- utils::capture.output(
@@ -232,11 +248,26 @@ find_breakpoints = function(d, avg_points_per_window, max_breakpoints, norm, n_t
     )
 
     fits[[j+1]] <<- f
-    suppressWarnings(loo <- f$loo())
 
-    repetitions <- f$draws("y_rep", format = "matrix")
-    means <- lapply(1:ncol(repetitions), function(j) {mean(repetitions[,j])}) %>% unlist()
-    sds <- lapply(1:ncol(repetitions), function(j) {sd(repetitions[,j])}) %>% unlist()
+
+    if (model_selection == 'LOO') {
+      suppressWarnings(loo <- f$loo())
+      return(loo)
+    } else if (model_selection == "BIC") {
+      k = 2 + (1 + length(bp)) #+ length(bp)
+      n = length(x)
+      return(k * log(n) - 2 * max(f$lp()))
+    }else if (model_selection == "AIC") {
+      k = 2 + (1 + length(bp)) #+ length(bp)
+      return(2 * k - 2 * max(f$lp()))
+
+    } else {
+      stop("model_selection parmater not recognised")
+    }
+
+    # repetitions <- f$draws("y_rep", format = "matrix")
+    # means <- lapply(1:ncol(repetitions), function(j) {mean(repetitions[,j])}) %>% unlist()
+    # sds <- lapply(1:ncol(repetitions), function(j) {sd(repetitions[,j])}) %>% unlist()
 
     # plots[[j+1]] <<- ggplot2::ggplot() +
     #   ggplot2::geom_pointrange(dplyr::tibble(x=x, means=means, sds = sds), mapping = ggplot2::aes(x=.data$x, y=.data$means, ymin=.data$means-.data$sds, ymax=.data$means+.data$sds)) +
@@ -245,65 +276,89 @@ find_breakpoints = function(d, avg_points_per_window, max_breakpoints, norm, n_t
     #   ggplot2::ggtitle(max(f$lp()))
 
 
-    k = 1 + (1 + length(bp)) #+ length(bp)
-    n = length(x)
-    bic = k * log(n) - 2 * max(f$lp())
-    #print(bic)
-
-    return(bic)
-
     #return(loo)
-
-    # k = 1 + (1 + length(bp)) #+ length(bp)
-    # n = length(x)
-    # bic = k * log(n) - 2 * max(f$lp())
-    # #median(f$lp())
-    # bic
-  }) %>% unlist()
+  })
 
   #proposed_breakpoints
   #ggpubr::ggarrange(plotlist = plots)
 
-  if (length(loos) == 1) {
+  if (length(criterion) == 1) {
     message("Zero models with breakpoints has been found")
     return(list(best_bp=NULL, best_fit=NULL))
   }
 
-  message("Choosing optimal breakpoints")
+  cli::cli_alert_info("Choosing optimal breakpoints...")
 
-  bic_comp <- dplyr::tibble(bic = loos, n_breakpoints = 1:length(loos) - 1)
-  best_j <- bic_comp %>%
-    dplyr::filter(bic == min(bic)) %>%
-    dplyr::pull(n_breakpoints) %>%
-    min()
+  if (model_selection == 'LOO') {
+    suppressWarnings(loo_comp <- loo::loo_compare(criterion))
+    loo_comp[,1] <- round(loo_comp[,1],1)
 
-  # suppressWarnings(loo_comp <- loo::loo_compare(loos))
-  # loo_comp[,1] <- round(loo_comp[,1],1)
-  #
-  # loo_comp <- loo_comp %>% as_tibble() %>%
-  #   dplyr::mutate(model = rownames(loo_comp)) %>%
-  #   dplyr::mutate(j = as.numeric(stringr::str_replace(rownames(loo_comp), pattern = "model", replacement = "")) - 1) %>%
-  #   dplyr::mutate(convergence = TRUE)
-  #
-  # loo_comp$convergence <- lapply(loo_comp$j, function(j) {
-  #   if (j == 0) return(TRUE)
-  #   all(loos[[j]]$diagnostics$pareto_k <= 1)
-  # }) %>% unlist()
-  #
-  # loo_comp <- loo_comp %>% dplyr::filter(convergence) %>% dplyr::filter(elpd_diff == max(elpd_diff))
-  # best_j <- min(loo_comp$j)
+    loo_comp <- loo_comp %>% as_tibble() %>%
+      dplyr::mutate(model = rownames(loo_comp)) %>%
+      dplyr::mutate(j = as.numeric(stringr::str_replace(rownames(loo_comp), pattern = "model", replacement = ""))) %>%
+      dplyr::mutate(convergence = TRUE)
 
-  best_fit <- fits[[best_j + 1]]
-  best_fit <- biPOD:::convert_mcmc_fit_to_biPOD(best_fit)
+    loo_comp$convergence <- lapply(loo_comp$j, function(j) {
+      if (j == 0) return(TRUE)
+      all(criterion[[j]]$diagnostics$pareto_k <= 1)
+    }) %>% unlist()
+
+    loo_comp <- loo_comp %>% dplyr::filter(convergence) %>% dplyr::filter(elpd_diff == max(elpd_diff))
+    best_j <- min(loo_comp$j)
+  } else if (model_selection %in% c("AIC", "BIC")) {
+
+    comp <- dplyr::tibble(value = unlist(criterion), n_breakpoints = c(0, proposed_breakpoints$n_breakpoints)) %>%
+      dplyr::mutate(idx = row_number())
+
+    best_j <- comp %>%
+      dplyr::filter(.data$value == min(.data$value)) %>%
+      dplyr::pull(.data$idx) %>%
+      min()
+
+  } else {
+    stop("model_selection parmater not recognised")
+  }
 
   best_bp <- proposed_breakpoints %>%
-    dplyr::filter(idx == best_j + 1) %>%
-    dplyr::pull(best_bp) %>% unlist()
+    dplyr::filter(.data$idx == (best_j - 1)) %>%
+    dplyr::pull(.data$best_bp) %>% unlist()
 
   if (norm) {
     x <- d$time
     best_bp <- best_bp * stats::sd(x) + mean(x)
   }
 
-  return(list(best_bp=best_bp, best_fit=best_fit, plots=plots))
+  # Extra fit
+  m <- biPOD:::get_model("piecewise_changepoints")
+
+  j = length(best_bp)
+  if (j == 0) {
+    bp = array(0, dim = c(0))
+  } else {
+    bp <- sort(best_bp)
+  }
+
+  input_data <- list(
+    S = length(d$time),
+    G = length(bp),
+    N = log(d$count),
+    T = d$time,
+    b_prior = best_bp,
+    sigma_changepoints = .5
+  )
+
+  tmp <- utils::capture.output(
+    suppressMessages(
+      f <- m$sample(input_data, parallel_chains = 4)
+    )
+  )
+
+  final_bp <- f$draws(variables = 'b', format = 'matrix') %>%
+    dplyr::as_tibble() %>%
+    dplyr::summarise_all(stats::median) %>%
+    as.numeric()
+
+  final_fit <- biPOD:::convert_mcmc_fit_to_biPOD(f)
+
+  return(list(best_bp=final_bp, best_fit=final_fit))
 }

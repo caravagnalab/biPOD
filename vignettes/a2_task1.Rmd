@@ -1,8 +1,8 @@
 ---
-title: "2. Task 1"
+title: "2. Fitting dynamics with known breakpoints"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{2. Task 1}
+  %\VignetteIndexEntry{2. Fitting dynamics with known breakpoints}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -19,7 +19,7 @@ library(biPOD)
 require(dplyr)
 ```
 
-The problem of characterizing a tumor growth model when growth rates change at known time-points while considering both exponential and logistic growths is denoted in `biPOD` as task 1. In this vignette we are going to look at how to use `biPOD` for this specific problem.
+The problem of characterizing a tumor growth model when growth rates change at known time-points while considering both exponential and logistic growths can be tackled using `biPOD`. In this vignette we are going to look at how to use `biPOD` for this specific problem.
 
 ## Input data
 

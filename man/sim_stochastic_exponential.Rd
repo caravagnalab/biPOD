@@ -2,28 +2,32 @@
 % Please edit documentation in R/simulate.R
 \name{sim_stochastic_exponential}
 \alias{sim_stochastic_exponential}
-\title{Simulate a stochastic birth-death process for multiple time steps}
+\title{Simulate a Stochastic Birth-Death Process}
 \usage{
 sim_stochastic_exponential(n0, lambda, mu, steps, delta_t)
 }
 \arguments{
-\item{n0}{The initial population size.}
+\item{n0}{Numeric value indicating the initial population size. Must be a non-negative integer.}
 
-\item{lambda}{The rate at which births occur. Can be a single value or a vector
-of length \code{steps}.}
+\item{lambda}{Numeric vector of birth rates.
+This can be a single value (constant birth rate) or a vector of length \code{steps} specifying the birth rate at each time step.}
 
-\item{mu}{The rate at which deaths occur. Can be a single value or a vector
-of length \code{steps}.}
+\item{mu}{Numeric vector of death rates.
+This can be a single value (constant death rate) or a vector of length \code{steps} specifying the death rate at each time step.}
 
-\item{steps}{The number of time steps to simulate.}
+\item{steps}{Integer value specifying the number of time steps to simulate. Must be a non-negative integer.}
 
-\item{delta_t}{The size of the time step. Can be a single value or a vector
-of length \code{steps}.}
+\item{delta_t}{Numeric vector of time step sizes. This can be a single value (constant time step) or a vector of length \code{steps}.
+If a single value is provided, it is replicated for each time step.}
 }
 \value{
-A tibble with the time, population size, birth rates, and death rates
-at each time step.
+A \code{tibble} with columns:
+\itemize{
+\item \code{time}: The cumulative time at each step.
+\item \code{count}: The population size at each time step.
+\item \code{group}: A factor indicating the group of contiguous intervals where the birth and death rates are constant.
+}
 }
 \description{
-Simulate a stochastic birth-death process for multiple time steps
+Simulates a stochastic birth-death process over multiple time steps. The process models population dynamics where both birth and death rates can vary over time.
 }

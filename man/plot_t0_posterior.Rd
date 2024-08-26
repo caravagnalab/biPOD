@@ -2,18 +2,18 @@
 % Please edit documentation in R/plot_task1.R
 \name{plot_t0_posterior}
 \alias{plot_t0_posterior}
-\title{Plot posteriors of t0}
+\title{Plot Posteriors of t0}
 \usage{
 plot_t0_posterior(x, add_prior = F)
 }
 \arguments{
-\item{x}{a bipod object with a 'fit' field}
+\item{x}{A \code{bipod} object that contains a 'fit' field.}
 
-\item{add_prior}{Boolean, indicate whether to plot also the prior distribution}
+\item{add_prior}{Logical value indicating whether to plot the prior distribution along with the posterior distribution. (default is FALSE)}
 }
 \value{
-A ggplot object containing the posterior density plots of the growth rates and the prior density plot
+A \code{ggplot2} object containing the posterior density plot of \code{t0}, and optionally the prior density plot.
 }
 \description{
-Plot posteriors of t0
+Creates a plot of the posterior distribution of the parameter \code{t0} from a \code{bipod} object. Optionally, the prior distribution can be included in the plot.
 }

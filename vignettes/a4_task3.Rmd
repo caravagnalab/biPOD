@@ -1,8 +1,8 @@
 ---
-title: "4. Task 3"
+title: "4. Fitting a mixture of resistant-sensitive population"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{a4_task3}
+  %\VignetteIndexEntry{4. Fitting a mixture of resistant-sensitive population}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -16,4 +16,58 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(biPOD)
+require(dplyr)
+```
+
+When a population shrinks (e.g., sensitive to treatment) and later regrows (e.g., resistant to treatment) the dynamics are U-shaped. Here we are going to consider this specific case.
+
+## Input data
+
+We take the `xenografts` data and we make it ready for inference by preparing the `count` column and by dividing the `time` column by a factor of 7 (in order to work with a unit of time of a week).
+
+We select the sample 543, already presented in the previous vignette and we filter out the observations that are prior to the treatment.
+
+```{r}
+data("xenografts", package = "biPOD")
+mouse_id <- 543
+d <- xenografts %>%
+  dplyr::rename(count = tumour_volume) %>%
+  dplyr::mutate(time = time / 7) %>%
+  dplyr::filter(time >= 0) %>% 
+  dplyr::filter(mouse == mouse_id)
+x <- biPOD::init(d, "543 U-shape")
+biPOD::plot_input(x)
+```
+
+## Two population model
+
+The model assumes that
+
+- only two populations exist, one dying out and one growing
+- the growth rates are both positive and constant
+- the sensible population must be present at x=0 but the same does not apply for the resistant one
+
+and is able to infer
+
+- $t_s$, instant of time in which the sensitive population dies out
+- $t_r$, instant of time in which the resistant population was born
+- $\rho_s$, death rate of the sensitive population
+- $\rho_r$, growth rate of the resistant population
+
+To do so, one need to use the `fit_two_pop_model` function.
+
+```{r}
+x <- biPOD::fit_two_pop_model(x, variational = F, factor_size = 1)
+```
+
+and the fit can be visualized as a single process
+
+```{r}
+biPOD::plot_two_pop_fit(x)
+```
+
+or splitting it depending on the two different populations
+
+```{r}
+biPOD::plot_two_pop_fit(x, split_process = T)
 ```

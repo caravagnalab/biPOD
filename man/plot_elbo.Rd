@@ -2,23 +2,21 @@
 % Please edit documentation in R/plot_diagnostics.R
 \name{plot_elbo}
 \alias{plot_elbo}
-\title{Plot the logarithm of the ELBO and the delta ELBO mean
-obtained during the variational sampling.}
+\title{Plot the Logarithm of the ELBO and Delta ELBO Mean}
 \usage{
 plot_elbo(x, elbo_data, diagnose = TRUE)
 }
 \arguments{
-\item{x}{A biPOD object of class \code{bipod}. Must contains 'fit'}
+\item{x}{A \code{bipod} object of class \code{bipod} that contains the fitted model and ELBO data.}
 
-\item{elbo_data}{.}
+\item{elbo_data}{A data frame or tibble containing ELBO values over iterations. Must include columns \code{iter}, \code{ELBO}, and \code{delta_ELBO_mean}.}
 
-\item{diagnose}{A Boolean indicating whether the plots should be colored and
-contain info regarding the convergence of the variational sampling.}
+\item{diagnose}{A logical value indicating whether to color the plot based on the convergence of the ELBO.
+If \code{TRUE}, the plot will include color coding based on whether the ELBO converged.}
 }
 \value{
-A ggplot object with traces of the specified parameters
+A \code{ggplot2} object displaying the ELBO and delta ELBO mean traces.
 }
 \description{
-Plot the logarithm of the ELBO and the delta ELBO mean
-obtained during the variational sampling.
+Plots the logarithm of the Evidence Lower Bound (ELBO) and the mean change in ELBO (delta ELBO) obtained during variational inference. This helps to assess the convergence and quality of the variational fit.
 }

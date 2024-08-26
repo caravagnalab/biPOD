@@ -1,13 +1,16 @@
-#' Plot traces of specified parameters from a fitted Stan model
+#' Generate a Comprehensive Report Plot
 #'
-#' @param x A biPOD object of class `bipod`. Must contains at least one fit
-#' @param fit_type .
-#' @param breakpoints_color .
-#' @param shadows_colors .
-#' @param t0_posterior_color .
-#' @param full_process .
+#' Creates a detailed report consisting of various plots to visualize the results of a fitted model within a `bipod` object.
+#' The report includes fit plots, breakpoints posterior plots, growth rates posterior plots, and model selection plots.
 #'
-#' @return A ggplot object with traces of the specified parameters
+#' @param x A `bipod` object. Must contain a 'fit' and metadata fields for model selection and, optionally, breakpoints and ELBO values.
+#' @param fit_type A character string specifying the type of fit plot to generate. Options include "simple" and "complex". (default is "complex")
+#' @param breakpoints_color A character string specifying the color for the breakpoints posterior plot. (default is "darkgray")
+#' @param shadows_colors A character vector specifying colors for shadows in the fit plot. (default is NULL)
+#' @param t0_posterior_color A character string specifying the color for the t0 posterior plot. (default is "darkorange")
+#' @param full_process A logical value indicating whether to include the full process in the fit plot when `fit_type` is "simple". (default is FALSE)
+#'
+#' @return A `patchwork` object containing multiple ggplot2 plots arranged in a single panel.
 #' @export
 plot_report <- function(x,
                         fit_type = "complex",
@@ -88,14 +91,10 @@ plot_report <- function(x,
   }
 
   if ("breakpoints_fit" %in% names(x)) {
-    panel_fits <- plots$fit / plots$breakpoints / plots$growth_rates / plots$model_selection +
-      patchwork::plot_layout(heights = c(2, 1, 1, .5))
-    panel_diagnostics <- plots$breakpoints_diagnostic / plots$fit_diagnostic
+    panel_fits <- patchwork::wrap_plots(plots$fit, plots$breakpoints, plots$growth_rates, plots$model_selection, ncol = 1, heights = c(2, 1, 1, .5))
   } else {
-    panel_fits <- plots$fit / plots$growth_rates / plots$model_selection +
-      patchwork::plot_layout(heights = c(2, 1, .5))
-    panel_diagnostics <- plots$fit_diagnostic
+    panel_fits <- patchwork::wrap_plots(plots$fit, plots$growth_rates, plots$model_selection, ncol = 1, heights = c(2, 1, .5))
   }
 
-  list(fits = panel_fits, diagnostics = panel_diagnostics)
+  panel_fits
 }

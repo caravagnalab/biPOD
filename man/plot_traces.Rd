@@ -2,23 +2,23 @@
 % Please edit documentation in R/plot_diagnostics.R
 \name{plot_traces}
 \alias{plot_traces}
-\title{Plot traces of specified parameters from a fitted Stan model}
+\title{Plot Traces of Specified Parameters from a Fitted Stan Model}
 \usage{
 plot_traces(x, fit, pars = c(), diagnose = FALSE)
 }
 \arguments{
-\item{x}{A biPOD object of class \code{bipod}. Must contains at least one fit}
+\item{x}{A \code{bipod} object that contains at least one fitted model.}
 
-\item{fit}{the name of the fit oh which the traces should be plotted}
+\item{fit}{The fit within the \code{bipod} object for which the traces should be plotted.}
 
-\item{pars}{A character vector of parameters to plot.}
+\item{pars}{A character vector specifying the names of the parameters to plot. If empty, plots all available parameters.}
 
-\item{diagnose}{A Boolean indicating whether the plots should be colored and
-contain info regarding the convergence of the MCMC sampling.}
+\item{diagnose}{A logical value indicating whether to color the plots based on convergence diagnostics.
+If \code{TRUE}, the plots will include color coding based on the R-hat convergence statistic. (default is FALSE)}
 }
 \value{
-A ggplot object with traces of the specified parameters
+A \code{ggplot2} object displaying the trace plots for the specified parameters.
 }
 \description{
-Plot traces of specified parameters from a fitted Stan model
+Generates trace plots for specified parameters from a fitted Stan model contained within a \code{bipod} object. The plots visualize the sampled values across iterations for each chain.
 }

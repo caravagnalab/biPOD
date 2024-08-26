@@ -1,10 +1,16 @@
-#' Plot the input data of the population over time
+
+#' Plot Population Counts Over Time
 #'
-#' @param x A bipod object of class `bipod`.
-#' @param log_scale Boolean, indicating whether the plot should have a title
-#' @param add_highlights Boolean, indicating whether the groups should be highlighted
+#' Generates a plot of population counts over time from a `bipod` object.
+#' The plot can be customized to display counts on a logarithmic scale and to highlight different groups if specified.
 #'
-#' @returns A plot. Represents the evolution of the population over time.
+#' @param x A `bipod` object.
+#' @param log_scale A logical value indicating whether to apply a logarithmic scale to the y-axis.
+#'  If `TRUE`, the y-axis will be transformed to a log scale; otherwise, it will use a linear scale. (default is FALSE)
+#' @param add_highlights A logical value indicating whether to highlight different groups in the plot.
+#'  If `TRUE`, additional visual elements will be added to the plot to distinguish groups. (defaults if FALSE)
+#'
+#' @return A `ggplot2` object representing the evolution of the population counts over time.
 #' @export
 plot_input <- function(x, log_scale = F, add_highlights = F) {
   # Check input

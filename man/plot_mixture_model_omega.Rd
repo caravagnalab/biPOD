@@ -2,20 +2,22 @@
 % Please edit documentation in R/plot_model_selection.R
 \name{plot_mixture_model_omega}
 \alias{plot_mixture_model_omega}
-\title{Plot the fit over the input data.}
+\title{Plot Omega Values from Mixture Model Fit}
 \usage{
 plot_mixture_model_omega(x, plot_type = "hist", color = "maroon")
 }
 \arguments{
-\item{x}{A biPOD object of class \code{bipod}. Must contains 'fit' and must have been fitted with model selection.}
+\item{x}{A \code{bipod} object. Must contain a 'fit' field and the 'omega_mixture_model' field in its metadata.}
 
-\item{plot_type}{One between "hist", "violin" and "boxplot"}
+\item{plot_type}{A character string specifying the type of plot to generate.
+Options are "hist" for histogram, "violin" for violin plot, and "boxplot" for boxplot. (default is 'hist')}
 
-\item{color}{Main color of the figure}
+\item{color}{A character string specifying the color to use for the plot elements. (default is 'maroon')}
 }
 \value{
-A plot of the Bayes Factor with its significance.
+A \code{ggplot2} object displaying the plot of omega values.
 }
 \description{
-Plot the fit over the input data.
+Generates a plot of the omega values obtained from fitting a mixture model to the data in a \code{bipod} object.
+The plot type can be customized to show a histogram, violin plot, or boxplot.
 }

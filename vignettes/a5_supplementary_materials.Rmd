@@ -2,7 +2,7 @@
 title: "5. biPOD Supplementary Materials and Methods"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{a5_supplementary_materials}
+  %\VignetteIndexEntry{5. biPOD Supplementary Materials and Methods}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

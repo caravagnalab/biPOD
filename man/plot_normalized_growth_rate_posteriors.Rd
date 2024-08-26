@@ -2,8 +2,7 @@
 % Please edit documentation in R/plot_task1.R
 \name{plot_normalized_growth_rate_posteriors}
 \alias{plot_normalized_growth_rate_posteriors}
-\title{Produces a plot of the posteriors for the growth rates.
-The posteriors are renormalized such that their highest peaks is at 1.}
+\title{Plot Normalized Posterior Distributions of Growth Rates}
 \usage{
 plot_normalized_growth_rate_posteriors(
   x,
@@ -14,20 +13,20 @@ plot_normalized_growth_rate_posteriors(
 )
 }
 \arguments{
-\item{x}{a bipod object with a 'fit' field}
+\item{x}{A \code{bipod} object that contains a 'fit' field.}
 
-\item{add_prior}{Boolean, indicate whether to plot also the prior distribution}
+\item{add_prior}{Logical value indicating whether to plot the prior distribution along with the posterior distributions. (default is FALSE)}
 
-\item{legend_labels}{Vector containing a name for each unique fitted parameters. Default is 'rho'}
+\item{legend_labels}{Vector of labels for each unique fitted parameter. (default is NULL, in which case 'rho' is used)}
 
-\item{legend_title}{Title for the legend. Default is "group"}
+\item{legend_title}{Title for the legend. (default is 'group')}
 
-\item{colors}{colors to use for the different growth rates posteriors}
+\item{colors}{Colors to use for the different growth rate posteriors. (default is NULL, which uses the default group colors)}
 }
 \value{
-A ggplot object containing the posterior density plots of the growth rates and the prior density plot
+A \code{ggplot2} object containing the posterior density plots of the growth rates and optionally the prior density plot.
 }
 \description{
-Produces a plot of the posteriors for the growth rates.
-The posteriors are renormalized such that their highest peaks is at 1.
+Creates a plot of the normalized posterior distributions of the growth rates.
+The distributions are renormalized so that their highest peak is at 1. Optionally, the prior distribution can be included in the plot.
 }

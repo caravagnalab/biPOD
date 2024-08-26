@@ -2,7 +2,7 @@
 % Please edit documentation in R/fit_task3.R
 \name{fit_two_pop_model}
 \alias{fit_two_pop_model}
-\title{Fit a two population growth}
+\title{Fit a Two-Population Growth Model to a bipod Object}
 \usage{
 fit_two_pop_model(
   x,
@@ -14,21 +14,29 @@ fit_two_pop_model(
 )
 }
 \arguments{
-\item{x}{a bipod object}
+\item{x}{A \code{bipod} object.}
 
-\item{variational}{Boolean specifying whether using variational as opposed to mcmc sampling}
+\item{variational}{A logical value indicating whether to use Variational Inference instead of MCMC sampling.
+If \code{TRUE}, the model will be fitted using Variational Inference; otherwise, MCMC sampling will be used. (default is FALSE)}
 
-\item{factor_size}{numeric factor by which to divide counts in the bipod object}
+\item{factor_size}{A numeric value representing the factor by which to divide the counts in the bipod object.
+This value must be positive and appropriate for the data scale. (default is 1)}
 
-\item{chains}{integer number of chains to run in the Markov Chain Monte Carlo (MCMC) algorithm}
+\item{chains}{An integer specifying the number of chains to run in the MCMC algorithm.
+This parameter is ignored if \code{variational = TRUE}. (default is 4)}
 
-\item{iter}{integer number of iterations to run in the MCMC algorithm}
+\item{iter}{An integer specifying the number of iterations to run in the MCMC algorithm.
+This parameter is ignored if \code{variational = TRUE}. (default is 5000)}
 
-\item{cores}{integer number of cores to use in parallel processing}
+\item{cores}{An integer specifying the number of cores to use for parallel processing during model fitting. (default is 4)}
 }
 \value{
-the input bipod object with an added 'two_pop_fit' slot containing the fitted model and an added 'two_pop_fit_info' slot containing information about the fit
+The input \code{bipod} object with added slots:
+\itemize{
+\item \code{'two_pop_fit'}: Contains the fitted two-population growth model.
+\item \code{'two_pop_fit_info'}: Contains information about the fitting process, including metadata such as sampling type and factor size.
+}
 }
 \description{
-Fit a two population growth
+This function fits a growth model that accounts for two populations within a bipod object. The fitting can be done using either Variational Inference or Markov Chain Monte Carlo (MCMC) sampling.
 }

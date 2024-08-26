@@ -2,20 +2,23 @@
 % Please edit documentation in R/plot_input.R
 \name{plot_input}
 \alias{plot_input}
-\title{Plot the input data of the population over time}
+\title{Plot Population Counts Over Time}
 \usage{
 plot_input(x, log_scale = F, add_highlights = F)
 }
 \arguments{
-\item{x}{A bipod object of class \code{bipod}.}
+\item{x}{A \code{bipod} object.}
 
-\item{log_scale}{Boolean, indicating whether the plot should have a title}
+\item{log_scale}{A logical value indicating whether to apply a logarithmic scale to the y-axis.
+If \code{TRUE}, the y-axis will be transformed to a log scale; otherwise, it will use a linear scale. (default is FALSE)}
 
-\item{add_highlights}{Boolean, indicating whether the groups should be highlighted}
+\item{add_highlights}{A logical value indicating whether to highlight different groups in the plot.
+If \code{TRUE}, additional visual elements will be added to the plot to distinguish groups. (defaults if FALSE)}
 }
 \value{
-A plot. Represents the evolution of the population over time.
+A \code{ggplot2} object representing the evolution of the population counts over time.
 }
 \description{
-Plot the input data of the population over time
+Generates a plot of population counts over time from a \code{bipod} object.
+The plot can be customized to display counts on a logarithmic scale and to highlight different groups if specified.
 }

@@ -2,30 +2,41 @@
 % Please edit documentation in R/fit_task0.R
 \name{fit_breakpoints}
 \alias{fit_breakpoints}
-\title{Fit growth model to bipod object}
+\title{Fit breakpoints to bipod object}
 \usage{
 fit_breakpoints(
   x,
   norm = TRUE,
   n_trials = 500,
   avg_points_per_window = 3,
-  max_breakpoints = 10
+  available_changepoints = c(0:5),
+  model_selection = "LOO",
+  n_core = 4
 )
 }
 \arguments{
-\item{x}{a bipod object}
+\item{x}{A bipod object.}
 
-\item{norm}{.}
+\item{norm}{Logical value indicating whether to normalize the data.
+If TRUE, the time and count data are standardized before fitting the model. (default is TRUE)}
 
-\item{n_trials}{.}
+\item{n_trials}{Integer specifying the number of trials for the optimization algorithm.
+This controls the number of iterations used to fit the breakpoints. (default is 500)}
 
-\item{avg_points_per_window}{.}
+\item{avg_points_per_window}{Integer specifying the average number of data points per segment.
+This parameter influences the granularity of the segments when searching for breakpoints. (default is 3)}
 
-\item{max_breakpoints}{.}
+\item{available_changepoints}{Integer vector specifying the range of available changepoints.
+These values represent the possible number of breakpoints to be considered during model fitting. (default is 0:5)}
+
+\item{model_selection}{Character string specifying the model selection criterion.
+Options include 'LOO' (Leave-One-Out cross-validation), 'AIC' (Akaike Information Criterion), and 'BIC' (Bayesian Information Criterion).  (default is "LOO")}
+
+\item{n_core}{Integer specifying the number of CPU cores to use for parallel processing. (default is 4)}
 }
 \value{
-the input bipod object with an added 'breakpoints_fit' slot containing the fitted model for the breakpoints
+The input bipod object with an added 'breakpoints_fit' slot containing the fitted model for the breakpoints.
 }
 \description{
-Fit growth model to bipod object
+Fit breakpoints to bipod object
 }

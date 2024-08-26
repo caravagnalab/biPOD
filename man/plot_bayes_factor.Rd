@@ -2,19 +2,19 @@
 % Please edit documentation in R/plot_model_selection.R
 \name{plot_bayes_factor}
 \alias{plot_bayes_factor}
-\title{Plot the fit over the input data.}
+\title{Plot Bayes Factor Over Input Data}
 \usage{
 plot_bayes_factor(x, with_categories = F)
 }
 \arguments{
-\item{x}{A biPOD object of class \code{bipod}. Must contains 'fit' and must have been fitted with model selection.}
+\item{x}{A \code{bipod} object that contains the results of a fitted model, including Bayes Factor and best growth model metadata.}
 
-\item{with_categories}{Boolean. If TRUE it will plot the bayes factor according
-to the categories proposed by Jeffreys in 'The Theory of Probability'}
+\item{with_categories}{A logical value indicating whether to include Bayes Factor significance categories based on Jeffreys' scale.
+If \code{TRUE}, the plot will use categories to interpret the Bayes Factor. (default is F)}
 }
 \value{
-A plot of the Bayes Factor with its significance.
+A \code{ggplot2} object displaying the Bayes Factor with its significance, optionally categorized.
 }
 \description{
-Plot the fit over the input data.
+Generates a plot of the Bayes Factor (BF) based on the fitted model from a \code{bipod} object. The plot can include categories for interpreting the Bayes Factor according to Jeffreys' scale of evidence.
 }

@@ -2,25 +2,33 @@
 % Please edit documentation in R/init.R
 \name{init}
 \alias{init}
-\title{Creates a biPOD object.}
+\title{Create a biPOD Object}
 \usage{
 init(counts, sample, break_points = NULL)
 }
 \arguments{
-\item{counts}{A dataframe of counts with the following fields:
+\item{counts}{A data frame with two columns:
 \itemize{
-\item \code{time} time step.
-\item \code{count} population count, integer.
+\item \code{time}: Numeric or integer values representing the time steps at which population counts were recorded.
+\item \code{count}: Integer values representing the population count at each time step.
 }}
 
-\item{sample}{A string containing the sample name.}
+\item{sample}{A character string specifying the name of the sample. This name is stored in the metadata of the resulting biPOD object.}
 
-\item{break_points}{An array containing the changing points.}
+\item{break_points}{A numeric vector specifying the breakpoints that define changes in the population dynamics.
+If provided, these breakpoints are used to group the time steps. If \code{NULL}, no grouping is applied. (default is NULL)}
 }
 \value{
-A biPOD object of class \code{bipod}.
+A \code{bipod} object of class \code{bipod}, which includes:
+\itemize{
+\item A \code{metadata} list containing the sample name and breakpoints (if provided).
+\item A \code{counts} data frame with an additional \code{group} column, which indicates the grouping of time steps based on the provided breakpoints.
+}
 }
 \description{
-Creates a biPOD object from a table containing
-population counts ad different time points and sample name.
+This function creates a \code{bipod} object for Bayesian inference of population dynamics.
+It takes in a data frame of population counts, a sample name, and optional breakpoints to define groups within the data.
+}
+\details{
+Initializes a biPOD object from a data frame containing population counts at different time points, along with a sample name and optional breakpoints.
 }

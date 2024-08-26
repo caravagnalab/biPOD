@@ -31,10 +31,9 @@ print.bipod = function(x, ...) {
     cat('\n')
 
     if (!is.null(x$metadata$breakpoints)) {
-      rhats <- x$breakpoints_fit$rhat %>% unlist()
-      mean_rhat <- rhats[grepl("b[", x$breakpoints_fit$parameters, fixed = TRUE)] %>% mean() %>% round(2)
 
-      x$breakpoints_fit$rhat
+      rhats <- x$breakpoints_fit$rhat %>% unlist()
+      mean_rhat <- c(rhats[grepl("b[", x$breakpoints_fit$parameters, fixed = TRUE)] %>% mean() %>% round(2))
 
       if (mean_rhat <= 1.1) {
         pstatus = function()
@@ -54,7 +53,11 @@ print.bipod = function(x, ...) {
 
       cli::cli_alert_info(paste0(" Number of breakpoints inferred : ", crayon::blue(length(x$metadata$breakpoints)), ""))
 
-      par_tibble <- lapply(x$breakpoints_fit$parameters[grepl("b[", x$breakpoints_fit$parameters, fixed = TRUE)], function(p) {
+      pars <- lapply(c("b["), function(s) {
+        x$breakpoints_fit$parameters[grepl(s, x$breakpoints_fit$parameters, fixed = TRUE)]
+      }) %>% unlist() %>% unique()
+
+      par_tibble <- lapply(pars, function(p) {
         draws <- x$breakpoints_fit$draws[,grepl(p, colnames(x$breakpoints_fit$draws), fixed = T)] %>% as.vector() %>% unlist()
         dplyr::tibble(
           Parameter = p,
@@ -64,7 +67,7 @@ print.bipod = function(x, ...) {
           p50 = stats::quantile(draws, .50),
           p95 = stats::quantile(draws, .95),
           Rhat = x$breakpoints_fit$rhat[p] %>% as.numeric())
-      }) %>% do.call("bind_rows", .)
+      }) %>% do.call(dplyr::bind_rows, .)
       print(par_tibble)
     } else {
       cli::cli_h1(
@@ -113,7 +116,7 @@ print.bipod = function(x, ...) {
     par_tibble <- lapply(x$two_pop_fit$parameters, function(p) {
       draws <- x$two_pop_fit$draws[,grepl(p, colnames(x$two_pop_fit$draws), fixed = T)] %>% as.vector() %>% unlist()
       dplyr::tibble(Parameter = p, Mean = mean(draws), Sd = stats::sd(draws), p05 = stats::quantile(draws, .05), p50 = stats::quantile(draws, .50), p95 = stats::quantile(draws, .95))
-    }) %>% do.call("bind_rows", .)
+    }) %>% do.call(dplyr::bind_rows, .)
     print(par_tibble)
   }
 
@@ -157,7 +160,7 @@ print.bipod = function(x, ...) {
     par_tibble <- lapply(x$fit$parameters, function(p) {
       draws <- x$fit$draws[,grepl(p, colnames(x$fit$draws), fixed = T)] %>% as.vector() %>% unlist()
       dplyr::tibble(Parameter = p, Mean = mean(draws), Sd = stats::sd(draws), p05 = stats::quantile(draws, .05), p50 = stats::quantile(draws, .50), p95 = stats::quantile(draws, .95))
-    }) %>% do.call("bind_rows", .)
+    }) %>% do.call(dplyr::bind_rows, .)
     print(par_tibble)
   }
 }

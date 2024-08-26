@@ -1,12 +1,14 @@
-#' Plot traces of specified parameters from a fitted Stan model
+#' Plot Traces of Specified Parameters from a Fitted Stan Model
 #'
-#' @param x A biPOD object of class `bipod`. Must contains at least one fit
-#' @param fit the name of the fit oh which the traces should be plotted
-#' @param pars A character vector of parameters to plot.
-#' @param diagnose A Boolean indicating whether the plots should be colored and
-#'  contain info regarding the convergence of the MCMC sampling.
+#' Generates trace plots for specified parameters from a fitted Stan model contained within a `bipod` object. The plots visualize the sampled values across iterations for each chain.
 #'
-#' @return A ggplot object with traces of the specified parameters
+#' @param x A `bipod` object that contains at least one fitted model.
+#' @param fit The fit within the `bipod` object for which the traces should be plotted.
+#' @param pars A character vector specifying the names of the parameters to plot. If empty, plots all available parameters.
+#' @param diagnose A logical value indicating whether to color the plots based on convergence diagnostics.
+#'  If `TRUE`, the plots will include color coding based on the R-hat convergence statistic. (default is FALSE)
+#'
+#' @return A `ggplot2` object displaying the trace plots for the specified parameters.
 #' @export
 plot_traces <- function(x, fit, pars = c(), diagnose = FALSE) {
   if (!(inherits(x, "bipod"))) stop("Input 'x' must be a 'bipod' object")
@@ -66,15 +68,16 @@ plot_traces <- function(x, fit, pars = c(), diagnose = FALSE) {
   plots
 }
 
-#' Plot the logarithm of the ELBO and the delta ELBO mean
-#' obtained during the variational sampling.
+#' Plot the Logarithm of the ELBO and Delta ELBO Mean
 #'
-#' @param x A biPOD object of class `bipod`. Must contains 'fit'
-#' @param elbo_data .
-#' @param diagnose A Boolean indicating whether the plots should be colored and
-#'  contain info regarding the convergence of the variational sampling.
+#' Plots the logarithm of the Evidence Lower Bound (ELBO) and the mean change in ELBO (delta ELBO) obtained during variational inference. This helps to assess the convergence and quality of the variational fit.
 #'
-#' @return A ggplot object with traces of the specified parameters
+#' @param x A `bipod` object of class `bipod` that contains the fitted model and ELBO data.
+#' @param elbo_data A data frame or tibble containing ELBO values over iterations. Must include columns `iter`, `ELBO`, and `delta_ELBO_mean`.
+#' @param diagnose A logical value indicating whether to color the plot based on the convergence of the ELBO.
+#'  If `TRUE`, the plot will include color coding based on whether the ELBO converged.
+#'
+#' @return A `ggplot2` object displaying the ELBO and delta ELBO mean traces.
 #' @export
 plot_elbo <- function(x, elbo_data, diagnose = TRUE) {
   if (!(inherits(x, "bipod"))) stop("The input 'x' must be a 'bipod' object")

@@ -1,11 +1,13 @@
-#' Plot the posterior density for a desired parameter.
+#' Plot Posterior Density for a Specific Parameter
 #'
-#' @param x A biPOD object of class `bipod`. Must contains 'fit' and must have been fitted with model selection.
-#' @param x_fit The fit which contain the desired parameter. It should be inside x.
-#' @param par_name Name of the desired parameter.
-#' @param color Color for the density plot.
+#' Creates a density plot of the posterior distribution for a specified parameter from a fitted model within a `bipod` object.
 #'
-#' @returns A plot of the Bayes Factor with its significance.
+#' @param x A `bipod` object of class `bipod`. Must contain a 'fit' field and should have been fitted with model selection.
+#' @param x_fit The fit object within `x` that contains the desired parameter.
+#' @param par_name The name of the parameter whose posterior distribution is to be plotted.
+#' @param color A character string specifying the color to use for the density plot. (default is 'black')
+#'
+#' @return A `ggplot2` object showing the density plot of the specified parameter.
 #' @export
 plot_posterior <- function(x, x_fit, par_name, color = "black") {
   # Check input
@@ -20,16 +22,20 @@ plot_posterior <- function(x, x_fit, par_name, color = "black") {
   p
 }
 
-#' Plot posterior densities for a set of desired parameter.
+#' Plot Posterior Densities for Multiple Parameters
 #'
-#' @param x A biPOD object of class `bipod`. Must contains 'fit' and must have been fitted with model selection.
-#' @param x_fit The fit which contain the desired parameter. It should be inside x.
-#' @param par_list Vector containing names of desired parameters
-#' @param with_histogram Boolean. If density should overlay histogram of samples.
-#' @param alpha Alpha value for the plotted densities.
-#' @param colors Vector containing colors for each parameter.
+#' Generates density plots for the posterior distributions of a set of parameters from a fitted model within a `bipod` object.
+#'  Optionally overlays histograms on the density plots.
 #'
-#' @returns A plot of the Bayes Factor with its significance.
+#' @param x A `bipod` object of class `bipod`. Must contain a 'fit' field and should have been fitted with model selection.
+#' @param x_fit The fit object within `x` that contains the desired parameters.
+#' @param par_list A character vector containing the names of the parameters whose posterior distributions are to be plotted.
+#' @param with_histogram A logical value indicating whether to overlay histograms of the posterior samples on the density plots. (default is FALSE)
+#' @param alpha A numeric value between 0 and 1 specifying the transparency level of the density plots. (default is .6)
+#' @param colors A character vector specifying the colors to use for the density plots of each parameter.
+#'  If `NULL`, a default color scheme will be used. (default is NULL)
+#'
+#' @return A `ggplot2` object showing the density plots of the specified parameters. If `with_histogram` is `TRUE`, histograms will be overlaid on the density plots.
 #' @export
 plot_posteriors <- function(x, x_fit, par_list, with_histogram = F, alpha = .6, colors = NULL) {
   samples <- get_parameters(x_fit, par_list = par_list)

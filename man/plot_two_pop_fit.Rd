@@ -2,25 +2,24 @@
 % Please edit documentation in R/plot_task3.R
 \name{plot_two_pop_fit}
 \alias{plot_two_pop_fit}
-\title{Plot the fit over the input data.}
+\title{Plot the Fit Over the Input Data for Two Populations}
 \usage{
 plot_two_pop_fit(x, CI = 0.95, add_posteriors = F, split_process = F)
 }
 \arguments{
-\item{x}{A bipod object of class \code{bipod}. Must contains 'fit'}
+\item{x}{A \code{bipod} object. Must contain a 'two_pop_fit' field.}
 
-\item{CI}{confidence interval for the growth rate to plot}
+\item{CI}{Numeric value representing the confidence interval for the growth rate to plot. (default is 0.95)}
 
-\item{add_posteriors}{Boolean. If TRUE, posteriors regarding
-the time of origin of the resistant population and the time of death
-of the sensitive popultation will be added}
+\item{add_posteriors}{Logical value indicating whether to add posteriors for the time of origin of the resistant population (\code{t0_r})
+and the time of death of the sensitive population (\code{t_end}). (default is FALSE)}
 
-\item{split_process}{Boolean. If TRUE, the dynamics of the two populations
-will be divided.}
+\item{split_process}{Logical value indicating whether to plot the dynamics of the two populations separately. (default is FALSE)}
 }
 \value{
-A plot of the fit over the input data.
+A \code{ggplot2} object showing the fit over the input data.
 }
 \description{
-Plot the fit over the input data.
+Creates a plot of the fit over the input data for a model with two populations.
+The plot can display the fit for each population separately and optionally include posteriors for key parameters.
 }

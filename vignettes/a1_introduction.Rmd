@@ -49,10 +49,14 @@ Let's use one of the sample coming from the `xenograft` data along with a made u
 
 ```{r}
 mouse_id <- 529
-biPOD::init(
+x <- biPOD::init(
   counts = xenografts %>% dplyr::filter(mouse == mouse_id) %>% dplyr::mutate(count = tumour_volume),
   sample = mouse_id,
   break_points = c(0, 20)
 )
 ```
-If you look at the modified counts you will see that the observations have been grouped
+If you look at the modified counts you will see that the observations have been grouped in different time windows
+
+```{r}
+biPOD::plot_input(x, add_highlights = T)
+```
