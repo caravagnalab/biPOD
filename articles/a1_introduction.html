@@ -41,9 +41,9 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/a1_introduction.html">1. Introduction</a></li>
-    <li><a class="dropdown-item" href="../articles/a2_task1.html">2. Task 1</a></li>
-    <li><a class="dropdown-item" href="../articles/a3_task2.html">3. Task 0</a></li>
-    <li><a class="dropdown-item" href="../articles/a4_task3.html">4. Task 3</a></li>
+    <li><a class="dropdown-item" href="../articles/a2_task1.html">2. Fitting dynamics with known breakpoints</a></li>
+    <li><a class="dropdown-item" href="../articles/a3_task2.html">3. Inferring uknwokn breakpoints</a></li>
+    <li><a class="dropdown-item" href="../articles/a4_task3.html">4. Fitting a mixture of resistant-sensitive population</a></li>
     <li><a class="dropdown-item" href="../articles/a5_supplementary_materials.html">5. biPOD Supplementary Materials and Methods</a></li>
   </ul>
 </li>
@@ -122,7 +122,7 @@ user should also input them if known. (see below)</p>
 data along with a made up set of breakpoints.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mouse_id</span> <span class="op">&lt;-</span> <span class="fl">529</span></span>
-<span><span class="fu">biPOD</span><span class="fu">::</span><span class="fu"><a href="../reference/init.html">init</a></span><span class="op">(</span></span>
+<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">biPOD</span><span class="fu">::</span><span class="fu"><a href="../reference/init.html">init</a></span><span class="op">(</span></span>
 <span>  counts <span class="op">=</span> <span class="va">xenografts</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">mouse</span> <span class="op">==</span> <span class="va">mouse_id</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>count <span class="op">=</span> <span class="va">tumour_volume</span><span class="op">)</span>,</span>
 <span>  sample <span class="op">=</span> <span class="va">mouse_id</span>,</span>
 <span>  break_points <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">20</span><span class="op">)</span></span>
@@ -130,10 +130,12 @@ data along with a made up set of breakpoints.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">biPOD - bayesian inference for Population Dynamics</span> <span style="color: #00BBBB;">──────────────────────────</span></span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Using sample named: <span style="color: #00BB00;">529</span>.</span></span>
-<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> No group column present in input dataframe! A column will be added.</span></span>
-<span><span class="co">#&gt; ── <span style="color: #000000; background-color: #BBBB00;">[ biPOD ]</span> <span style="color: #00BB00;">6</span> observations divided in <span style="color: #00BB00;">3</span> time windows. ─────────────────────────</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> No group column present in input dataframe! A column will be added.</span></span></code></pre></div>
 <p>If you look at the modified counts you will see that the observations
-have been grouped</p>
+have been grouped in different time windows</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">biPOD</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_input.html">plot_input</a></span><span class="op">(</span><span class="va">x</span>, add_highlights <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span></code></pre></div>
+<p><img src="a1_introduction_files/figure-html/unnamed-chunk-4-1.png" width="700"></p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

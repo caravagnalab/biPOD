@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>4. Task 3 • biPOD</title>
+<title>4. Fitting a mixture of resistant-sensitive population • biPOD</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
 <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
@@ -16,7 +16,7 @@
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="4. Task 3">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="4. Fitting a mixture of resistant-sensitive population">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -41,9 +41,9 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/a1_introduction.html">1. Introduction</a></li>
-    <li><a class="dropdown-item" href="../articles/a2_task1.html">2. Task 1</a></li>
-    <li><a class="dropdown-item" href="../articles/a3_task2.html">3. Task 0</a></li>
-    <li><a class="dropdown-item" href="../articles/a4_task3.html">4. Task 3</a></li>
+    <li><a class="dropdown-item" href="../articles/a2_task1.html">2. Fitting dynamics with known breakpoints</a></li>
+    <li><a class="dropdown-item" href="../articles/a3_task2.html">3. Inferring uknwokn breakpoints</a></li>
+    <li><a class="dropdown-item" href="../articles/a4_task3.html">4. Fitting a mixture of resistant-sensitive population</a></li>
     <li><a class="dropdown-item" href="../articles/a5_supplementary_materials.html">5. biPOD Supplementary Materials and Methods</a></li>
   </ul>
 </li>
@@ -64,7 +64,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="../logo.png" class="logo" alt=""><h1>4. Task 3</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>4. Fitting a mixture of resistant-sensitive population</h1>
             
       
 
@@ -74,8 +74,86 @@
     
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://caravagnalab.github.io/biPOD/">biPOD</a></span><span class="op">)</span></span></code></pre></div>
-  </main>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://caravagnalab.github.io/biPOD/">biPOD</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; Loading required package: dplyr</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Attaching package: 'dplyr'</span></span>
+<span><span class="co">#&gt; The following objects are masked from 'package:stats':</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     filter, lag</span></span>
+<span><span class="co">#&gt; The following objects are masked from 'package:base':</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     intersect, setdiff, setequal, union</span></span></code></pre></div>
+<p>When a population shrinks (e.g., sensitive to treatment) and later
+regrows (e.g., resistant to treatment) the dynamics are U-shaped. Here
+we are going to consider this specific case.</p>
+<div class="section level2">
+<h2 id="input-data">Input data<a class="anchor" aria-label="anchor" href="#input-data"></a>
+</h2>
+<p>We take the <code>xenografts</code> data and we make it ready for
+inference by preparing the <code>count</code> column and by dividing the
+<code>time</code> column by a factor of 7 (in order to work with a unit
+of time of a week).</p>
+<p>We select the sample 543, already presented in the previous vignette
+and we filter out the observations that are prior to the treatment.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"xenografts"</span>, package <span class="op">=</span> <span class="st">"biPOD"</span><span class="op">)</span></span>
+<span><span class="va">mouse_id</span> <span class="op">&lt;-</span> <span class="fl">543</span></span>
+<span><span class="va">d</span> <span class="op">&lt;-</span> <span class="va">xenografts</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename</a></span><span class="op">(</span>count <span class="op">=</span> <span class="va">tumour_volume</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>time <span class="op">=</span> <span class="va">time</span> <span class="op">/</span> <span class="fl">7</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">time</span> <span class="op">&gt;=</span> <span class="fl">0</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">mouse</span> <span class="op">==</span> <span class="va">mouse_id</span><span class="op">)</span></span>
+<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">biPOD</span><span class="fu">::</span><span class="fu"><a href="../reference/init.html">init</a></span><span class="op">(</span><span class="va">d</span>, <span class="st">"543 U-shape"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">biPOD - bayesian inference for Population Dynamics</span> <span style="color: #00BBBB;">──────────────────────────</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Using sample named: <span style="color: #00BB00;">543 U-shape</span>.</span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> No group column present in input dataframe! A column will be added.</span></span>
+<span><span class="fu">biPOD</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_input.html">plot_input</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
+<p><img src="a4_task3_files/figure-html/unnamed-chunk-2-1.png" width="700"></p>
+</div>
+<div class="section level2">
+<h2 id="two-population-model">Two population model<a class="anchor" aria-label="anchor" href="#two-population-model"></a>
+</h2>
+<p>The model assumes that</p>
+<ul>
+<li>only two populations exist, one dying out and one growing</li>
+<li>the growth rates are both positive and constant</li>
+<li>the sensible population must be present at x=0 but the same does not
+apply for the resistant one</li>
+</ul>
+<p>and is able to infer</p>
+<ul>
+<li>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>t</mi><mi>s</mi></msub><annotation encoding="application/x-tex">t_s</annotation></semantics></math>,
+instant of time in which the sensitive population dies out</li>
+<li>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>t</mi><mi>r</mi></msub><annotation encoding="application/x-tex">t_r</annotation></semantics></math>,
+instant of time in which the resistant population was born</li>
+<li>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ρ</mi><mi>s</mi></msub><annotation encoding="application/x-tex">\rho_s</annotation></semantics></math>,
+death rate of the sensitive population</li>
+<li>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ρ</mi><mi>r</mi></msub><annotation encoding="application/x-tex">\rho_r</annotation></semantics></math>,
+growth rate of the resistant population</li>
+</ul>
+<p>To do so, one need to use the <code>fit_two_pop_model</code>
+function.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">biPOD</span><span class="fu">::</span><span class="fu"><a href="../reference/fit_two_pop_model.html">fit_two_pop_model</a></span><span class="op">(</span><span class="va">x</span>, variational <span class="op">=</span> <span class="cn">F</span>, factor_size <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Fitting two population model using MCMC sampling ...</span></span></code></pre></div>
+<p>and the fit can be visualized as a single process</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">biPOD</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_two_pop_fit.html">plot_two_pop_fit</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
+<p><img src="a4_task3_files/figure-html/unnamed-chunk-4-1.png" width="700"></p>
+<p>or splitting it depending on the two different populations</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">biPOD</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_two_pop_fit.html">plot_two_pop_fit</a></span><span class="op">(</span><span class="va">x</span>, split_process <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span></code></pre></div>
+<p><img src="a4_task3_files/figure-html/unnamed-chunk-5-1.png" width="700"></p>
+</div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside>
 </div>
 
 

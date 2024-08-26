@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>2. Task 1 • biPOD</title>
+<title>2. Fitting dynamics with known breakpoints • biPOD</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
 <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
@@ -16,7 +16,7 @@
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="2. Task 1">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="2. Fitting dynamics with known breakpoints">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -41,9 +41,9 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/a1_introduction.html">1. Introduction</a></li>
-    <li><a class="dropdown-item" href="../articles/a2_task1.html">2. Task 1</a></li>
-    <li><a class="dropdown-item" href="../articles/a3_task2.html">3. Task 0</a></li>
-    <li><a class="dropdown-item" href="../articles/a4_task3.html">4. Task 3</a></li>
+    <li><a class="dropdown-item" href="../articles/a2_task1.html">2. Fitting dynamics with known breakpoints</a></li>
+    <li><a class="dropdown-item" href="../articles/a3_task2.html">3. Inferring uknwokn breakpoints</a></li>
+    <li><a class="dropdown-item" href="../articles/a4_task3.html">4. Fitting a mixture of resistant-sensitive population</a></li>
     <li><a class="dropdown-item" href="../articles/a5_supplementary_materials.html">5. biPOD Supplementary Materials and Methods</a></li>
   </ul>
 </li>
@@ -64,7 +64,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="../logo.png" class="logo" alt=""><h1>2. Task 1</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>2. Fitting dynamics with known breakpoints</h1>
             
       
 
@@ -87,7 +87,7 @@
 <span><span class="co">#&gt;     intersect, setdiff, setequal, union</span></span></code></pre></div>
 <p>The problem of characterizing a tumor growth model when growth rates
 change at known time-points while considering both exponential and
-logistic growths is denoted in <code>biPOD</code> as task 1. In this
+logistic growths can be tackled using <code>biPOD</code>. In this
 vignette we are going to look at how to use <code>biPOD</code> for this
 specific problem.</p>
 <div class="section level2">

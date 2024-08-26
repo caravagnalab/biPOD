@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>3. Task 0 • biPOD</title>
+<title>3. Inferring uknwokn breakpoints • biPOD</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
 <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
@@ -16,7 +16,7 @@
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="3. Task 0">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="3. Inferring uknwokn breakpoints">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -41,9 +41,9 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/a1_introduction.html">1. Introduction</a></li>
-    <li><a class="dropdown-item" href="../articles/a2_task1.html">2. Task 1</a></li>
-    <li><a class="dropdown-item" href="../articles/a3_task2.html">3. Task 0</a></li>
-    <li><a class="dropdown-item" href="../articles/a4_task3.html">4. Task 3</a></li>
+    <li><a class="dropdown-item" href="../articles/a2_task1.html">2. Fitting dynamics with known breakpoints</a></li>
+    <li><a class="dropdown-item" href="../articles/a3_task2.html">3. Inferring uknwokn breakpoints</a></li>
+    <li><a class="dropdown-item" href="../articles/a4_task3.html">4. Fitting a mixture of resistant-sensitive population</a></li>
     <li><a class="dropdown-item" href="../articles/a5_supplementary_materials.html">5. biPOD Supplementary Materials and Methods</a></li>
   </ul>
 </li>
@@ -64,7 +64,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="../logo.png" class="logo" alt=""><h1>3. Task 0</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>3. Inferring uknwokn breakpoints</h1>
             
       
 
@@ -111,9 +111,9 @@ vignette.</p>
 </h2>
 <p>You can infer the breakpoints in the following way. After having
 initialized a <code>bipod</code> object with no breakpoints you can use
-the function <code>breakpoints_inference</code>.</p>
+the function <code>fit_breakpoints</code>.</p>
 <p>If you reasonably know the possible number of breakpoints, you should
-pass a vector to the <code>available_changepoints</code></p>
+pass a vector to the <code>available_changepoints</code>.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">biPOD</span><span class="fu">::</span><span class="fu"><a href="../reference/init.html">init</a></span><span class="op">(</span><span class="va">d</span>, sample <span class="op">=</span> <span class="va">mouse_id</span>, break_points <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -123,26 +123,30 @@ pass a vector to the <code>available_changepoints</code></p>
 <span><span class="fu">biPOD</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_input.html">plot_input</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
 <p><img src="a3_task2_files/figure-html/unnamed-chunk-3-1.png" width="700"></p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">biPOD</span><span class="fu">::</span><span class="fu"><a href="../reference/fit_breakpoints.html">fit_breakpoints</a></span><span class="op">(</span><span class="va">x</span>, norm <span class="op">=</span> <span class="cn">F</span>, n_trials <span class="op">=</span> <span class="fl">200</span>, avg_points_per_window <span class="op">=</span> <span class="fl">4</span>, max_breakpoints <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Intializing breakpoints</span></span>
-<span><span class="co">#&gt; Breakpoints optimization</span></span>
-<span><span class="co">#&gt; Choosing optimal breakpoints</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Median of the inferred breakpoints have been succesfully stored.</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">biPOD</span><span class="fu">::</span><span class="fu"><a href="../reference/fit_breakpoints.html">fit_breakpoints</a></span><span class="op">(</span><span class="va">x</span>, norm <span class="op">=</span> <span class="cn">T</span>, n_trials <span class="op">=</span> <span class="fl">500</span>, avg_points_per_window <span class="op">=</span> <span class="fl">3</span>, available_changepoints <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">2</span><span class="op">)</span>, model_selection <span class="op">=</span> <span class="st">"LOO"</span>, n_core<span class="op">=</span><span class="fl">1</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Intializing breakpoints...</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Breakpoints optimization...</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Choosing optimal breakpoints...</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Median of the inferred breakpoints have been succesfully stored.</span></span>
+<span><span class="va">x</span></span>
+<span><span class="co">#&gt; ── <span style="color: #000000; background-color: #BBBB00;">[ biPOD ]</span> <span style="color: #00BB00;">23</span> observations divided in <span style="color: #00BB00;">3</span> time windows. ────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">Break-points inference </span><span style="color: #000000; background-color: #00BB00; font-weight: bold;"> PASS </span><span style="font-weight: bold;"> Mean rhat = </span><span style="color: #00BB00; font-weight: bold;">1</span><span style="font-weight: bold;">.</span> <span style="color: #00BBBB;">────────────────────────────────</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span>  Number of breakpoints inferred : <span style="color: #0000BB;">2</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 7</span></span></span>
+<span><span class="co">#&gt;   Parameter  Mean    Sd    p05   p50   p95  Rhat</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> b[1]      0.237 0.443 -<span style="color: #BB0000;">0.481</span> 0.223 0.990  1.00</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> b[2]      6.84  0.326  6.33  6.83  7.39   1.00</span></span></code></pre></div>
 <p>The inferred breakpoints are now stored in the
 <code>metadata$breakpoints</code> field.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">metadata</span><span class="op">$</span><span class="va">breakpoints</span><span class="op">)</span></span>
-<span><span class="co">#&gt;     par1 </span></span>
-<span><span class="co">#&gt; 7.933023</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="breakpoints">Breakpoints<a class="anchor" aria-label="anchor" href="#breakpoints"></a>
-</h2>
-<p>The the inferred breakpoints can be found in the
-<code>metadata</code> of the biPOD object.</p>
+<span><span class="co">#&gt; [1] 0.2229005 6.8275200</span></span></code></pre></div>
+<p>and their posterior distribution can be visualized using
+<code>plot_breakpoints_posterior</code> function</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">biPOD</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_input.html">plot_input</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_vline</a></span><span class="op">(</span>xintercept <span class="op">=</span> <span class="va">x</span><span class="op">$</span><span class="va">metadata</span><span class="op">$</span><span class="va">breakpoints</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">biPOD</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_breakpoints_posterior.html">plot_breakpoints_posterior</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
 <p><img src="a3_task2_files/figure-html/unnamed-chunk-5-1.png" width="700"></p>
 </div>
 <div class="section level2">
@@ -159,20 +163,16 @@ Let’s see how it works on one example.</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Fitting with model selection.</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Model selection finished!</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Model with <span style="color: #0000BB;">"Logistic"</span> growth deemed better with <span style="color: #0000BB;">"Decisive"</span> evidence. (BF = <span style="color: #0000BB;">357984411.456748</span>)</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Model with <span style="color: #0000BB;">"Logistic"</span> growth deemed better with <span style="color: #0000BB;">"Decisive"</span> evidence. (BF = <span style="color: #0000BB;">243769621497475424</span>)</span></span></code></pre></div>
 <p>And let’s look at the final result.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">biPOD</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_fit.html">plot_fit</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">biPOD</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_report.html">plot_report</a></span><span class="op">(</span><span class="va">x</span>, fit_type <span class="op">=</span> <span class="st">'simple'</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Creating report...</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Preparing fit plot...</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Preparing breakpoints posterior plot...</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Preparing growth rates posterior plot...</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Preparing model selection plot...</span></span></code></pre></div>
 <p><img src="a3_task2_files/figure-html/unnamed-chunk-7-1.png" width="700"></p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">biPOD</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_posteriors.html">plot_posteriors</a></span><span class="op">(</span></span>
-<span>  <span class="va">x</span>,</span>
-<span>  x_fit <span class="op">=</span> <span class="va">x</span><span class="op">$</span><span class="va">fit</span>,</span>
-<span>  par_list <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"rho[1]"</span>, <span class="st">"rho[2]"</span>, <span class="st">"rho[3]"</span>, <span class="st">"rho[4]"</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: Removed 2 rows containing non-finite outside the scale range</span></span>
-<span><span class="co">#&gt; (`stat_density()`).</span></span></code></pre></div>
-<p><img src="a3_task2_files/figure-html/unnamed-chunk-7-2.png" width="700"></p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
