@@ -174,6 +174,11 @@ find_breakpoints = function(d, avg_points_per_window, max_breakpoints, norm, n_t
 
   max_breakpoints = min(max(available_changepoints), as.integer(length(x) / avg_points_per_window))
   available_changepoints <- available_changepoints[available_changepoints <= max_breakpoints & available_changepoints > 0] %>% sort()
+  if (!length(available_changepoints)) {
+    cli::cli_alert_info("No breakpoints possible given the 'available_changepoints' and 'avg_points_per_window' passed as input!")
+    cli::cli_alert_info("Model with zero breakpoints will be considered.")
+    return(list(best_bp=NULL, best_fit=NULL))
+  }
   cli::cli_alert_info("Intializing breakpoints...")
   proposed_breakpoints <- parallel::mclapply(available_changepoints, FUN = function(n_breakpoints) {
     convergence <<- FALSE
@@ -331,8 +336,7 @@ find_breakpoints = function(d, avg_points_per_window, max_breakpoints, norm, n_t
   # Extra fit
   m <- biPOD:::get_model("piecewise_changepoints")
 
-  j = length(best_bp)
-  if (j == 0) {
+  if (is.null(best_bp) | length(best_bp) == 0) {
     bp = array(0, dim = c(0))
   } else {
     bp <- sort(best_bp)
@@ -343,7 +347,7 @@ find_breakpoints = function(d, avg_points_per_window, max_breakpoints, norm, n_t
     G = length(bp),
     N = log(d$count),
     T = d$time,
-    b_prior = best_bp,
+    b_prior = bp,
     sigma_changepoints = .5
   )
 
@@ -353,12 +357,16 @@ find_breakpoints = function(d, avg_points_per_window, max_breakpoints, norm, n_t
     )
   )
 
-  final_bp <- f$draws(variables = 'b', format = 'matrix') %>%
-    dplyr::as_tibble() %>%
-    dplyr::summarise_all(stats::median) %>%
-    as.numeric()
-
   final_fit <- biPOD:::convert_mcmc_fit_to_biPOD(f)
+
+  if (length(bp)) {
+    final_bp <- f$draws(variables = 'b', format = 'matrix') %>%
+      dplyr::as_tibble() %>%
+      dplyr::summarise_all(stats::median) %>%
+      as.numeric()
+  } else {
+    final_bp <- NULL
+  }
 
   return(list(best_bp=final_bp, best_fit=final_fit))
 }
