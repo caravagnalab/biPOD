@@ -34,11 +34,11 @@ model {
   }
 
   // Priors
+  // n0 ~ normal(N[1], 0.1 * N[1]);
   rho_r ~ normal(0, 1);       // Prior for rho_r
   rho_s ~ normal(0, 1);       // Prior for rho_s
   t0_r ~ normal(0, 1);         // Prior for t_r
-  f_s ~ uniform(0,1);         // Prior for f_s
-
+  f_s ~ beta(2,2);         // Prior for f_s
 
   // Likelihood (assuming normallN distributed noise)
   N ~ poisson(mu);

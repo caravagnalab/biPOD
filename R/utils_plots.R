@@ -14,7 +14,8 @@ get_group_colors <- function() {
     "darkgreen",
     "firebrick3",
     "turquoise4",
-    "goldenrod3"
+    "goldenrod3",
+    "mediumpurple"
   )
   color
 }
