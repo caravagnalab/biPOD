@@ -4,17 +4,33 @@
 \alias{plot_two_pop_fit}
 \title{Plot the Fit Over the Input Data for Two Populations}
 \usage{
-plot_two_pop_fit(x, CI = 0.95, add_posteriors = F, split_process = F)
+plot_two_pop_fit(
+  x,
+  CI = 0.95,
+  f_posteriors = TRUE,
+  t_posteriors = TRUE,
+  r_posteriors = TRUE,
+  split_process = TRUE,
+  resistant_color = "steelblue",
+  sensitive_color = "indianred"
+)
 }
 \arguments{
 \item{x}{A \code{bipod} object. Must contain a 'two_pop_fit' field.}
 
 \item{CI}{Numeric value representing the confidence interval for the growth rate to plot. (default is 0.95)}
 
-\item{add_posteriors}{Logical value indicating whether to add posteriors for the time of origin of the resistant population (\code{t0_r})
-and the time of death of the sensitive population (\code{t_end}). (default is FALSE)}
+\item{f_posteriors}{.}
+
+\item{t_posteriors}{.}
+
+\item{r_posteriors}{.}
 
 \item{split_process}{Logical value indicating whether to plot the dynamics of the two populations separately. (default is FALSE)}
+
+\item{resistant_color}{.}
+
+\item{sensitive_color}{.}
 }
 \value{
 A \code{ggplot2} object showing the fit over the input data.

@@ -5,20 +5,31 @@
 #'
 #' @param x A `bipod` object. Must contain a 'two_pop_fit' field.
 #' @param CI Numeric value representing the confidence interval for the growth rate to plot. (default is 0.95)
-#' @param add_posteriors Logical value indicating whether to add posteriors for the time of origin of the resistant population (`t0_r`)
-#'  and the time of death of the sensitive population (`t_end`). (default is FALSE)
+#' @param f_posteriors .
+#' @param t_posteriors .
+#' @param r_posteriors .
 #' @param split_process Logical value indicating whether to plot the dynamics of the two populations separately. (default is FALSE)
+#' @param resistant_color .
+#' @param sensitive_color .
 #'
 #' @return A `ggplot2` object showing the fit over the input data.
 #' @export
-plot_two_pop_fit <- function(x, CI = .95, add_posteriors = F, split_process = F) {
+plot_two_pop_fit <- function(
+    x,
+    CI = .95,
+    f_posteriors = TRUE,
+    t_posteriors = TRUE,
+    r_posteriors = TRUE,
+    split_process = TRUE,
+    resistant_color = "steelblue",
+    sensitive_color = "indianred") {
   # Check input
   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
   if (!("two_pop_fit" %in% names(x))) stop("Input must contain a 'two_pop_fit' field")
-  if (add_posteriors & !(split_process)) stop("Posteriors can be only added if 'split_process' = TRUE")
+  #if (add_posteriors & !(split_process)) stop("Posteriors can be only added if 'split_process' = TRUE")
 
   alpha <- 1 - CI
-  fitted_data <- get_data_for_two_pop_plot(x, alpha = alpha)
+  fitted_data <- biPOD:::get_data_for_two_pop_plot(x, alpha = alpha)
 
   fitted_data <- dplyr::bind_rows(fitted_data,
                                   fitted_data %>%
@@ -29,27 +40,81 @@ plot_two_pop_fit <- function(x, CI = .95, add_posteriors = F, split_process = F)
 
   times <- x$counts$time
 
-  # Plot data
+
   p <- ggplot2::ggplot() +
     ggplot2::geom_point(x$counts, mapping = ggplot2::aes(x = .data$time, y = .data$count)) + # original points
     ggplot2::geom_line(fitted_data %>%
                          dplyr::filter(.data$group == "total", .data$x >= min(times), .data$x <= max(times)), mapping = ggplot2::aes(x = .data$x, y = .data$y), col = "black") +
-    my_ggplot_theme()
+    biPOD:::my_ggplot_theme()
 
   if (split_process) {
     p <- p +
-      ggplot2::geom_line(fitted_data %>% dplyr::filter(.data$group == "resistant", .data$x <= max(times)), mapping = ggplot2::aes(x = .data$x, y = .data$y), col = "forestgreen") +
-      ggplot2::geom_ribbon(fitted_data %>% dplyr::filter(.data$group == "resistant", .data$x <= max(times)), mapping = ggplot2::aes(x = .data$x, y = .data$y, ymin = .data$ylow, ymax = .data$yhigh), fill = "forestgreen", alpha = .3) +
-      ggplot2::geom_line(fitted_data %>% dplyr::filter(.data$group == "sensible", .data$x >= min(times)), mapping = ggplot2::aes(x = .data$x, y = .data$y), col = "indianred") +
-      ggplot2::geom_ribbon(fitted_data %>% dplyr::filter(.data$group == "sensible", .data$x >= min(times)), mapping = ggplot2::aes(x = .data$x, y = .data$y, ymin = .data$ylow, ymax = .data$yhigh), fill = "indianred", alpha = .3)
+      ggplot2::geom_line(fitted_data %>% dplyr::filter(.data$group == "resistant", .data$x <= max(times)), mapping = ggplot2::aes(x = .data$x, y = .data$y), col = resistant_color) +
+      ggplot2::geom_ribbon(fitted_data %>% dplyr::filter(.data$group == "resistant", .data$x <= max(times)), mapping = ggplot2::aes(x = .data$x, y = .data$y, ymin = .data$ylow, ymax = .data$yhigh), fill = resistant_color, alpha = .3) +
+      ggplot2::geom_line(fitted_data %>% dplyr::filter(.data$group == "sensible", .data$x >= min(times)), mapping = ggplot2::aes(x = .data$x, y = .data$y), col = sensitive_color) +
+      ggplot2::geom_ribbon(fitted_data %>% dplyr::filter(.data$group == "sensible", .data$x >= min(times)), mapping = ggplot2::aes(x = .data$x, y = .data$y, ymin = .data$ylow, ymax = .data$yhigh), fill = sensitive_color, alpha = .3)
   }
 
-  if (add_posteriors) {
-    p <- add_posterior(base_plot = p, param = "t0_r", x = x, x_fit = x$two_pop_fit, color = "forestgreen")
-    p <- add_posterior(base_plot = p, param = "t_end", x = x, x_fit = x$two_pop_fit, color = "indianred")
+  plots <- list(p = p)
+
+  if (t_posteriors) {
+    t_data <- biPOD:::get_parameters(x$two_pop_fit, par_list = c('t0_r', "t_end")) %>%
+      dplyr::mutate(parameter = if_else(parameter == "t0_r", "t_r", 't_e'))
+
+
+    time_limits <- c(min(t_data$value, min(fitted_data$x)), max(t_data$value, max(fitted_data$x)))
+
+    p <- p + lims(x = time_limits)
+
+    t_plot <- t_data%>%
+      ggplot(mapping = aes(x=value, fill=parameter)) +
+      geom_histogram(alpha = .7, binwidth = 0.005) +
+      #scale_color_manual(values = c("t_e"=sensitive_color, "t_r"=resistant_color)) +
+      scale_fill_manual(values = c("t_e"=sensitive_color, "t_r"=resistant_color)) +
+      biPOD:::my_ggplot_theme() +
+      labs(fill = "", col="", x="time") +
+      lims(x = time_limits)
+
+    plots = list(p = p, t_plot=t_plot)
   }
 
-  return(p)
+  if (r_posteriors) {
+    d <- biPOD:::get_parameters(x$two_pop_fit, par_list = c('rho_r', "rho_s")) %>%
+      dplyr::mutate(value = ifelse(parameter == "rho_s", -value, value))
+
+    rho_plot <- d %>%
+      ggplot(mapping = aes(x=value,fill=parameter)) +
+      #geom_density(alpha = .3) +
+      geom_histogram(alpha = .7, binwidth = 0.005) +
+      #scale_color_manual(values = c("rho_s"=sensitive_color, "rho_r"=resistant_color)) +
+      scale_fill_manual(values = c("rho_s"=sensitive_color, "rho_r"=resistant_color)) +
+      biPOD:::my_ggplot_theme() +
+      labs(fill = "", col="", x="Growth rate") +
+      geom_vline(xintercept = 0, linetype='dashed')
+
+    plots$rho_plot = rho_plot
+  }
+
+  if (f_posteriors) {
+    d <- biPOD:::get_parameters(x$two_pop_fit, par_list = c('f_s')) %>%
+      dplyr::mutate(value = 1 - value, parameter = "f_r")
+
+    f_plot <- d %>%
+      ggplot(mapping = aes(x=value,fill=parameter)) +
+      #geom_density(alpha = .3) +
+      geom_histogram(alpha = .7, binwidth = 0.01) +
+      #scale_color_manual(values = c("rho_s"=sensitive_color, "rho_r"=resistant_color)) +
+      scale_fill_manual(values = c("f_r"=resistant_color)) +
+      biPOD:::my_ggplot_theme() +
+      labs(fill = "", col="", x="Resistant population fraction") +
+      lims(x = c(-0.05,1.05))
+
+    plots$f_plot = f_plot
+  }
+
+  w = c(1, rep(1 / (length(plots)), length(plots) - 1))
+
+  patchwork::wrap_plots(plots, ncol = 1, heights = w)
 }
 
 # Utils

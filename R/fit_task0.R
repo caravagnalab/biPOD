@@ -54,7 +54,7 @@ fit_breakpoints = function(
   x$metadata$breakpoints <- best_bp
 
   if (!(is.null(best_bp))) {
-    x$counts$group <- bp_to_groups(x$counts, x$metadata$breakpoints)
+    x$counts$group <- biPOD:::bp_to_groups(x$counts, x$metadata$breakpoints)
   }
   cli::cli_alert_info("Median of the inferred breakpoints have been succesfully stored.")
 
@@ -179,6 +179,7 @@ find_breakpoints = function(d, avg_points_per_window, max_breakpoints, norm, n_t
     cli::cli_alert_info("Model with zero breakpoints will be considered.")
     return(list(best_bp=NULL, best_fit=NULL))
   }
+
   cli::cli_alert_info("Intializing breakpoints...")
   proposed_breakpoints <- parallel::mclapply(available_changepoints, FUN = function(n_breakpoints) {
     convergence <<- FALSE
@@ -199,7 +200,6 @@ find_breakpoints = function(d, avg_points_per_window, max_breakpoints, norm, n_t
         })
       }
     )
-
     dplyr::tibble(n_breakpoints = n_breakpoints, best_bp = list(bb), convergence = convergence)
   }, mc.cores = min(parallel::detectCores(), n_core)) %>%
     do.call(dplyr::bind_rows, .) %>%
@@ -242,7 +242,8 @@ find_breakpoints = function(d, avg_points_per_window, max_breakpoints, norm, n_t
       T = x,
       b_prior = bp,
       b = bp,
-      sigma_changepoints = (max(x) - min(x)) / length(bp)
+      sigma_changepoints = .01
+      #sigma_changepoints = (max(x) - min(x)) / length(bp)
       #sigma_changepoints = (max(x) - min(x))
     )
 
@@ -254,7 +255,6 @@ find_breakpoints = function(d, avg_points_per_window, max_breakpoints, norm, n_t
 
     fits[[j+1]] <<- f
 
-
     if (model_selection == 'LOO') {
       suppressWarnings(loo <- f$loo())
       return(loo)
@@ -265,7 +265,6 @@ find_breakpoints = function(d, avg_points_per_window, max_breakpoints, norm, n_t
     }else if (model_selection == "AIC") {
       k = 2 + (1 + length(bp)) #+ length(bp)
       return(2 * k - 2 * max(f$lp()))
-
     } else {
       stop("model_selection parmater not recognised")
     }
@@ -305,67 +304,100 @@ find_breakpoints = function(d, avg_points_per_window, max_breakpoints, norm, n_t
 
     loo_comp$convergence <- lapply(loo_comp$j, function(j) {
       if (j == 0) return(TRUE)
-      all(criterion[[j]]$diagnostics$pareto_k <= 1)
+      all(criterion[[j]]$diagnostics$pareto_k <= 1.1)
     }) %>% unlist()
 
-    loo_comp <- loo_comp %>% dplyr::filter(convergence) %>% dplyr::filter(elpd_diff == max(elpd_diff))
-    best_j <- min(loo_comp$j)
+    #loo_comp <- loo_comp %>% dplyr::filter(convergence) %>% dplyr::filter(elpd_diff == max(elpd_diff))
+    loo_comp <- loo_comp %>% dplyr::filter(convergence) %>% dplyr::arrange(-as.numeric(elpd_diff), -as.numeric(se_diff))
+    best_js <- loo_comp$j
   } else if (model_selection %in% c("AIC", "BIC")) {
 
     comp <- dplyr::tibble(value = unlist(criterion), n_breakpoints = c(0, proposed_breakpoints$n_breakpoints)) %>%
       dplyr::mutate(idx = row_number())
 
-    best_j <- comp %>%
-      dplyr::filter(.data$value == min(.data$value)) %>%
-      dplyr::pull(.data$idx) %>%
-      min()
+    best_js <- comp %>%
+      dplyr::arrange(.data$value) %>%
+      dplyr::pull(.data$idx)
 
   } else {
     stop("model_selection parmater not recognised")
   }
 
-  best_bp <- proposed_breakpoints %>%
-    dplyr::filter(.data$idx == (best_j - 1)) %>%
-    dplyr::pull(.data$best_bp) %>% unlist()
+  all_correct <- FALSE
+  j_idx <- 1
+  while (!all_correct) {
+    best_j <- best_js[j_idx]
 
-  if (norm) {
+    best_bp <- proposed_breakpoints %>%
+      dplyr::filter(.data$idx == (best_j - 1)) %>%
+      dplyr::pull(.data$best_bp) %>% unlist()
+
     x <- d$time
-    best_bp <- best_bp * stats::sd(x) + mean(x)
-  }
+    y <- log(d$count)
 
-  # Extra fit
-  m <- biPOD:::get_model("piecewise_changepoints")
+    if (norm) {
+      x <- (x - mean(x)) / stats::sd(x)
+      y <- (y - mean(y)) / stats::sd(y)
+      #x <- d$time
+      #best_bp <- best_bp * stats::sd(x) + mean(x)
+    }
 
-  if (is.null(best_bp) | length(best_bp) == 0) {
-    bp = array(0, dim = c(0))
-  } else {
-    bp <- sort(best_bp)
-  }
+    # Extra fit
+    m <- biPOD:::get_model("piecewise_changepoints")
 
-  input_data <- list(
-    S = length(d$time),
-    G = length(bp),
-    N = log(d$count),
-    T = d$time,
-    b_prior = bp,
-    sigma_changepoints = .5
-  )
+    if (is.null(best_bp) | length(best_bp) == 0) {
+      bp = array(0, dim = c(0))
+    } else {
+      bp <- sort(best_bp)
+    }
 
-  tmp <- utils::capture.output(
-    suppressMessages(
-      f <- m$sample(input_data, parallel_chains = 4)
+    input_data <- list(
+      S = length(x),
+      G = length(bp),
+      N = y,
+      T = x,
+      b_prior = bp,
+      sigma_changepoints = .1
     )
-  )
 
-  final_fit <- biPOD:::convert_mcmc_fit_to_biPOD(f)
+    tmp <- utils::capture.output(
+      suppressMessages(
+        f <- m$sample(input_data, parallel_chains = 4)
+      )
+    )
 
-  if (length(bp)) {
-    final_bp <- f$draws(variables = 'b', format = 'matrix') %>%
-      dplyr::as_tibble() %>%
-      dplyr::summarise_all(stats::median) %>%
-      as.numeric()
-  } else {
-    final_bp <- NULL
+    final_fit <- biPOD:::convert_mcmc_fit_to_biPOD(f)
+
+    if (norm) {
+      x <- d$time
+      final_fit$draws[grepl("b[", colnames(final_fit$draws), fixed = T)] <- final_fit$draws[grepl("b[", colnames(final_fit$draws), fixed = T)] * stats::sd(x) + mean(x)
+    }
+
+    if (length(bp)) {
+      final_bp <- f$draws(variables = 'b', format = 'matrix') %>%
+        dplyr::as_tibble() %>%
+        dplyr::summarise_all(median) %>%
+        as.numeric()
+
+      if (norm) {
+        x <- d$time
+        final_bp <- final_bp * stats::sd(x) + mean(x)
+      }
+    } else {
+      final_bp <- NULL
+    }
+
+    # bring final_bp to true x values if very close to each other
+    final_bp <- lapply(final_bp, function(f_bp) {
+      if (any(abs(f_bp - x) <= (max(x) - min(x)) / 1000)) {
+        return(x[abs(f_bp - x) <= (max(x) - min(x)) / 1000])
+      } else {
+        return(f_bp)
+      }
+    }) %>% unlist()
+
+    all_correct <- all((biPOD:::bp_to_groups(dplyr::tibble(time=x, count=y), unlist(final_bp)) %>% table()) >= avg_points_per_window) & mean(unlist(final_fit$rhat)) <= 1.1
+    j_idx <- j_idx + 1
   }
 
   return(list(best_bp=final_bp, best_fit=final_fit))
