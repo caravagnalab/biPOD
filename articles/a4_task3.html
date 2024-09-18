@@ -142,14 +142,23 @@ growth rate of the resistant population</li>
 function.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">biPOD</span><span class="fu">::</span><span class="fu"><a href="../reference/fit_two_pop_model.html">fit_two_pop_model</a></span><span class="op">(</span><span class="va">x</span>, variational <span class="op">=</span> <span class="cn">F</span>, factor_size <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Fitting two population model using MCMC sampling ...</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Fitting two population model using MCMC sampling ...</span></span>
+<span><span class="co">#&gt; Warning: Some Pareto k diagnostic values are too high. See help('pareto-k-diagnostic') for details.</span></span>
+<span><span class="co">#&gt; Warning: Some Pareto k diagnostic values are too high. See help('pareto-k-diagnostic') for details.</span></span>
+<span><span class="co">#&gt; Warning: Dropping 'draws_df' class as required metadata was removed.</span></span>
+<span><span class="co">#&gt; Warning: Dropping 'draws_df' class as required metadata was removed.</span></span>
+<span><span class="co">#&gt; Warning: Dropping 'draws_df' class as required metadata was removed.</span></span>
+<span><span class="co">#&gt; Warning: Dropping 'draws_df' class as required metadata was removed.</span></span>
+<span><span class="co">#&gt; Warning: Dropping 'draws_df' class as required metadata was removed.</span></span>
+<span><span class="co">#&gt; Warning: Dropping 'draws_df' class as required metadata was removed.</span></span>
+<span><span class="co">#&gt; Warning: Dropping 'draws_df' class as required metadata was removed.</span></span></code></pre></div>
 <p>and the fit can be visualized as a single process</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">biPOD</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_two_pop_fit.html">plot_two_pop_fit</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">biPOD</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_two_pop_fit.html">plot_two_pop_fit</a></span><span class="op">(</span><span class="va">x</span>, split_process <span class="op">=</span> <span class="cn">F</span>, f_posteriors <span class="op">=</span> <span class="cn">F</span>, t_posteriors <span class="op">=</span> <span class="cn">F</span>, r_posteriors <span class="op">=</span> <span class="cn">F</span><span class="op">)</span></span></code></pre></div>
 <p><img src="a4_task3_files/figure-html/unnamed-chunk-4-1.png" width="700"></p>
 <p>or splitting it depending on the two different populations</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">biPOD</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_two_pop_fit.html">plot_two_pop_fit</a></span><span class="op">(</span><span class="va">x</span>, split_process <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">biPOD</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_two_pop_fit.html">plot_two_pop_fit</a></span><span class="op">(</span><span class="va">x</span>, split_process <span class="op">=</span> <span class="cn">T</span>, f_posteriors <span class="op">=</span> <span class="cn">F</span>, t_posteriors <span class="op">=</span> <span class="cn">F</span>, r_posteriors <span class="op">=</span> <span class="cn">F</span><span class="op">)</span></span></code></pre></div>
 <p><img src="a4_task3_files/figure-html/unnamed-chunk-5-1.png" width="700"></p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
