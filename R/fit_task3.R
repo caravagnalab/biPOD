@@ -44,9 +44,9 @@ fit_two_pop_model <- function(
 
   # Add results to bipod object
   x$two_pop_fit_elbo <- res$elbo_data
-  x$two_pop_fit <- convert_mcmc_fit_to_biPOD(res$fit)
+  x$metadata$chains = chains
 
-  if (sampling_type == "mcmc") {
+  if (sampling_type == "MCMC sampling") {
     x$metadata$status <- diagnose_mcmc_fit(res$fit)
   } else {
     x$metadata$status <- diagnose_variational_fit(res$fit, res$elbo_data)
@@ -56,6 +56,124 @@ fit_two_pop_model <- function(
   x$metadata$sampling <- res$fit_info$sampling
   x$metadata$factor_size <- res$fit_info$factor_size
 
+  # Produce plots ####
+  ## Produce evo plot ####
+  best_fit <- res$fit
+  draws <- best_fit$draws(format = "df", variables = "mu")
+
+  mu <- draws %>%
+    dplyr::as_tibble() %>%
+    dplyr::select(!c(.data$.chain, .data$.iteration, .data$.draw)) %>%
+    #select(starts_with("mu")) %>%
+    apply(2, stats::quantile, c(00.05, 0.5, 0.95)) %>%
+    t() %>%
+    data.frame(x = x$counts$time) %>%
+    tidyr::gather(pct, y, -x)
+  mu$y <- mu$y * factor_size
+
+  evo_plot <- ggplot2::ggplot() +
+    ggplot2::geom_point(ggplot2::aes(x=.data$time, y=.data$count), data = x$counts, size = 1) +
+    ggplot2::geom_line(ggplot2::aes(x=.data$x, y=.data$y, linetype = .data$pct), data = mu, color = 'darkgreen') +
+    ggplot2::scale_linetype_manual(values = c(2,1,2)) +
+    ggplot2::guides(linetype = "none") +
+    ggplot2::theme_bw()
+
+  ## Produce evo separated plot ####
+  draws <- best_fit$draws(format = "df", variables = "ns")
+  ns <- draws %>%
+    dplyr::as_tibble() %>%
+    dplyr::select(!c(.data$.chain, .data$.iteration, .data$.draw)) %>%
+    apply(2, stats::quantile, c(00.05, 0.5, 0.95)) %>%
+    t() %>%
+    data.frame(x = x$counts$time) %>%
+    tidyr::gather(pct, y, -x) %>%
+    dplyr::mutate(y = .data$y * factor_size)
+
+  draws <- best_fit$draws(format = "df", variables = "nr")
+  nr <- draws %>%
+    dplyr::as_tibble() %>%
+    dplyr::select(!c(.data$.chain, .data$.iteration, .data$.draw)) %>%
+    apply(2, stats::quantile, c(00.05, 0.5, 0.95)) %>%
+    t() %>%
+    data.frame(x = x$counts$time) %>%
+    tidyr::gather(pct, y, -x) %>%
+    dplyr::mutate(y = .data$y * factor_size)
+
+  evo_plot_separated <- ggplot2::ggplot() +
+    ggplot2::geom_point(ggplot2::aes(x=.data$time, y=.data$count), data = x$counts, size = 1) +
+    ggplot2::geom_line(ggplot2::aes(x=.data$x, y=.data$y, linetype = .data$pct), data = nr, color = 'steelblue3') +
+    ggplot2::geom_line(ggplot2::aes(x=.data$x, y=.data$y, linetype = .data$pct), data = ns, color = 'indianred') +
+    ggplot2::scale_linetype_manual(values = c(2,1,2)) +
+    ggplot2::guides(linetype = "none") +
+    ggplot2::theme_bw()
+
+  ## Produce times plot ####
+  variables <- best_fit$summary()$variable
+
+  times <- dplyr::tibble(x = best_fit$draws(format = "df", variables = "t0_r")[,1] %>% unlist() %>% as.numeric(), par = 't0_r')
+  t0_r_draws <- times$x
+  if ("t_end" %in% variables) {
+    times <- dplyr::bind_rows(
+      times,
+      dplyr::tibble(x = best_fit$draws(format = "df", variables = "t_end")[,1] %>% unlist() %>% as.numeric(), par = 't_end')
+    )
+  }
+
+  times_plot <- times %>%
+    dplyr::group_by(.data$par) %>%
+    dplyr::mutate(q_low = stats::quantile(x, .05), q_high = stats::quantile(x, .95)) %>%
+    dplyr::filter(x >= .data$q_low, x <= .data$q_high) %>%
+    ggplot2::ggplot(mapping = ggplot2::aes(x=.data$x, col=.data$par)) +
+    ggplot2::geom_density() +
+    ggplot2::labs(x = "Time", y="Density") +
+    ggplot2::geom_vline(xintercept = x$counts$time[1], linetype = "dashed") +
+    ggplot2::theme_bw()
+
+  ## Produce plot of F_R ####
+  nr_first_obs <- best_fit$draws(format = "df", variables = "nr")[,1] %>% unlist() %>% as.numeric()
+  ns_first_obs <- best_fit$draws(format = "df", variables = "ns")[,1] %>% unlist() %>% as.numeric()
+
+  nr_first_obs <- nr_first_obs[t0_r_draws <= 0]
+  ns_first_obs <- ns_first_obs[t0_r_draws <= 0]
+
+  f_r = nr_first_obs / (nr_first_obs + ns_first_obs)
+  fr_plot <- dplyr::tibble(x = f_r) %>%
+    ggplot2::ggplot(mapping = ggplot2::aes(x=x)) +
+    ggplot2::geom_density() +
+    ggplot2::labs(x = "Resistant population fraction", y="Density") +
+    ggplot2::lims(x = c(0,1)) +
+    ggplot2::theme_bw()
+
+  ## Rates plot ####
+  rho_r_draws <- best_fit$draws(format = "df", variables = "rho_r")[,1] %>% unlist() %>% as.numeric()
+  rates <- dplyr::tibble(x=best_fit$draws(format = "df", variables = "rho_r")[,1] %>% unlist() %>% as.numeric(), par = "rho_r")
+  if ("rho_s" %in% variables) {
+    rates <- dplyr::bind_rows(
+      rates,
+      dplyr::tibble(x=-(best_fit$draws(format = "df", variables = "rho_s")[,1] %>% unlist() %>% as.numeric()), par = "rho_s")
+    )
+  }
+
+  rates_plot <- rates %>%
+    dplyr::group_by(.data$par) %>%
+    dplyr::mutate(q_low = stats::quantile(x, .05), q_high = stats::quantile(x, .95)) %>%
+    dplyr::filter(x >= .data$q_low, x <= .data$q_high) %>%
+    ggplot2::ggplot(mapping = ggplot2::aes(x=.data$x, col=.data$par)) +
+    ggplot2::geom_density() +
+    ggplot2::geom_vline(xintercept = 0, linetype = "dashed") +
+    ggplot2::labs(x = "Growth rate", y="Density") +
+    ggplot2::theme_bw()
+
+  x$two_pop_plots <- list(
+    evo_plot = evo_plot,
+    evo_plot_separated = evo_plot_separated,
+    rates_plot = rates_plot,
+    times_plot = times_plot,
+    fr_plot = fr_plot
+  )
+
+  x$two_pop_fit <- convert_mcmc_fit_to_biPOD(res$fit)
+  #x$two_pop_fit <- res$fit
   return(x)
 }
 
@@ -73,22 +191,38 @@ prep_data_two_pop_fit <- function(x, factor_size) {
 
 fit_two_pop_data <- function(x, factor_size, variational, chains, iter, cores) {
   input_data <- prep_data_two_pop_fit(x = x, factor_size = factor_size)
-  model <- get_model(model_name = "two_pop")
+  #model <- get_model(model_name = "two_pop")
 
+  m1 <- get_model("two_pop_single")
+  m2 <- get_model("two_pop_both")
+
+  tmp <- utils::capture.output(f1 <- m1$sample(input_data, parallel_chains = chains, iter_warmup = iter, iter_sampling = iter, chains = chains))
+  tmp <- utils::capture.output(f2 <- m2$sample(input_data, parallel_chains = chains, iter_warmup = iter, iter_sampling = iter, chains = chains))
+
+  fits <- list(f1, f2)
+
+  loo1 <- f1$loo()
+  loo2 <- f2$loo()
+
+  loos <- loo::loo_compare(list(loo1, loo2))
+  fit_model <- fits[[as.numeric(stringr::str_replace(rownames(loos)[1], "model", ""))]]
+
+  sampling <- "mcmc"
+  elbo_d <- NULL
   # Fit with either MCMC or Variational
-  if (variational) {
-    sampling <- "variational"
-    res <- variational_fit(model = model, data = input_data, iter = iter)
-    fit_model <- res$fit_model
-    elbo_d <- res$elbo_d
-  } else {
-    sampling <- "mcmc"
-    tmp <- utils::capture.output(
-      suppressMessages(
-        fit_model <- model$sample(data = input_data, chains = chains, parallel_chains = cores, iter_warmup = iter, iter_sampling = iter, refresh = iter)
-      )
-    )
-  }
+  # if (variational) {
+  #   sampling <- "variational"
+  #   res <- variational_fit(model = model, data = input_data, iter = iter)
+  #   fit_model <- res$fit_model
+  #   elbo_d <- res$elbo_d
+  # } else {
+  #   sampling <- "mcmc"
+  #   tmp <- utils::capture.output(
+  #     suppressMessages(
+  #       fit_model <- model$sample(data = input_data, chains = chains, parallel_chains = cores, iter_warmup = iter, iter_sampling = iter, refresh = iter)
+  #     )
+  #   )
+  # }
 
   elbo_data <- c()
   if (variational) elbo_data <- elbo_d

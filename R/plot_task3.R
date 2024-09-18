@@ -29,7 +29,7 @@ plot_two_pop_fit <- function(
   #if (add_posteriors & !(split_process)) stop("Posteriors can be only added if 'split_process' = TRUE")
 
   alpha <- 1 - CI
-  fitted_data <- biPOD:::get_data_for_two_pop_plot(x, alpha = alpha)
+  fitted_data <- get_data_for_two_pop_plot(x, alpha = alpha)
 
   fitted_data <- dplyr::bind_rows(fitted_data,
                                   fitted_data %>%
@@ -38,14 +38,14 @@ plot_two_pop_fit <- function(
                                     dplyr::summarise_all(sum) %>%
                                     dplyr::mutate(group = 'total'))
 
-  times <- x$counts$time
 
+  times <- x$counts$time
 
   p <- ggplot2::ggplot() +
     ggplot2::geom_point(x$counts, mapping = ggplot2::aes(x = .data$time, y = .data$count)) + # original points
     ggplot2::geom_line(fitted_data %>%
                          dplyr::filter(.data$group == "total", .data$x >= min(times), .data$x <= max(times)), mapping = ggplot2::aes(x = .data$x, y = .data$y), col = "black") +
-    biPOD:::my_ggplot_theme()
+    my_ggplot_theme()
 
   if (split_process) {
     p <- p +
@@ -58,56 +58,56 @@ plot_two_pop_fit <- function(
   plots <- list(p = p)
 
   if (t_posteriors) {
-    t_data <- biPOD:::get_parameters(x$two_pop_fit, par_list = c('t0_r', "t_end")) %>%
-      dplyr::mutate(parameter = if_else(parameter == "t0_r", "t_r", 't_e'))
-
+    t_data <- get_parameters(x$two_pop_fit, par_list = c('t0_r', "t_end")) %>%
+      dplyr::mutate(parameter = dplyr::if_else(.data$parameter == "t0_r", "t_r", 't_e'))
 
     time_limits <- c(min(t_data$value, min(fitted_data$x)), max(t_data$value, max(fitted_data$x)))
 
-    p <- p + lims(x = time_limits)
+    p <- p + ggplot2::lims(x = time_limits)
 
     t_plot <- t_data%>%
-      ggplot(mapping = aes(x=value, fill=parameter)) +
-      geom_histogram(alpha = .7, binwidth = 0.005) +
+      ggplot2::ggplot(mapping = ggplot2::aes(x=.data$value, fill=.data$parameter)) +
+      ggplot2::geom_histogram(alpha = .7, binwidth = 0.005) +
       #scale_color_manual(values = c("t_e"=sensitive_color, "t_r"=resistant_color)) +
-      scale_fill_manual(values = c("t_e"=sensitive_color, "t_r"=resistant_color)) +
-      biPOD:::my_ggplot_theme() +
-      labs(fill = "", col="", x="time") +
-      lims(x = time_limits)
+      ggplot2::scale_fill_manual(values = c("t_e"=sensitive_color, "t_r"=resistant_color)) +
+      my_ggplot_theme() +
+      ggplot2::labs(fill = "", col="", x="time") +
+      ggplot2::lims(x = time_limits)
 
     plots = list(p = p, t_plot=t_plot)
   }
 
   if (r_posteriors) {
-    d <- biPOD:::get_parameters(x$two_pop_fit, par_list = c('rho_r', "rho_s")) %>%
-      dplyr::mutate(value = ifelse(parameter == "rho_s", -value, value))
+    d <- get_parameters(x$two_pop_fit, par_list = c('rho_r', "rho_s")) %>%
+      dplyr::mutate(value = ifelse(.data$parameter == "rho_s", -.data$value, .data$value))
 
     rho_plot <- d %>%
-      ggplot(mapping = aes(x=value,fill=parameter)) +
+      ggplot2::ggplot(mapping = ggplot2::aes(x=.data$value,fill=.data$parameter)) +
       #geom_density(alpha = .3) +
-      geom_histogram(alpha = .7, binwidth = 0.005) +
+      ggplot2::geom_histogram(alpha = .7, binwidth = 0.005) +
       #scale_color_manual(values = c("rho_s"=sensitive_color, "rho_r"=resistant_color)) +
-      scale_fill_manual(values = c("rho_s"=sensitive_color, "rho_r"=resistant_color)) +
-      biPOD:::my_ggplot_theme() +
-      labs(fill = "", col="", x="Growth rate") +
-      geom_vline(xintercept = 0, linetype='dashed')
+      ggplot2::scale_fill_manual(values = c("rho_s"=sensitive_color, "rho_r"=resistant_color)) +
+      my_ggplot_theme() +
+      ggplot2::labs(fill = "", col="", x="Growth rate") +
+      ggplot2::geom_vline(xintercept = 0, linetype='dashed')
 
     plots$rho_plot = rho_plot
   }
 
   if (f_posteriors) {
-    d <- biPOD:::get_parameters(x$two_pop_fit, par_list = c('f_s')) %>%
-      dplyr::mutate(value = 1 - value, parameter = "f_r")
+    ns <- get_parameters(x$two_pop_fit, par_list = c('ns[1]')) %>% dplyr::pull(.data$value)
+    nr <- get_parameters(x$two_pop_fit, par_list = c('nr[1]')) %>% dplyr::pull(.data$value)
+    d <- dplyr::tibble(value = nr / (nr + ns), parameter = "f_r")
 
     f_plot <- d %>%
-      ggplot(mapping = aes(x=value,fill=parameter)) +
+      ggplot2::ggplot(mapping = ggplot2::aes(x=.data$value,fill=.data$parameter)) +
       #geom_density(alpha = .3) +
-      geom_histogram(alpha = .7, binwidth = 0.01) +
+      ggplot2::geom_histogram(alpha = .7, binwidth = 0.01) +
       #scale_color_manual(values = c("rho_s"=sensitive_color, "rho_r"=resistant_color)) +
-      scale_fill_manual(values = c("f_r"=resistant_color)) +
-      biPOD:::my_ggplot_theme() +
-      labs(fill = "", col="", x="Resistant population fraction") +
-      lims(x = c(-0.05,1.05))
+      ggplot2::scale_fill_manual(values = c("f_r"=resistant_color)) +
+      my_ggplot_theme() +
+      ggplot2::labs(fill = "", col="", x="Resistant population fraction") +
+      ggplot2::lims(x = c(-0.05,1.05))
 
     plots$f_plot = f_plot
   }
@@ -129,7 +129,7 @@ get_data_for_two_pop_plot <- function(x, alpha) {
 
   rho_quantiles <- rho_samples %>%
     dplyr::group_by(.data$parameter) %>%
-    dplyr::summarise(low = stats::quantile(.data$value, alpha / 2), mid = stats::quantile(.data$value, .5), high = stats::quantile(.data$value, 1 - alpha / 2))
+    dplyr::summarise(low = stats::quantile(.data$value, alpha / 2, na.rm=TRUE), mid = stats::quantile(.data$value, .5, na.rm=TRUE), high = stats::quantile(.data$value, 1 - alpha / 2, na.rm=TRUE))
   rho_s_quantiles <- rho_quantiles %>% dplyr::filter(.data$parameter == "rho_s")
   rho_r_quantiles <- rho_quantiles %>% dplyr::filter(.data$parameter == "rho_r")
 
@@ -146,15 +146,15 @@ get_data_for_two_pop_plot <- function(x, alpha) {
 
   xs <- seq(min_t, max_t, length = 2000)
 
-  median_ns <- get_parameter(fit, "ns") %>%
+  median_ns <- get_parameter(fit, "ns[1]") %>%
     dplyr::pull(.data$value) %>%
     stats::median()
 
   func <- two_pops_evo
 
-  ylow <- lapply(xs, two_pops_evo, ns = median_ns, t0_r = median_t0_r, rho_s = -rho_s_quantiles$low, rho_r = rho_r_quantiles$low)
-  ymid <- lapply(xs, two_pops_evo, ns = median_ns, t0_r = median_t0_r, rho_s = -rho_s_quantiles$mid, rho_r = rho_r_quantiles$mid)
-  yhigh <- lapply(xs, two_pops_evo, ns = median_ns, t0_r = median_t0_r, rho_s = -rho_s_quantiles$high, rho_r = rho_r_quantiles$high)
+  ylow <- lapply(xs, func, ns = median_ns, t0_r = median_t0_r, rho_s = -rho_s_quantiles$low, rho_r = rho_r_quantiles$low)
+  ymid <- lapply(xs, func, ns = median_ns, t0_r = median_t0_r, rho_s = -rho_s_quantiles$mid, rho_r = rho_r_quantiles$mid)
+  yhigh <- lapply(xs, func, ns = median_ns, t0_r = median_t0_r, rho_s = -rho_s_quantiles$high, rho_r = rho_r_quantiles$high)
 
   ylow_r <- lapply(ylow, function(y) {
     y$r_pop

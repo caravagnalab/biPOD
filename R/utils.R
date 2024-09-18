@@ -80,13 +80,14 @@ two_pops_evo <- function(t, ns, t0_r, rho_s, rho_r) {
 
 diagnose_mcmc_fit <- function(fit) {
   all_pars <- colnames(fit$draws(format = "matrix"))
-
   n_chains <- ncol(fit$draws("lp__"))
 
   status <- "PASS"
   for (par in all_pars) {
     rhat <- posterior::rhat(fit$draws(par))
-    if (rhat > 1.01) {
+    if (is.na(rhat)) {
+      status <- "PASS"
+    } else if (rhat > 1.01) {
       status <- "FAIL"
       break()
     }

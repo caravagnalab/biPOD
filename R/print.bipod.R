@@ -103,7 +103,7 @@ print.bipod = function(x, ...) {
       )
     )
 
-    x$two_pop_fit
+    #x$two_pop_fit
 
     if (x$metadata$factor_size != 1) {
       cli::cli_alert_info(paste0(" Scale factor : ", crayon::blue(x$metadata$factor_size), ". Instant of birth might be incorrect."))
@@ -113,7 +113,9 @@ print.bipod = function(x, ...) {
     cat("\n")
     cli::cli_alert_info(" Inferred parameters")
 
-    par_tibble <- lapply(x$two_pop_fit$parameters, function(p) {
+    par_list <- c("lp__", "rho_r", "rho_s", "t0_r", "t_end")
+
+    par_tibble <- lapply(par_list, function(p) {
       draws <- x$two_pop_fit$draws[,grepl(p, colnames(x$two_pop_fit$draws), fixed = T)] %>% as.vector() %>% unlist()
       dplyr::tibble(Parameter = p, Mean = mean(draws), Sd = stats::sd(draws), p05 = stats::quantile(draws, .05), p50 = stats::quantile(draws, .50), p95 = stats::quantile(draws, .95))
     }) %>% do.call(dplyr::bind_rows, .)

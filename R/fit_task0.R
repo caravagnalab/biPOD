@@ -54,7 +54,7 @@ fit_breakpoints = function(
   x$metadata$breakpoints <- best_bp
 
   if (!(is.null(best_bp))) {
-    x$counts$group <- biPOD:::bp_to_groups(x$counts, x$metadata$breakpoints)
+    x$counts$group <- bp_to_groups(x$counts, x$metadata$breakpoints)
   }
   cli::cli_alert_info("Median of the inferred breakpoints have been succesfully stored.")
 
@@ -129,7 +129,7 @@ find_breakpoints = function(d, avg_points_per_window, max_breakpoints, norm, n_t
 
   fit_with_breaks_opt <- function(breaks) {
     # Ensure necessary attributes are initialized
-    if(!all(((biPOD:::bp_to_groups(dplyr::tibble(time=x, count=y), break_points = breaks) %>% table()) >= avg_points_per_window))) return(Inf)
+    if(!all(((bp_to_groups(dplyr::tibble(time=x, count=y), break_points = breaks) %>% table()) >= avg_points_per_window))) return(Inf)
     A <- assemble_regression_matrix(c(min(x), breaks, max(x)))
 
     # Try to solve the regression problem
@@ -206,7 +206,7 @@ find_breakpoints = function(d, avg_points_per_window, max_breakpoints, norm, n_t
     dplyr::distinct()
 
   for (j in 1:nrow(proposed_breakpoints)) {
-    if (!all((biPOD:::bp_to_groups(dplyr::tibble(time=x, count=y), unlist(proposed_breakpoints[j,]$best_bp)) %>% table()) >= avg_points_per_window)) {
+    if (!all((bp_to_groups(dplyr::tibble(time=x, count=y), unlist(proposed_breakpoints[j,]$best_bp)) %>% table()) >= avg_points_per_window)) {
       proposed_breakpoints[j,]$convergence <- F
     }
   }
@@ -220,7 +220,7 @@ find_breakpoints = function(d, avg_points_per_window, max_breakpoints, norm, n_t
     return(list(best_bp=NULL, best_fit=NULL))
   }
 
-  m <- biPOD:::get_model("fit_breakpoints")
+  m <- get_model("fit_breakpoints")
   cli::cli_alert_info("Breakpoints optimization...")
   fits <- list()
   plots <- list()
@@ -297,7 +297,7 @@ find_breakpoints = function(d, avg_points_per_window, max_breakpoints, norm, n_t
     suppressWarnings(loo_comp <- loo::loo_compare(criterion))
     loo_comp[,1] <- round(loo_comp[,1],1)
 
-    loo_comp <- loo_comp %>% as_tibble() %>%
+    loo_comp <- loo_comp %>% dplyr::as_tibble() %>%
       dplyr::mutate(model = rownames(loo_comp)) %>%
       dplyr::mutate(j = as.numeric(stringr::str_replace(rownames(loo_comp), pattern = "model", replacement = ""))) %>%
       dplyr::mutate(convergence = TRUE)
@@ -308,12 +308,12 @@ find_breakpoints = function(d, avg_points_per_window, max_breakpoints, norm, n_t
     }) %>% unlist()
 
     #loo_comp <- loo_comp %>% dplyr::filter(convergence) %>% dplyr::filter(elpd_diff == max(elpd_diff))
-    loo_comp <- loo_comp %>% dplyr::filter(convergence) %>% dplyr::arrange(-as.numeric(elpd_diff), -as.numeric(se_diff))
+    loo_comp <- loo_comp %>% dplyr::filter(convergence) %>% dplyr::arrange(-as.numeric(.data$elpd_diff), -as.numeric(.data$se_diff))
     best_js <- loo_comp$j
   } else if (model_selection %in% c("AIC", "BIC")) {
 
     comp <- dplyr::tibble(value = unlist(criterion), n_breakpoints = c(0, proposed_breakpoints$n_breakpoints)) %>%
-      dplyr::mutate(idx = row_number())
+      dplyr::mutate(idx = dplyr::row_number())
 
     best_js <- comp %>%
       dplyr::arrange(.data$value) %>%
@@ -343,7 +343,7 @@ find_breakpoints = function(d, avg_points_per_window, max_breakpoints, norm, n_t
     }
 
     # Extra fit
-    m <- biPOD:::get_model("piecewise_changepoints")
+    m <- get_model("piecewise_changepoints")
 
     if (is.null(best_bp) | length(best_bp) == 0) {
       bp = array(0, dim = c(0))
@@ -366,7 +366,7 @@ find_breakpoints = function(d, avg_points_per_window, max_breakpoints, norm, n_t
       )
     )
 
-    final_fit <- biPOD:::convert_mcmc_fit_to_biPOD(f)
+    final_fit <- convert_mcmc_fit_to_biPOD(f)
 
     if (norm) {
       x <- d$time
@@ -376,7 +376,7 @@ find_breakpoints = function(d, avg_points_per_window, max_breakpoints, norm, n_t
     if (length(bp)) {
       final_bp <- f$draws(variables = 'b', format = 'matrix') %>%
         dplyr::as_tibble() %>%
-        dplyr::summarise_all(median) %>%
+        dplyr::summarise_all(stats::median) %>%
         as.numeric()
 
       if (norm) {
@@ -396,7 +396,7 @@ find_breakpoints = function(d, avg_points_per_window, max_breakpoints, norm, n_t
       }
     }) %>% unlist()
 
-    all_correct <- all((biPOD:::bp_to_groups(dplyr::tibble(time=x, count=y), unlist(final_bp)) %>% table()) >= avg_points_per_window) & mean(unlist(final_fit$rhat)) <= 1.1
+    all_correct <- all((bp_to_groups(dplyr::tibble(time=x, count=y), unlist(final_bp)) %>% table()) >= avg_points_per_window) & mean(unlist(final_fit$rhat)) <= 1.1
     j_idx <- j_idx + 1
   }
 

@@ -63,11 +63,11 @@ x <- biPOD::fit_two_pop_model(x, variational = F, factor_size = 1)
 and the fit can be visualized as a single process
 
 ```{r}
-biPOD::plot_two_pop_fit(x)
+biPOD::plot_two_pop_fit(x, split_process = F, f_posteriors = F, t_posteriors = F, r_posteriors = F)
 ```
 
 or splitting it depending on the two different populations
 
 ```{r}
-biPOD::plot_two_pop_fit(x, split_process = T)
+biPOD::plot_two_pop_fit(x, split_process = T, f_posteriors = F, t_posteriors = F, r_posteriors = F)
 ```
