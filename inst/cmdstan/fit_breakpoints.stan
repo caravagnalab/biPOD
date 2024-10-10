@@ -48,9 +48,9 @@ model {
 
 generated quantities {
   vector[S] log_lik;
-  vector[S] y_rep;
+  vector[S] yrep;
   for (i in 1:S) {
+    yrep[i] = normal_rng(expected_mean(T[i], q, s, b), sigma);
     log_lik[i] = normal_lpdf(N[i] | expected_mean(T[i], q, s, b), sigma);
-    y_rep[i] = normal_rng(expected_mean(T[i], q, s, b), sigma);
   }
 }

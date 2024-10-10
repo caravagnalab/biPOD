@@ -11,6 +11,7 @@ URL: https://caravagnalab.github.io/biPOD/
 Depends: 
     R (>= 3.4.0)
 Imports: 
+    bayesplot,
     cli,
     crayon,
     DEoptim,

@@ -58,7 +58,7 @@ plot_two_pop_fit <- function(
   plots <- list(p = p)
 
   if (t_posteriors) {
-    t_data <- get_parameters(x$two_pop_fit, par_list = c('t0_r', "t_end")) %>%
+    t_data <- get_parameters(x$two_pop_fit, par_list = c('t0_r', "t_end"), variational = x$metadata$sampling == "variational") %>%
       dplyr::mutate(parameter = dplyr::if_else(.data$parameter == "t0_r", "t_r", 't_e'))
 
     time_limits <- c(min(t_data$value, min(fitted_data$x)), max(t_data$value, max(fitted_data$x)))
@@ -78,7 +78,7 @@ plot_two_pop_fit <- function(
   }
 
   if (r_posteriors) {
-    d <- get_parameters(x$two_pop_fit, par_list = c('rho_r', "rho_s")) %>%
+    d <- get_parameters(x$two_pop_fit, par_list = c('rho_r', "rho_s"), variational = x$metadata$sampling == "variational") %>%
       dplyr::mutate(value = ifelse(.data$parameter == "rho_s", -.data$value, .data$value))
 
     rho_plot <- d %>%
@@ -95,8 +95,8 @@ plot_two_pop_fit <- function(
   }
 
   if (f_posteriors) {
-    ns <- get_parameters(x$two_pop_fit, par_list = c('ns[1]')) %>% dplyr::pull(.data$value)
-    nr <- get_parameters(x$two_pop_fit, par_list = c('nr[1]')) %>% dplyr::pull(.data$value)
+    ns <- get_parameters(x$two_pop_fit, par_list = c('ns[1]'), variational = x$metadata$sampling == "variational") %>% dplyr::pull(.data$value)
+    nr <- get_parameters(x$two_pop_fit, par_list = c('nr[1]'), variational = x$metadata$sampling == "variational") %>% dplyr::pull(.data$value)
     d <- dplyr::tibble(value = nr / (nr + ns), parameter = "f_r")
 
     f_plot <- d %>%
@@ -125,7 +125,7 @@ get_data_for_two_pop_plot <- function(x, alpha) {
   factor_size <- x$metadata$factor_size # factor size
 
   # Produce ro quantiles
-  rho_samples <- get_parameters(fit, par_list = c("rho_s", "rho_r"))
+  rho_samples <- get_parameters(fit, par_list = c("rho_s", "rho_r"), variational = x$metadata$sampling == "variational")
 
   rho_quantiles <- rho_samples %>%
     dplyr::group_by(.data$parameter) %>%
@@ -133,11 +133,11 @@ get_data_for_two_pop_plot <- function(x, alpha) {
   rho_s_quantiles <- rho_quantiles %>% dplyr::filter(.data$parameter == "rho_s")
   rho_r_quantiles <- rho_quantiles %>% dplyr::filter(.data$parameter == "rho_r")
 
-  median_t0_r <- get_parameter(fit, "t0_r") %>%
+  median_t0_r <- get_parameter(fit, "t0_r", variational = x$metadata$sampling == "variational") %>%
     dplyr::pull(.data$value) %>%
     stats::median()
 
-  median_t_end <- get_parameter(fit, "t_end") %>%
+  median_t_end <- get_parameter(fit, "t_end", variational = x$metadata$sampling == "variational") %>%
     dplyr::pull(.data$value) %>%
     stats::median()
 
@@ -146,7 +146,7 @@ get_data_for_two_pop_plot <- function(x, alpha) {
 
   xs <- seq(min_t, max_t, length = 2000)
 
-  median_ns <- get_parameter(fit, "ns[1]") %>%
+  median_ns <- get_parameter(fit, "ns[1]", variational = x$metadata$sampling == "variational") %>%
     dplyr::pull(.data$value) %>%
     stats::median()
 

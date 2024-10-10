@@ -13,7 +13,7 @@ functions {
     for (g in 2:G) {
       res = res + (x - b[g-1]) * s[g] * ind(x, b[g-1]);
     }
-    return exp(res);
+    return res;
   }
 }
 
@@ -56,8 +56,10 @@ model {
 
 generated quantities {
   vector[S] log_lik;
+  vector[S] yrep;
   for (i in 1:S) {
     log_lik[i] = normal_lpdf(N[i] | expected_mean(T[i], q, s, b), sigma);
+    yrep[i] = normal_rng(expected_mean(T[i], q, s, b), sigma);
   }
 }
 

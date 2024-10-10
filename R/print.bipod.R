@@ -58,7 +58,8 @@ print.bipod = function(x, ...) {
       }) %>% unlist() %>% unique()
 
       par_tibble <- lapply(pars, function(p) {
-        draws <- x$breakpoints_fit$draws[,grepl(p, colnames(x$breakpoints_fit$draws), fixed = T)] %>% as.vector() %>% unlist()
+        #draws <- x$breakpoints_fit$draws[,grepl(p, colnames(x$breakpoints_fit$draws), fixed = T)] %>% as.vector() %>% unlist()
+        draws = x$breakpoints_fit$draws[,,which(x$breakpoints_fit$parameters==p)] %>% as.vector() %>% unlist()
         dplyr::tibble(
           Parameter = p,
           Mean = mean(draws),
@@ -116,12 +117,20 @@ print.bipod = function(x, ...) {
     par_list <- c("lp__", "rho_r", "rho_s", "t0_r", "t_end")
 
     par_tibble <- lapply(par_list, function(p) {
-      draws <- x$two_pop_fit$draws[,grepl(p, colnames(x$two_pop_fit$draws), fixed = T)] %>% as.vector() %>% unlist()
-      dplyr::tibble(Parameter = p, Mean = mean(draws), Sd = stats::sd(draws), p05 = stats::quantile(draws, .05), p50 = stats::quantile(draws, .50), p95 = stats::quantile(draws, .95))
+      #draws <- x$two_pop_fit$draws[,grepl(p, colnames(x$two_pop_fit$draws), fixed = T)] %>% as.vector() %>% unlist()
+      draws = x$two_pop_fit$draws[,,which(x$two_pop_fit$parameters==p)] %>% as.vector() %>% unlist()
+      dplyr::tibble(
+        Parameter = p,
+        Mean = mean(draws),
+        Sd = stats::sd(draws),
+        p05 = stats::quantile(draws, .05),
+        p50 = stats::quantile(draws, .50),
+        p95 = stats::quantile(draws, .95),
+        Rhat = x$two_pop_fit$rhat[p] %>% as.numeric()
+      )
     }) %>% do.call(dplyr::bind_rows, .)
     print(par_tibble)
   }
-
 
   # task 1 ####
   if (task1) {
@@ -160,8 +169,16 @@ print.bipod = function(x, ...) {
     cli::cli_alert_info(" Inferred parameters")
 
     par_tibble <- lapply(x$fit$parameters, function(p) {
-      draws <- x$fit$draws[,grepl(p, colnames(x$fit$draws), fixed = T)] %>% as.vector() %>% unlist()
-      dplyr::tibble(Parameter = p, Mean = mean(draws), Sd = stats::sd(draws), p05 = stats::quantile(draws, .05), p50 = stats::quantile(draws, .50), p95 = stats::quantile(draws, .95))
+      draws = x$fit$draws[,,which(x$fit$parameters==p)] %>% as.vector() %>% unlist()
+      dplyr::tibble(
+        Parameter = p,
+        Mean = mean(draws),
+        Sd = stats::sd(draws),
+        p05 = stats::quantile(draws, .05),
+        p50 = stats::quantile(draws, .50),
+        p95 = stats::quantile(draws, .95),
+        Rhat = x$fit$rhat[p] %>% as.numeric()
+      )
     }) %>% do.call(dplyr::bind_rows, .)
     print(par_tibble)
   }

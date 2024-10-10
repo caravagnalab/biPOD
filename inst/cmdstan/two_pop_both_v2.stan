@@ -48,7 +48,7 @@ generated quantities {
   vector[S] log_lik;             // Log-likelihood for each observation
   vector[S] ns;
   vector[S] nr;
-  vector[S] mu;               // Expected values for N given x
+  vector[S] yrep;               // Expected values for N given x
 
   for (i in 1:S) {
     if (T[i] >= t_end) {
@@ -62,8 +62,8 @@ generated quantities {
     } else {
       nr[i] = 1e-6;
     }
-    mu[i] = nr[i] + ns[i];
-    log_lik[i] = poisson_lpmf(N[i] | mu[i]); // Log-likelihood calculation
+    yrep[i] = nr[i] + ns[i];
+    log_lik[i] = poisson_lpmf(N[i] | yrep[i]); // Log-likelihood calculation
   }
 }
 

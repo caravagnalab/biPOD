@@ -74,7 +74,7 @@ add_t0_posterior <- function(base_plot, x, color) {
   if (!(x$metadata$t0_inferred)) {
     return(base_plot)
   } else {
-    values <- get_parameter(x$fit, "t0") %>% dplyr::pull(.data$value)
+    values <- get_parameter(x$fit, "t0", variational = x$metadata$sampling == 'variational') %>% dplyr::pull(.data$value)
 
     # Add t0 posterior
     df <- get_normalized_density(values, max_value = max(x$counts$count))
@@ -86,7 +86,7 @@ add_t0_posterior <- function(base_plot, x, color) {
 }
 
 add_posterior <- function(base_plot, param, x, x_fit, color) {
-  values <- get_parameter(x_fit, param) %>% dplyr::pull(.data$value)
+  values <- get_parameter(x_fit, param, variational = x$metadata$sampling == 'variational') %>% dplyr::pull(.data$value)
 
   # Add t0 posterior
   df <- get_normalized_density(values, max_value = max(x$counts$count))

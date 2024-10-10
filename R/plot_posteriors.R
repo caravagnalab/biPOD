@@ -12,7 +12,8 @@
 plot_posterior <- function(x, x_fit, par_name, color = "black") {
   # Check input
   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
-  d <- get_parameter(x_fit, par_name)
+  if (!(par_name %in% x_fit$parameters)) stop(paste0("Input par_name is not an available parameters for the given input fit.\nAvailable parameters are : ", paste(x_fit$parameters, collapse = ", ")))
+  d <- get_parameter(x_fit, par_name, x$metadata$sampling == "variational")
   p <- ggplot2::ggplot() +
     ggplot2::geom_density(data = d, mapping = ggplot2::aes(x = .data$value), col = "black", fill = color, linewidth = .8, alpha = .6) +
     ggplot2::facet_wrap(~ .data$parameter, labeller = ggplot2::label_parsed) +
@@ -38,7 +39,10 @@ plot_posterior <- function(x, x_fit, par_name, color = "black") {
 #' @return A `ggplot2` object showing the density plots of the specified parameters. If `with_histogram` is `TRUE`, histograms will be overlaid on the density plots.
 #' @export
 plot_posteriors <- function(x, x_fit, par_list, with_histogram = F, alpha = .6, colors = NULL) {
-  samples <- get_parameters(x_fit, par_list = par_list)
+  # Check input
+  if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
+
+  samples <- get_parameters(x_fit, par_list = par_list, variational = x$metadata$sampling == "variational")
 
   if (with_histogram) alpha <- 0
 

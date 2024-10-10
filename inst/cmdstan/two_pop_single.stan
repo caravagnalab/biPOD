@@ -31,14 +31,14 @@ model {
 
 generated quantities {
   vector[S] log_lik;             // Log-likelihood for each observation
-  vector[S] mu;               // Expected values for N given x
+  vector[S] yrep;               // Expected values for N given x
   vector[S] ns;
   vector[S] nr;
 
   for (i in 1:S) {
     nr[i] = exp(rho_r * (T[i] - t0_r));
     ns[i] = 0.0;
-    mu[i] =  nr[i] + ns[i];
-    log_lik[i] = poisson_lpmf(N[i] | mu[i]); // Log-likelihood calculation
+    yrep[i] =  nr[i] + ns[i];
+    log_lik[i] = poisson_lpmf(N[i] | yrep[i]); // Log-likelihood calculation
   }
 }

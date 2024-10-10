@@ -59,7 +59,7 @@ fit_two_pop_model <- function(
   # Produce plots ####
   ## Produce evo plot ####
   best_fit <- res$fit
-  draws <- best_fit$draws(format = "df", variables = "mu")
+  draws <- best_fit$draws(format = "df", variables = "yrep")
 
   mu <- draws %>%
     dplyr::as_tibble() %>%
@@ -172,7 +172,7 @@ fit_two_pop_model <- function(
     fr_plot = fr_plot
   )
 
-  x$two_pop_fit <- convert_mcmc_fit_to_biPOD(res$fit)
+  x$two_pop_fit <- convert_mcmc_fit_to_biPOD(res$fit, variational=variational)
   #x$two_pop_fit <- res$fit
   return(x)
 }

@@ -80,7 +80,7 @@ fit <- function(
 
   # Add results to bipod object
   x$fit_elbo <- res$elbo_data
-  x$fit <- convert_mcmc_fit_to_biPOD(res$fit)
+  x$fit <- convert_mcmc_fit_to_biPOD(res$fit, variational = variational)
 
   # Add metadata
   if (sampling_type == "mcmc") {

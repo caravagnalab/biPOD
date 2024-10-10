@@ -50,12 +50,12 @@ model {
   }
 }
 
-// generated quantities {
-//   int <lower=0> N_rep[S-1];
-//   real log_lik[S-1];
-//
-//   for (i in 2:S) {
-//     log_lik[i-1] = poisson_lpmf(N[i] | mean_t(T[i], T[1], N[1], t_array, rho));
-//     N_rep[i-1] = poisson_rng(mean_t(T[i], T[1], N[1], t_array, rho));
-//   }
-// }
+generated quantities {
+  vector[S] log_lik;             // Log-likelihood for each observation
+  vector[S] yrep;               // Expected values for N given x
+
+  for (i in 1:S) {
+    yrep[i] = mean_t(T[i], T[1], n0, t_array, rho);
+    log_lik[i] = poisson_lpmf(N[i] | yrep[i]); // Log-likelihood calculation
+  }
+}

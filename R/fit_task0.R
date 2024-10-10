@@ -50,8 +50,8 @@ fit_breakpoints = function(
   # Add results to bipod object
   #x$breakpoints_elbo <- elbo_data
   x$breakpoints_fit <- best_fit
-
   x$metadata$breakpoints <- best_bp
+  x$breakpoints_fit$normalization_pars <- res$normalization_pars
 
   if (!(is.null(best_bp))) {
     x$counts$group <- bp_to_groups(x$counts, x$metadata$breakpoints)
@@ -59,7 +59,6 @@ fit_breakpoints = function(
   cli::cli_alert_info("Median of the inferred breakpoints have been succesfully stored.")
 
   x
-
 }
 
 
@@ -223,7 +222,7 @@ find_breakpoints = function(d, avg_points_per_window, max_breakpoints, norm, n_t
   m <- get_model("fit_breakpoints")
   cli::cli_alert_info("Breakpoints optimization...")
   fits <- list()
-  plots <- list()
+  #plots <- list()
 
   #proposed_breakpoints$idx <- c(1:nrow(proposed_breakpoints)) + 1
 
@@ -366,11 +365,14 @@ find_breakpoints = function(d, avg_points_per_window, max_breakpoints, norm, n_t
       )
     )
 
-    final_fit <- convert_mcmc_fit_to_biPOD(f)
+    final_fit <- convert_mcmc_fit_to_biPOD(f, variational = F)
 
     if (norm) {
-      x <- d$time
-      final_fit$draws[grepl("b[", colnames(final_fit$draws), fixed = T)] <- final_fit$draws[grepl("b[", colnames(final_fit$draws), fixed = T)] * stats::sd(x) + mean(x)
+      #x <- d$time
+      #final_fit$draws[grepl("b[", colnames(final_fit$draws), fixed = T)] <- final_fit$draws[grepl("b[", colnames(final_fit$draws), fixed = T)] * stats::sd(x) + mean(x)
+      normalization_pars = list("mean" = mean(d$time), "sd" = stats::sd(d$time))
+    } else {
+      normalization_pars = NULL
     }
 
     if (length(bp)) {
@@ -400,5 +402,5 @@ find_breakpoints = function(d, avg_points_per_window, max_breakpoints, norm, n_t
     j_idx <- j_idx + 1
   }
 
-  return(list(best_bp=final_bp, best_fit=final_fit))
+  return(list(best_bp=final_bp, best_fit=final_fit, normalization_pars=normalization_pars))
 }

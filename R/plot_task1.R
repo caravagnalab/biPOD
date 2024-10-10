@@ -98,7 +98,7 @@ plot_normalized_growth_rate_posteriors <- function(x,
   n_groups <- length(unique(x$counts$group))
   par_list <- paste0("rho[", c(1:n_groups), "]")
 
-  d_long <- get_parameters(x$fit, par_list = par_list)
+  d_long <- get_parameters(x$fit, par_list = par_list, x$metadata$sampling == "variational")
 
   # get densities for each variable
   densities <- lapply(c(1:length(par_list)), function(i) {
@@ -216,19 +216,19 @@ get_data_for_plot <- function(x, alpha) {
   # Plot model with t0
   if (!(x$metadata$t0_inferred)) {
     median_t0 <- min(x$counts$time)
-    n0 <- get_parameter(x$fit, "n0") %>%
+    n0 <- get_parameter(x$fit, "n0", variational = x$metadata$sampling == "variational") %>%
       dplyr::pull(.data$value) %>%
       stats::median()
     n0 <- n0
   } else {
-    median_t0 <- get_parameter(x$fit, "t0") %>%
+    median_t0 <- get_parameter(x$fit, "t0", x$metadata$sampling == "variational") %>%
       dplyr::pull(.data$value) %>%
       stats::median()
     n0 <- 1
   }
 
   # Produce ro quantiles
-  rho_samples <- get_parameters(x$fit, par_list = paste0("rho[", 1:(length(x$metadata$breakpoints) + 1), "]"))
+  rho_samples <- get_parameters(x$fit, par_list = paste0("rho[", 1:(length(x$metadata$breakpoints) + 1), "]"), x$metadata$sampling == "variational")
 
   rho_quantiles <- rho_samples %>%
     dplyr::group_by(.data$parameter) %>%
@@ -237,7 +237,7 @@ get_data_for_plot <- function(x, alpha) {
   xs <- seq(median_t0, max(x$counts$time), length = 1000)
 
   if (x$metadata$growth_type == "logistic") {
-    K <- get_parameter(x$fit, "K") %>%
+    K <- get_parameter(x$fit, "K", x$metadata$sampling == "variational") %>%
       dplyr::pull(.data$value) %>%
       stats::median()
     func <- log_growth_multiple

@@ -20,10 +20,12 @@ plot_breakpoints_posterior <- function(x, with_histogram = F, alpha = .6, colors
     paste0("b[", i, "]")
   }) %>% unlist()
 
-  samples <- get_parameters(x$breakpoints_fit, par_list = par_list)
-  #samples$value <- samples$value + min(x$counts$time)
+  samples <- get_parameters(x$breakpoints_fit, par_list = par_list, variational = F)
+  if (!(is.null(x$breakpoints_fit$normalization_pars))) {
+    samples$value <- samples$value * x$breakpoints_fit$normalization_pars$sd + x$breakpoints_fit$normalization_pars$mean
+  }
 
-  colors = rep('darkgray', length(x$metadata$breakpoints))
+  if (is.null(colors)) { colors = rep('darkgray', length(x$metadata$breakpoints)) }
 
   ggplot2::ggplot() +
     ggplot2::geom_density(data = samples, mapping = ggplot2::aes(x = .data$value, fill = .data$parameter, col = .data$parameter), alpha = alpha) +

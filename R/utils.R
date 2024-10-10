@@ -186,20 +186,23 @@ parse_pareto_warning <- function(w) {
 }
 
 
-convert_mcmc_fit_to_biPOD <- function(mcmc_fit) {
+convert_mcmc_fit_to_biPOD <- function(mcmc_fit, variational) {
   # convert mcmc fit into dplyr::tibble
   parameters <- mcmc_fit$metadata()$model_params
-  draws <- mcmc_fit$draws() %>% dplyr::as_tibble() %>% dplyr::mutate_all(as.numeric)
+  draws <- mcmc_fit$draws() #%>% dplyr::as_tibble() %>% dplyr::mutate_all(as.numeric)
 
-  rhats <- lapply(parameters, function(p) { compute_rhat(draws, p) })
-  names(rhats) <- parameters
-  rhats
+  if (variational) {
+    rhats <- NULL
+  } else {
+    rhats <- lapply(parameters, function(p) { compute_rhat(draws, p, parameters) })
+    names(rhats) <- parameters
+  }
 
   list(parameters = parameters, draws = draws, rhat = rhats)
 }
 
-compute_rhat <- function(draws, par_name) {
-  X <- draws[grepl(par_name, colnames(draws), fixed = T)] %>% as.matrix()
+compute_rhat <- function(draws, par_name, parameters) {
+  X <- draws[,,which(par_name==parameters)] %>% dplyr::as_tibble() %>% as.matrix()
 
   N <- nrow(X)
   M <- ncol(X)
