@@ -44,7 +44,6 @@
     <li><a class="dropdown-item" href="../articles/a2_task1.html">2. Fitting dynamics with known breakpoints</a></li>
     <li><a class="dropdown-item" href="../articles/a3_task2.html">3. Inferring uknwokn breakpoints</a></li>
     <li><a class="dropdown-item" href="../articles/a4_task3.html">4. Fitting a mixture of resistant-sensitive population</a></li>
-    <li><a class="dropdown-item" href="../articles/a5_supplementary_materials.html">5. biPOD Supplementary Materials and Methods</a></li>
   </ul>
 </li>
       </ul>
@@ -198,7 +197,15 @@ let’s plot
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>t</mi><mn>0</mn></msub><annotation encoding="application/x-tex">t_0</annotation></semantics></math>.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">fit</span><span class="op">$</span><span class="va">parameters</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "lp__"        "lp_approx__" "rho[1]"      "t0"          "K"</span></span>
+<span><span class="co">#&gt;  [1] "lp__"        "lp_approx__" "rho[1]"      "t0"          "K"          </span></span>
+<span><span class="co">#&gt;  [6] "log_lik[1]"  "log_lik[2]"  "log_lik[3]"  "log_lik[4]"  "log_lik[5]" </span></span>
+<span><span class="co">#&gt; [11] "log_lik[6]"  "log_lik[7]"  "log_lik[8]"  "log_lik[9]"  "log_lik[10]"</span></span>
+<span><span class="co">#&gt; [16] "log_lik[11]" "log_lik[12]" "log_lik[13]" "log_lik[14]" "log_lik[15]"</span></span>
+<span><span class="co">#&gt; [21] "log_lik[16]" "log_lik[17]" "log_lik[18]" "log_lik[19]" "log_lik[20]"</span></span>
+<span><span class="co">#&gt; [26] "yrep[1]"     "yrep[2]"     "yrep[3]"     "yrep[4]"     "yrep[5]"    </span></span>
+<span><span class="co">#&gt; [31] "yrep[6]"     "yrep[7]"     "yrep[8]"     "yrep[9]"     "yrep[10]"   </span></span>
+<span><span class="co">#&gt; [36] "yrep[11]"    "yrep[12]"    "yrep[13]"    "yrep[14]"    "yrep[15]"   </span></span>
+<span><span class="co">#&gt; [41] "yrep[16]"    "yrep[17]"    "yrep[18]"    "yrep[19]"    "yrep[20]"</span></span>
 <span><span class="fu">biPOD</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_posterior.html">plot_posterior</a></span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
 <span>  x_fit <span class="op">=</span> <span class="va">x</span><span class="op">$</span><span class="va">fit</span>,</span>
@@ -269,8 +276,10 @@ different task on the same object.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">biPOD</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_traces.html">plot_traces</a></span><span class="op">(</span><span class="va">x</span>, fit <span class="op">=</span> <span class="va">x</span><span class="op">$</span><span class="va">fit</span>, pars <span class="op">=</span> <span class="cn">NULL</span>, diagnose <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> The input vector 'pars' is empty. All the following parameters will be</span></span>
-<span><span class="co">#&gt; reported: <span style="color: #0000BB;">"lp__"</span>, <span style="color: #0000BB;">"rho[1]"</span>, <span style="color: #0000BB;">"rho[2]"</span>, <span style="color: #0000BB;">"rho[3]"</span>, <span style="color: #0000BB;">"t0"</span>, and <span style="color: #0000BB;">"K"</span>.  It might take</span></span>
-<span><span class="co">#&gt; some time...</span></span></code></pre></div>
+<span><span class="co">#&gt; reported: <span style="color: #0000BB;">"lp__"</span>, <span style="color: #0000BB;">"rho[1]"</span>, <span style="color: #0000BB;">"rho[2]"</span>, <span style="color: #0000BB;">"rho[3]"</span>, <span style="color: #0000BB;">"t0"</span>, <span style="color: #0000BB;">"K"</span>, <span style="color: #0000BB;">"log_lik[1]"</span>,</span></span>
+<span><span class="co">#&gt; <span style="color: #0000BB;">"log_lik[2]"</span>, <span style="color: #0000BB;">"log_lik[3]"</span>, <span style="color: #0000BB;">"log_lik[4]"</span>, <span style="color: #0000BB;">"log_lik[5]"</span>, <span style="color: #0000BB;">"log_lik[6]"</span>,</span></span>
+<span><span class="co">#&gt; <span style="color: #0000BB;">"log_lik[7]"</span>, <span style="color: #0000BB;">"log_lik[8]"</span>, <span style="color: #0000BB;">"log_lik[9]"</span>, <span style="color: #0000BB;">"log_lik[10]"</span>, <span style="color: #0000BB;">"log_lik[11]"</span>,</span></span>
+<span><span class="co">#&gt; <span style="color: #0000BB;">"log_lik[12]"</span>, …, <span style="color: #0000BB;">"yrep[22]"</span>, and <span style="color: #0000BB;">"yrep[23]"</span>.  It might take some time...</span></span></code></pre></div>
 <p><img src="a2_task1_files/figure-html/unnamed-chunk-13-1.png" width="700"></p>
 </div>
 <div class="section level3">
@@ -317,7 +326,7 @@ growth rates one against each other.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
     </footer>
