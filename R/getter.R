@@ -10,10 +10,10 @@ get_model <- function(model_name) {
     "piecewise_changepoints" = "piecewise_linear_regression.stan",
     #"two_pop" = "two_population.stan",
     "two_pop_both" = 'two_pop_both_v2.stan',
-    "two_pop_single" = 'two_pop_single.stan'
+    "two_pop_single" = 'two_pop_single.stan',
+    "two_pop_pre" = 'two_pop_pre.stan',
+    "two_pop_post" = 'two_pop_post.stan'
     #"pw_lin_fixed_b" = "pw_linear_b_fixed.stan",
-
-
   )
 
   if (!(model_name) %in% names(all_paths)) stop("model_name not recognized")
