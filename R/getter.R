@@ -10,10 +10,10 @@ get_model <- function(model_name) {
     "piecewise_changepoints" = "piecewise_linear_regression.stan",
     #"two_pop" = "two_population.stan",
     "two_pop_both" = 'two_pop_both_v2.stan',
-    "two_pop_single" = 'two_pop_single.stan'
+    "two_pop_single" = 'two_pop_single.stan',
+    "two_pop_pre" = 'two_pop_pre.stan',
+    "two_pop_post" = 'two_pop_post.stan'
     #"pw_lin_fixed_b" = "pw_linear_b_fixed.stan",
-
-
   )
 
   if (!(model_name) %in% names(all_paths)) stop("model_name not recognized")
@@ -30,15 +30,7 @@ get_parameter <- function(fit, par_name, variational) {
   } else {
     v <- fit$draws[,,which(par_name==fit$parameters)] %>% as.vector() %>% unlist() %>% unname()
   }
-  #v <- fit$draws[,grepl(par_name, colnames(fit$draws), fixed = T)] %>% unlist() %>% unname()
-
   dplyr::tibble(value = v, parameter = par_name)
-
-  # fit$draws[[par_name]]
-  #   dplyr::as_tibble() %>%
-  #   dplyr::mutate(par_name = par_name) %>%
-  #   dplyr::rename("value" = 1, "parameter" = 2) %>%
-  #   dplyr::mutate(value = as.numeric(.data$value))
 }
 
 get_parameters <- function(fit, par_list, variational) {

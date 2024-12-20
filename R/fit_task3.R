@@ -194,17 +194,20 @@ fit_two_pop_data <- function(x, factor_size, variational, chains, iter, cores) {
   #model <- get_model(model_name = "two_pop")
 
   m1 <- get_model("two_pop_single")
-  m2 <- get_model("two_pop_both")
+  m2 <- get_model("two_pop_pre")
+  m3 <- get_model("two_pop_post")
 
   tmp <- utils::capture.output(f1 <- m1$sample(input_data, parallel_chains = chains, iter_warmup = iter, iter_sampling = iter, chains = chains))
   tmp <- utils::capture.output(f2 <- m2$sample(input_data, parallel_chains = chains, iter_warmup = iter, iter_sampling = iter, chains = chains))
+  tmp <- utils::capture.output(f3 <- m3$sample(input_data, parallel_chains = chains, iter_warmup = iter, iter_sampling = iter, chains = chains))
 
-  fits <- list(f1, f2)
+  fits <- list(f1, f2, f3)
 
   loo1 <- f1$loo()
   loo2 <- f2$loo()
+  loo3 <- f3$loo()
 
-  loos <- loo::loo_compare(list(loo1, loo2))
+  loos <- loo::loo_compare(list(loo1, loo2, loo3))
   fit_model <- fits[[as.numeric(stringr::str_replace(rownames(loos)[1], "model", ""))]]
 
   sampling <- "mcmc"
