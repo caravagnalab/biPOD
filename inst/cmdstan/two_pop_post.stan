@@ -26,7 +26,7 @@ model {
 
   for (i in 1:S) {
     if (T[i] >= t_end) {
-      ns[i] = 1e-6;
+      ns[i] = 1e-9;
     } else {
       ns[i] = exp(-rho_s * (T[i] - t_end));
     }
@@ -34,7 +34,7 @@ model {
     if (T[i] >= t0_r) {
       nr[i] = exp(rho_r * (T[i] - t0_r));
     } else {
-      nr[i] = 1e-6;
+      nr[i] = 1e-9;
     }
 
     mu[i] = nr[i] + ns[i];
@@ -52,7 +52,7 @@ generated quantities {
 
   for (i in 1:S) {
     if (T[i] >= t_end) {
-      ns[i] = 1e-6;
+      ns[i] = 1e-9;
     } else {
       ns[i] = exp(-rho_s * (T[i] - t_end));
     }
@@ -60,11 +60,9 @@ generated quantities {
     if (T[i] >= t0_r) {
       nr[i] = exp(rho_r * (T[i] - t0_r));
     } else {
-      nr[i] = 1e-6;
+      nr[i] = 1e-9;
     }
     yrep[i] = nr[i] + ns[i];
     log_lik[i] = poisson_lpmf(N[i] | yrep[i]); // Log-likelihood calculation
   }
 }
-
-

@@ -122,7 +122,7 @@ fit_two_pop_model <- function(
   times_plot <- times %>%
     dplyr::group_by(.data$par) %>%
     dplyr::mutate(q_low = stats::quantile(x, .05), q_high = stats::quantile(x, .95)) %>%
-    dplyr::filter(x >= .data$q_low, x <= .data$q_high) %>%
+    #dplyr::filter(x >= .data$q_low, x <= .data$q_high) %>%
     ggplot2::ggplot(mapping = ggplot2::aes(x=.data$x, col=.data$par)) +
     ggplot2::geom_density() +
     ggplot2::labs(x = "Time", y="Density") +
@@ -133,8 +133,10 @@ fit_two_pop_model <- function(
   nr_first_obs <- best_fit$draws(format = "df", variables = "nr")[,1] %>% unlist() %>% as.numeric()
   ns_first_obs <- best_fit$draws(format = "df", variables = "ns")[,1] %>% unlist() %>% as.numeric()
 
-  nr_first_obs <- nr_first_obs[t0_r_draws <= 0]
-  ns_first_obs <- ns_first_obs[t0_r_draws <= 0]
+  nr_first_obs[nr_first_obs == 1e-9] = 0
+
+  #nr_first_obs <- nr_first_obs[t0_r_draws <= 0]
+  #ns_first_obs <- ns_first_obs[t0_r_draws <= 0]
 
   f_r = nr_first_obs / (nr_first_obs + ns_first_obs)
   fr_plot <- dplyr::tibble(x = f_r) %>%
@@ -157,7 +159,7 @@ fit_two_pop_model <- function(
   rates_plot <- rates %>%
     dplyr::group_by(.data$par) %>%
     dplyr::mutate(q_low = stats::quantile(x, .05), q_high = stats::quantile(x, .95)) %>%
-    dplyr::filter(x >= .data$q_low, x <= .data$q_high) %>%
+    #dplyr::filter(x >= .data$q_low, x <= .data$q_high) %>%
     ggplot2::ggplot(mapping = ggplot2::aes(x=.data$x, col=.data$par)) +
     ggplot2::geom_density() +
     ggplot2::geom_vline(xintercept = 0, linetype = "dashed") +
