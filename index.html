@@ -69,7 +69,31 @@
 </div>
 <!-- badges: start -->
 
-<p>biPOD is a package to infer kinetic parameters of an evolving population whose size is observed at discrete intervals of time. The tool is able to …</p>
+<p>biPOD is a package to infer kinetic parameters of an evolving population whose size is observed at discrete intervals of time. The tool is able to:</p>
+<ol style="list-style-type: decimal">
+<li>Infer growth rates and instant of birth of a population of cells when time windows and change points are known. This includes:
+<ul>
+<li>Calculating exponential growth rates for different time periods (e.g., treatment phase, relapse phase)</li>
+<li>Determining the upper limit for the population’s birth time if growth is observed in the initial window</li>
+<li>Handling multiple time windows with predefined change points</li>
+</ul>
+</li>
+<li>Identify optimal change points in population dynamics when these transition times are not known, by:
+<ul>
+<li>Analyzing population size data to detect significant changes in growth patterns</li>
+<li>Computing the most likely moments when population behavior shifts</li>
+<li>Optimizing the placement of change points to best fit the observed data</li>
+</ul>
+</li>
+<li>Analyze dual-population scenarios typical in treatment-to-relapse cases, characterized by:
+<ul>
+<li>Inferring separate growth rates for resistant and sensitive cell populations</li>
+<li>Determining the birth time of the resistant population</li>
+<li>Calculating the death time of the sensitive population</li>
+<li>Modeling the characteristic U-shaped dynamics that emerge from the interplay between these populations</li>
+</ul>
+</li>
+</ol>
 <div class="section level4">
 <h4 id="help-and-support">Help and support<a class="anchor" aria-label="anchor" href="#help-and-support"></a>
 </h4>
