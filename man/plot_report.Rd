@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_report.R
 \name{plot_report}
 \alias{plot_report}
-\title{Generate a Comprehensive Report Plot}
+\title{Generate a Comprehensive Model Analysis Report}
 \usage{
 plot_report(
   x,
@@ -14,22 +14,62 @@ plot_report(
 )
 }
 \arguments{
-\item{x}{A \code{bipod} object. Must contain a 'fit' and metadata fields for model selection and, optionally, breakpoints and ELBO values.}
+\item{x}{A bipod object that must contain:
+* 'fit' field with model fitting results
+* metadata fields with model selection information
+* Optional: breakpoints analysis results
+* Optional: ELBO values for variational inference}
 
-\item{fit_type}{A character string specifying the type of fit plot to generate. Options include "simple" and "complex". (default is "complex")}
+\item{fit_type}{Character string controlling fit plot complexity:
+* "simple": Basic fit visualization
+* "complex": Detailed fit visualization with additional elements
+Default is "complex"}
 
-\item{breakpoints_color}{A character string specifying the color for the breakpoints posterior plot. (default is "darkgray")}
+\item{breakpoints_color}{Character string specifying color for breakpoint
+posterior visualization. Default is "darkgray"}
 
-\item{shadows_colors}{A character vector specifying colors for shadows in the fit plot. (default is NULL)}
+\item{shadows_colors}{Character vector defining colors for time window
+highlighting in fit plot. Default is NULL}
 
-\item{t0_posterior_color}{A character string specifying the color for the t0 posterior plot. (default is "darkorange")}
+\item{t0_posterior_color}{Character string specifying color for t0 (initial time)
+posterior visualization. Default is "darkorange"}
 
-\item{full_process}{A logical value indicating whether to include the full process in the fit plot when \code{fit_type} is "simple". (default is FALSE)}
+\item{full_process}{Logical indicating whether to show complete process
+details in simple fit plots. Only applies when fit_type = "simple".
+Default is FALSE}
 }
 \value{
-A \code{patchwork} object containing multiple ggplot2 plots arranged in a single panel.
+A patchwork object containing:
+\itemize{
+\item Main panel: Model fit visualization
+\item Secondary panels (if applicable):
+\itemize{
+\item Breakpoint posterior distributions
+\item Growth rate posterior distributions
+\item Model selection results
+All panels are arranged vertically with appropriate size ratios
+}
+}
 }
 \description{
-Creates a detailed report consisting of various plots to visualize the results of a fitted model within a \code{bipod} object.
-The report includes fit plots, breakpoints posterior plots, growth rates posterior plots, and model selection plots.
+Creates a multi-panel visualization report that combines key analytical plots into a single
+comprehensive display. The report can include:
+\itemize{
+\item Model fit visualization with confidence intervals
+\item Breakpoint posterior distributions (if breakpoints were inferred)
+\item Growth rate posterior distributions
+\item Model selection diagnostics (if multiple models were compared)
+}
+
+Each component is automatically included based on the available data and analysis
+in the bipod object, creating a tailored summary of the modeling results.
+}
+\details{
+The function automatically adapts its output based on the analyses present in
+the input bipod object:
+\itemize{
+\item Breakpoint analysis panels only appear if breakpoints were inferred
+\item Model selection panels only appear if multiple models were compared
+\item Panel heights are automatically adjusted for optimal visualization
+}
 }

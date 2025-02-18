@@ -1,21 +1,47 @@
-#' Fit a Two-Population Growth Model to a bipod Object
+#' Fit a Two-Population Growth Model to a `bipod` Object
 #'
-#' This function fits a growth model that accounts for two populations within a bipod object. The fitting can be done using either Variational Inference or Markov Chain Monte Carlo (MCMC) sampling.
+#' This function fits a growth model that accounts for two interacting populations within a `bipod` object.
+#' The model can be fitted using either Variational Inference or Markov Chain Monte Carlo (MCMC) sampling.
 #'
-#' @param x A `bipod` object.
-#' @param variational A logical value indicating whether to use Variational Inference instead of MCMC sampling.
-#'  If `TRUE`, the model will be fitted using Variational Inference; otherwise, MCMC sampling will be used. (default is FALSE)
-#' @param factor_size A numeric value representing the factor by which to divide the counts in the bipod object.
-#'  This value must be positive and appropriate for the data scale. (default is 1)
-#' @param chains An integer specifying the number of chains to run in the MCMC algorithm.
-#'  This parameter is ignored if `variational = TRUE`. (default is 4)
-#' @param iter An integer specifying the number of iterations to run in the MCMC algorithm.
-#'  This parameter is ignored if `variational = TRUE`. (default is 5000)
-#' @param cores An integer specifying the number of cores to use for parallel processing during model fitting. (default is 4)
+#' @param x A `bipod` object containing population count data over time.
+#' @param variational Logical, indicating whether to use Variational Inference instead of MCMC sampling.
+#'   If `TRUE`, Variational Inference is applied; otherwise, MCMC sampling is used. Default is `FALSE`.
+#' @param factor_size Numeric, specifying the scaling factor for population counts in the `bipod` object.
+#'   This value must be positive and appropriately chosen for the data. Default is `1`.
+#' @param chains Integer, defining the number of MCMC chains. This parameter is ignored if `variational = TRUE`. Default is `4`.
+#' @param iter Integer, setting the number of iterations for MCMC sampling. This parameter is ignored if `variational = TRUE`. Default is `5000`.
+#' @param cores Integer, specifying the number of CPU cores to use for parallel computation. Default is `4`.
 #'
-#' @return The input `bipod` object with added slots:
-#' - `'two_pop_fit'`: Contains the fitted two-population growth model.
-#' - `'two_pop_fit_info'`: Contains information about the fitting process, including metadata such as sampling type and factor size.
+#' @return The input `bipod` object with additional attributes:
+#'   * `two_pop_fit` – The fitted two-population growth model.
+#'   * `two_pop_fit_info` – Metadata related to the fitting process, including:
+#'     * Sampling method (MCMC or Variational Inference)
+#'     * Scaling factor used (`factor_size`)
+#'     * Diagnostics of the model fitting process
+#'   * `two_pop_plots` – A list of visualization plots, including:
+#'     * Evolutionary trend plots
+#'     * Population growth rates
+#'     * Key time estimates (e.g., emergence of resistant populations)
+#'
+#' @examples
+#' # Load a bipod object
+#' data("xenografts", package = "biPOD")
+#' mouse_id <- 543
+#' d <- xenografts
+#' d = dplyr::rename(d, count = tumour_volume)
+#' d = dplyr::mutate(d, time = time / 7)
+#' d = dplyr::filter(d, time >= 0)
+#' d = dplyr::filter(d, mouse == mouse_id)
+#' x <- biPOD::init(d, "543 U-shape")
+#' # Fit a two-population growth model using MCMC
+#' x <- biPOD::fit_two_pop_model(x, variational = FALSE, factor_size = 1)
+#' biPOD::plot_two_pop_fit(
+#'   x,
+#'   split_process = FALSE,
+#'   f_posteriors = FALSE,
+#'   t_posteriors = FALSE,
+#'   r_posteriors = FALSE
+#' )
 #'
 #' @export
 fit_two_pop_model <- function(

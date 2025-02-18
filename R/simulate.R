@@ -1,22 +1,40 @@
-#' Simulate a Stochastic Birth-Death Process
+#' Simulate a Stochastic Birth-Death Process (Exponential Growth)
 #'
-#' Simulates a stochastic birth-death process over multiple time steps. The process models population dynamics where both birth and death rates can vary over time.
+#' Simulates a stochastic birth-death process over multiple time steps, which models population dynamics in an environment where both birth and death rates can vary over time.
+#' This process follows an exponential growth model, where population size fluctuates due to random birth and death events.
 #'
-#' @param n0 Numeric value indicating the initial population size. Must be a non-negative integer.
-#' @param lambda Numeric vector of birth rates.
-#'  This can be a single value (constant birth rate) or a vector of length `steps` specifying the birth rate at each time step.
-#' @param mu Numeric vector of death rates.
-#'  This can be a single value (constant death rate) or a vector of length `steps` specifying the death rate at each time step.
-#' @param steps Integer value specifying the number of time steps to simulate. Must be a non-negative integer.
-#' @param delta_t Numeric vector of time step sizes. This can be a single value (constant time step) or a vector of length `steps`.
-#'  If a single value is provided, it is replicated for each time step.
+#' @param n0 Numeric value indicating the initial population size at time 0. This must be a non-negative integer (>= 0).
+#' @param lambda Numeric vector or scalar specifying the birth rates at each time step.
+#' If a scalar is provided, it is assumed to be constant for all time steps. If a vector is provided, it should be of length `steps`, specifying the birth rate at each step.
+#' @param mu Numeric vector or scalar specifying the death rates at each time step.
+#' Like `lambda`, if a scalar is provided, it is assumed to be constant for all time steps. If a vector is provided, it should be of length `steps`, specifying the death rate at each step.
+#' @param steps Integer specifying the number of time steps to simulate. Must be a non-negative integer.
+#' @param delta_t Numeric vector or scalar specifying the time step sizes.
+#' If a scalar is provided, it is assumed to be constant for all steps. If a vector is provided, it should be of length `steps`, specifying the time step size at each step.
 #'
-#' @return A `tibble` with columns:
+#' @return A `tibble` with the following columns:
 #' \itemize{
-#'   \item \code{time}: The cumulative time at each step.
-#'   \item \code{count}: The population size at each time step.
-#'   \item \code{group}: A factor indicating the group of contiguous intervals where the birth and death rates are constant.
+#'   \item \code{time}: The cumulative time at each step, starting from 0.
+#'   \item \code{count}: The population size at each time step, calculated after applying the stochastic birth-death process.
+#'   \item \code{group}: A factor that groups contiguous intervals where the birth and death rates are constant (i.e., `lambda` and `mu` remain the same over consecutive time steps).
 #' }
+#'
+#' @details
+#' This function simulates a population following an exponential growth model, where the population size changes due to random births and deaths. The rates of birth (`lambda`) and death (`mu`) may vary over time.
+#' At each time step, the function computes the expected number of births and deaths based on the rates `lambda` and `mu`. A random draw is then made to determine whether a birth or death event occurs. The population size is updated accordingly.
+#'
+#' The simulation assumes that the population size is never negative, so if a death event causes the population to drop to zero, it will remain zero thereafter.
+#'
+#' If `steps` is set to 0, the function returns the initial population size `n0` immediately, without any simulation.
+#'
+#' @examples
+#' # Simulate a stochastic birth-death process with constant rates
+#' sim_stochastic_exponential(n0 = 10, lambda = 0.2, mu = 0.1, steps = 10, delta_t = 1)
+#'
+#' # Simulate with varying rates
+#' lambda_rates <- c(rep(0.3, 5), rep(0.1, 5), rep(0.9, 5))
+#' mu_rates <- c(rep(0.1, 5), rep(0.15, 5), rep(0.3, 5))
+#' sim_stochastic_exponential(n0 = 10, lambda = lambda_rates, mu = mu_rates, steps = 15, delta_t = .1)
 #'
 #' @export
 sim_stochastic_exponential <- function(n0, lambda, mu, steps, delta_t) {
@@ -123,27 +141,56 @@ sim_single_stochastic_exponential <- function(n0, lambda, mu, delta_t) {
   pop_size
 }
 
-#' Simulate Population Growth with Logistic Dynamics
+#' Simulate Population Growth with Stochastic Logistic Dynamics
 #'
 #' Simulates population growth over multiple time steps using a stochastic logistic growth model.
 #' This model incorporates both stochastic elements and a carrying capacity to describe population dynamics.
+#' Population size changes due to random births and deaths, but the growth rate is constrained by the carrying capacity \(K\).
 #'
-#' @param n0 Numeric value indicating the initial population size. Must be a non-negative integer.
-#' @param lambda Numeric vector of birth rates.
-#'  This can be a single value (constant birth rate) or a vector of length `steps` specifying the birth rate at each time step.
-#' @param mu Numeric vector of death rates.
-#'  This can be a single value (constant death rate) or a vector of length `steps` specifying the death rate at each time step.
-#' @param K Numeric value representing the carrying capacity of the environment. Must be a non-negative integer.
-#' @param steps Integer value specifying the number of time steps to simulate. Must be a non-negative integer.
-#' @param delta_t Numeric vector of time step sizes. This can be a single value (constant time step) or a vector of length `steps`.
-#'  If a single value is provided, it is replicated for each time step.
+#' @param n0 Numeric value indicating the initial population size at time 0. This must be a non-negative integer (>= 0).
+#' @param lambda Numeric vector or scalar specifying the birth rates at each time step.
+#' If a scalar is provided, it is assumed to be constant for all time steps. If a vector is provided, it should be of length `steps`, specifying the birth rate at each step.
+#' @param mu Numeric vector or scalar specifying the death rates at each time step.
+#' Like `lambda`, if a scalar is provided, it is assumed to be constant for all time steps. If a vector is provided, it should be of length `steps`, specifying the death rate at each step.
+#' @param K Numeric value indicating the carrying capacity of the environment. This must be a non-negative integer (> 0).
+#' @param steps Integer specifying the number of time steps to simulate. Must be a non-negative integer.
+#' @param delta_t Numeric vector or scalar specifying the time step sizes.
+#' If a scalar is provided, it is assumed to be constant for all steps. If a vector is provided, it should be of length `steps`, specifying the time step size at each step.
 #'
-#' @return A `tibble` with columns:
+#' @return A `tibble` with the following columns:
 #' \itemize{
-#'   \item \code{time}: The cumulative time at each step.
-#'   \item \code{count}: The population size at each time step.
-#'   \item \code{group}: A factor indicating the group of contiguous intervals where the birth and death rates are constant.
+#'   \item \code{time}: The cumulative time at each step, starting from 0.
+#'   \item \code{count}: The population size at each time step, updated based on the stochastic logistic model.
+#'   \item \code{group}: A factor that groups contiguous intervals where the birth and death rates are constant (i.e., `lambda` and `mu` remain the same over consecutive time steps).
 #' }
+#'
+#' @details
+#' This function simulates a population following a stochastic logistic growth model, where the population size changes due to random births and deaths while being constrained by the carrying capacity \(K\).
+#' The population's growth rate decreases as the population size approaches \(K\), representing the limitations of resources. The rates of birth (`lambda`) and death (`mu`) may vary over time.
+#'
+#' The stochastic component of the model introduces randomness, making the population size fluctuate between time steps.
+#'
+#' At each time step, the birth and death rates are used to calculate the expected population change, and a random event (birth or death) is chosen based on the probabilities at that step. The population is updated accordingly.
+#'
+#' The simulation stops when the population reaches zero or when the specified number of steps is completed.
+#'
+#' If `steps` is set to 0, the function returns the initial population size `n0` immediately, without any simulation.
+#'
+#' @examples
+#' # Simulate a stochastic logistic growth process with constant rates and carrying capacity of 100
+#' sim_stochastic_logistic(n0 = 10, lambda = 0.2, mu = 0.1, K = 100, steps = 15, delta_t = .25)
+#'
+#' # Simulate with varying rates
+#' lambda_rates <- c(rep(0.3, 5), rep(0.1, 5), rep(0.9, 5))
+#' mu_rates <- c(rep(0.1, 5), rep(0.15, 5), rep(0.3, 5))
+#' sim_stochastic_logistic(
+#' n0 = 10,
+#' lambda = lambda_rates,
+#' mu = mu_rates,
+#' steps = 15,
+#' delta_t = .1,
+#' K=200
+#' )
 #'
 #' @export
 sim_stochastic_logistic <- function(n0, lambda, mu, K, steps, delta_t) {

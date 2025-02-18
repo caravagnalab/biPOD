@@ -2,18 +2,28 @@
 % Please edit documentation in R/plot_task1.R
 \name{plot_t0_posterior}
 \alias{plot_t0_posterior}
-\title{Plot Posteriors of t0}
+\title{Visualize t0 Parameter Posterior Distribution}
 \usage{
 plot_t0_posterior(x, add_prior = F)
 }
 \arguments{
-\item{x}{A \code{bipod} object that contains a 'fit' field.}
+\item{x}{A \code{bipod} object containing a 'fit' field with model results}
 
-\item{add_prior}{Logical value indicating whether to plot the prior distribution along with the posterior distribution. (default is FALSE)}
+\item{add_prior}{Logical indicating whether to overlay the prior distribution
+on the plot. Defaults to FALSE}
 }
 \value{
-A \code{ggplot2} object containing the posterior density plot of \code{t0}, and optionally the prior density plot.
+A ggplot2 object showing the posterior density plot for t0
 }
 \description{
-Creates a plot of the posterior distribution of the parameter \code{t0} from a \code{bipod} object. Optionally, the prior distribution can be included in the plot.
+Creates a visualization of the posterior distribution for the t0 parameter,
+which represents the theoretical start time of the growth process. The plot
+can optionally include the prior distribution for comparison.
+}
+\details{
+This function is only applicable when t0 has been inferred during model fitting
+(i.e., when x$metadata$t0_inferred is TRUE). The plot shows the full posterior
+distribution, allowing assessment of the uncertainty in the estimated start time.
+When the prior is included, it helps visualize how the data has updated our
+beliefs about t0.
 }

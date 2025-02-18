@@ -7,16 +7,16 @@
 plot_elbo(x, elbo_data, diagnose = TRUE)
 }
 \arguments{
-\item{x}{A \code{bipod} object of class \code{bipod} that contains the fitted model and ELBO data.}
+\item{x}{A \code{bipod} object that contains the fitted model and ELBO data.}
 
-\item{elbo_data}{A data frame or tibble containing ELBO values over iterations. Must include columns \code{iter}, \code{ELBO}, and \code{delta_ELBO_mean}.}
+\item{elbo_data}{A data frame or tibble containing ELBO values and their corresponding delta ELBO mean over iterations. Must include columns \code{iter}, \code{ELBO}, and \code{delta_ELBO_mean}.}
 
-\item{diagnose}{A logical value indicating whether to color the plot based on the convergence of the ELBO.
-If \code{TRUE}, the plot will include color coding based on whether the ELBO converged.}
+\item{diagnose}{A logical value indicating whether to color the plot based on the convergence of the ELBO. If \code{TRUE}, the plot will include color coding to indicate whether the ELBO converged (green for convergence, red for lack of convergence). (default is \code{TRUE})}
 }
 \value{
-A \code{ggplot2} object displaying the ELBO and delta ELBO mean traces.
+A \code{ggplot2} object displaying the ELBO and delta ELBO mean traces. The plot includes a line for each variable and color coding to indicate convergence.
 }
 \description{
-Plots the logarithm of the Evidence Lower Bound (ELBO) and the mean change in ELBO (delta ELBO) obtained during variational inference. This helps to assess the convergence and quality of the variational fit.
+Plots the logarithm of the Evidence Lower Bound (ELBO) and the mean change in ELBO (delta ELBO) over iterations during variational inference.
+This helps assess the convergence and quality of the variational fit by examining how ELBO values evolve over iterations.
 }

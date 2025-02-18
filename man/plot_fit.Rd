@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_task1.R
 \name{plot_fit}
 \alias{plot_fit}
-\title{Plot the Fit Over the Input Data}
+\title{Visualize Model Fit with Input Data}
 \usage{
 plot_fit(
   x,
@@ -18,31 +18,46 @@ plot_fit(
 )
 }
 \arguments{
-\item{x}{A \code{bipod} object that contains a 'fit' field.}
+\item{x}{A \code{bipod} object containing a 'fit' field with model results}
 
-\item{CI}{Numeric value between 0 and 1 representing the confidence interval for the fit. (default is 0.95)}
+\item{CI}{Numeric value between 0 and 1 specifying the confidence interval width for the fit line.
+For example, 0.95 shows the 95\% confidence interval. Defaults to 0.95}
 
-\item{legend_labels}{Vector of labels for each unique group in \code{x$counts$group}. (default is NULL)}
+\item{legend_labels}{Character vector providing custom labels for each group in \code{x$counts$group}.
+Must match the number of unique groups. Defaults to NULL}
 
-\item{legend_title}{Title for the legend. (default is "group")}
+\item{legend_title}{Character string specifying the title for the plot legend.
+Defaults to "group"}
 
-\item{zoom}{Logical value indicating whether to present a zoomed-in view of the observations. (default is TRUE)}
+\item{zoom}{Logical indicating whether to include a zoomed-in panel focusing on the
+observation period. Defaults to TRUE}
 
-\item{full_process}{Logical value indicating whether to include the posterior for \code{t0} in the plot. (default is TRUE)}
+\item{full_process}{Logical indicating whether to display the posterior distribution
+for the t0 parameter. Defaults to TRUE}
 
-\item{sec_axis_breaks}{Vector of values specifying where breaks should appear on the secondary x-axis. (default is NULL)}
+\item{sec_axis_breaks}{Numeric vector specifying the positions of breaks on the secondary
+x-axis. Must be provided together with sec_axis_labels. Defaults to NULL}
 
-\item{sec_axis_labels}{Vector of labels for the secondary x-axis. (default is NULL)}
+\item{sec_axis_labels}{Character vector providing labels for the secondary x-axis breaks.
+Must be provided together with sec_axis_breaks. Defaults to NULL}
 
-\item{t0_posterior_color}{Color to use for the posterior distribution of \code{t0}. (default is 'darkorange')}
+\item{t0_posterior_color}{Character string specifying the color for the t0 posterior
+distribution plot. Defaults to "darkorange"}
 
-\item{shadows_colors}{Colors to use for highlighting different time windows. (default is NULL)}
+\item{shadows_colors}{Character vector specifying colors for highlighting different
+time windows in the plot. Defaults to NULL}
 }
 \value{
-A \code{ggplot2} object displaying the fit over the input data.
+A ggplot2 object containing the visualization
 }
 \description{
-Creates a plot showing the fit of the model over the input data.
-The plot can include a zoomed-in view, a secondary x-axis, and highlights for different time windows.
-Optionally, it can also display the posterior distribution for the parameter \code{t0}.
+Creates a comprehensive visualization of the model fit overlaid on the input data.
+The plot can include multiple visualization elements:
+\itemize{
+\item Main plot showing data points and model fit with confidence intervals
+\item Optional zoomed-in view of the observations
+\item Optional secondary x-axis for alternative time scales
+\item Optional time window highlights
+\item Optional posterior distribution for the t0 parameter
+}
 }

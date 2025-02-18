@@ -22,7 +22,23 @@ knitr::opts_chunk$set(
 [![Codecov test coverage](https://codecov.io/gh/caravagnalab/biPOD/branch/main/graph/badge.svg)](https://app.codecov.io/gh/caravagnalab/biPOD?branch=main)
 <!-- badges: end -->
 
-biPOD is a package to infer kinetic parameters of an evolving population whose size is observed at discrete intervals of time. The tool is able to ...
+biPOD is a package to infer kinetic parameters of an evolving population whose size is observed at discrete intervals of time. The tool is able to:
+
+1. Infer growth rates and instant of birth of a population of cells when time windows and change points are known. This includes:
+   - Calculating exponential growth rates for different time periods (e.g., treatment phase, relapse phase)
+   - Determining the upper limit for the population's birth time if growth is observed in the initial window
+   - Handling multiple time windows with predefined change points
+
+2. Identify optimal change points in population dynamics when these transition times are not known, by:
+   - Analyzing population size data to detect significant changes in growth patterns
+   - Computing the most likely moments when population behavior shifts
+   - Optimizing the placement of change points to best fit the observed data
+
+3. Analyze dual-population scenarios typical in treatment-to-relapse cases, characterized by:
+   - Inferring separate growth rates for resistant and sensitive cell populations
+   - Determining the birth time of the resistant population
+   - Calculating the death time of the sensitive population
+   - Modeling the characteristic U-shaped dynamics that emerge from the interplay between these populations
 
 #### Help and support
 

@@ -1,16 +1,50 @@
-#' Generate a Comprehensive Report Plot
+#' Generate a Comprehensive Model Analysis Report
 #'
-#' Creates a detailed report consisting of various plots to visualize the results of a fitted model within a `bipod` object.
-#' The report includes fit plots, breakpoints posterior plots, growth rates posterior plots, and model selection plots.
+#' @description
+#' Creates a multi-panel visualization report that combines key analytical plots into a single
+#' comprehensive display. The report can include:
+#' * Model fit visualization with confidence intervals
+#' * Breakpoint posterior distributions (if breakpoints were inferred)
+#' * Growth rate posterior distributions
+#' * Model selection diagnostics (if multiple models were compared)
 #'
-#' @param x A `bipod` object. Must contain a 'fit' and metadata fields for model selection and, optionally, breakpoints and ELBO values.
-#' @param fit_type A character string specifying the type of fit plot to generate. Options include "simple" and "complex". (default is "complex")
-#' @param breakpoints_color A character string specifying the color for the breakpoints posterior plot. (default is "darkgray")
-#' @param shadows_colors A character vector specifying colors for shadows in the fit plot. (default is NULL)
-#' @param t0_posterior_color A character string specifying the color for the t0 posterior plot. (default is "darkorange")
-#' @param full_process A logical value indicating whether to include the full process in the fit plot when `fit_type` is "simple". (default is FALSE)
+#' Each component is automatically included based on the available data and analysis
+#' in the bipod object, creating a tailored summary of the modeling results.
 #'
-#' @return A `patchwork` object containing multiple ggplot2 plots arranged in a single panel.
+#' @param x A bipod object that must contain:
+#'        * 'fit' field with model fitting results
+#'        * metadata fields with model selection information
+#'        * Optional: breakpoints analysis results
+#'        * Optional: ELBO values for variational inference
+#' @param fit_type Character string controlling fit plot complexity:
+#'        * "simple": Basic fit visualization
+#'        * "complex": Detailed fit visualization with additional elements
+#'        Default is "complex"
+#' @param breakpoints_color Character string specifying color for breakpoint
+#'        posterior visualization. Default is "darkgray"
+#' @param shadows_colors Character vector defining colors for time window
+#'        highlighting in fit plot. Default is NULL
+#' @param t0_posterior_color Character string specifying color for t0 (initial time)
+#'        posterior visualization. Default is "darkorange"
+#' @param full_process Logical indicating whether to show complete process
+#'        details in simple fit plots. Only applies when fit_type = "simple".
+#'        Default is FALSE
+#'
+#' @return A patchwork object containing:
+#'   * Main panel: Model fit visualization
+#'   * Secondary panels (if applicable):
+#'     * Breakpoint posterior distributions
+#'     * Growth rate posterior distributions
+#'     * Model selection results
+#'   All panels are arranged vertically with appropriate size ratios
+#'
+#' @details
+#' The function automatically adapts its output based on the analyses present in
+#' the input bipod object:
+#' * Breakpoint analysis panels only appear if breakpoints were inferred
+#' * Model selection panels only appear if multiple models were compared
+#' * Panel heights are automatically adjusted for optimal visualization
+#'
 #' @export
 plot_report <- function(x,
                         fit_type = "complex",

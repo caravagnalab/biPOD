@@ -3,9 +3,9 @@
 #' Generates a plot showing the posterior distributions of the inferred breakpoints from a fitted model.
 #' The plot can include density estimates and optional histograms for better visualization.
 #'
-#' @param x A `bipod` object that contains a 'breakpoints_fit' field.
-#' @param with_histogram A logical value indicating whether to overlay histograms of the breakpoint samples on the density plots. (default is FALSE)
-#' @param alpha A numeric value between 0 and 1 specifying the transparency level of the density plot. (default is 0.6)
+#' @param x A `bipod` object that contains a 'breakpoints_fit' field, which includes posterior samples of the inferred breakpoints.
+#' @param with_histogram A logical value indicating whether to overlay histograms of the breakpoint samples on the density plots. The default is `FALSE`.
+#' @param alpha A numeric value between 0 and 1 specifying the transparency level of the density plot. The default is 0.6.
 #' @param colors A character vector specifying colors to use for the different inferred breakpoints. If `NULL`, the default color 'darkgray' is used for all breakpoints.
 #'
 #' @return A `ggplot2` object displaying the posterior distributions of the inferred breakpoints. The plot shows density estimates and optionally histograms for the breakpoints.

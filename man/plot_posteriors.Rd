@@ -14,23 +14,31 @@ plot_posteriors(
 )
 }
 \arguments{
-\item{x}{A \code{bipod} object of class \code{bipod}. Must contain a 'fit' field and should have been fitted with model selection.}
+\item{x}{A \code{bipod} object of class \code{bipod}. It must contain a 'fit' field with the fitted model and associated results.
+This object should have undergone model selection and fitting.}
 
-\item{x_fit}{The fit object within \code{x} that contains the desired parameters.}
+\item{x_fit}{The fit object within \code{x} that contains the desired parameters. It holds the fitted values for the parameters to be plotted.}
 
-\item{par_list}{A character vector containing the names of the parameters whose posterior distributions are to be plotted.}
+\item{par_list}{A character vector containing the names of the parameters whose posterior distributions are to be plotted.
+These should match the parameter names available in the model fit.}
 
-\item{with_histogram}{A logical value indicating whether to overlay histograms of the posterior samples on the density plots. (default is FALSE)}
+\item{with_histogram}{A logical value indicating whether to overlay histograms on the density plots.
+If \code{TRUE}, histograms will be displayed alongside the density plots to give a clearer visualization of the sample distribution.
+The default is \code{FALSE}.}
 
-\item{alpha}{A numeric value between 0 and 1 specifying the transparency level of the density plots. (default is .6)}
+\item{alpha}{A numeric value between 0 and 1 specifying the transparency level of the density plots.
+A lower value (e.g., 0.2) will make the density plot more transparent, while a higher value (e.g., 0.8) will make it more opaque. The default is \code{0.6}.}
 
 \item{colors}{A character vector specifying the colors to use for the density plots of each parameter.
-If \code{NULL}, a default color scheme will be used. (default is NULL)}
+If \code{NULL} (default), a predefined color scheme will be used.
+The length of this vector should match the number of parameters in \code{par_list}.}
 }
 \value{
-A \code{ggplot2} object showing the density plots of the specified parameters. If \code{with_histogram} is \code{TRUE}, histograms will be overlaid on the density plots.
+A \code{ggplot2} object displaying the density plots of the specified parameters.
+If \code{with_histogram} is \code{TRUE}, histograms will be overlaid on the density plots.
 }
 \description{
-Generates density plots for the posterior distributions of a set of parameters from a fitted model within a \code{bipod} object.
-Optionally overlays histograms on the density plots.
+Generates density plots for the posterior distributions of multiple parameters from a fitted model within a \code{bipod} object.
+This function can optionally overlay histograms of the posterior samples on top of the density plots for a better visual comparison of the distribution.
+This is useful when you want to examine the posterior distributions of several parameters simultaneously.
 }

@@ -2,32 +2,51 @@
 % Please edit documentation in R/simulate.R
 \name{sim_stochastic_exponential}
 \alias{sim_stochastic_exponential}
-\title{Simulate a Stochastic Birth-Death Process}
+\title{Simulate a Stochastic Birth-Death Process (Exponential Growth)}
 \usage{
 sim_stochastic_exponential(n0, lambda, mu, steps, delta_t)
 }
 \arguments{
-\item{n0}{Numeric value indicating the initial population size. Must be a non-negative integer.}
+\item{n0}{Numeric value indicating the initial population size at time 0. This must be a non-negative integer (>= 0).}
 
-\item{lambda}{Numeric vector of birth rates.
-This can be a single value (constant birth rate) or a vector of length \code{steps} specifying the birth rate at each time step.}
+\item{lambda}{Numeric vector or scalar specifying the birth rates at each time step.
+If a scalar is provided, it is assumed to be constant for all time steps. If a vector is provided, it should be of length \code{steps}, specifying the birth rate at each step.}
 
-\item{mu}{Numeric vector of death rates.
-This can be a single value (constant death rate) or a vector of length \code{steps} specifying the death rate at each time step.}
+\item{mu}{Numeric vector or scalar specifying the death rates at each time step.
+Like \code{lambda}, if a scalar is provided, it is assumed to be constant for all time steps. If a vector is provided, it should be of length \code{steps}, specifying the death rate at each step.}
 
-\item{steps}{Integer value specifying the number of time steps to simulate. Must be a non-negative integer.}
+\item{steps}{Integer specifying the number of time steps to simulate. Must be a non-negative integer.}
 
-\item{delta_t}{Numeric vector of time step sizes. This can be a single value (constant time step) or a vector of length \code{steps}.
-If a single value is provided, it is replicated for each time step.}
+\item{delta_t}{Numeric vector or scalar specifying the time step sizes.
+If a scalar is provided, it is assumed to be constant for all steps. If a vector is provided, it should be of length \code{steps}, specifying the time step size at each step.}
 }
 \value{
-A \code{tibble} with columns:
+A \code{tibble} with the following columns:
 \itemize{
-\item \code{time}: The cumulative time at each step.
-\item \code{count}: The population size at each time step.
-\item \code{group}: A factor indicating the group of contiguous intervals where the birth and death rates are constant.
+\item \code{time}: The cumulative time at each step, starting from 0.
+\item \code{count}: The population size at each time step, calculated after applying the stochastic birth-death process.
+\item \code{group}: A factor that groups contiguous intervals where the birth and death rates are constant (i.e., \code{lambda} and \code{mu} remain the same over consecutive time steps).
 }
 }
 \description{
-Simulates a stochastic birth-death process over multiple time steps. The process models population dynamics where both birth and death rates can vary over time.
+Simulates a stochastic birth-death process over multiple time steps, which models population dynamics in an environment where both birth and death rates can vary over time.
+This process follows an exponential growth model, where population size fluctuates due to random birth and death events.
+}
+\details{
+This function simulates a population following an exponential growth model, where the population size changes due to random births and deaths. The rates of birth (\code{lambda}) and death (\code{mu}) may vary over time.
+At each time step, the function computes the expected number of births and deaths based on the rates \code{lambda} and \code{mu}. A random draw is then made to determine whether a birth or death event occurs. The population size is updated accordingly.
+
+The simulation assumes that the population size is never negative, so if a death event causes the population to drop to zero, it will remain zero thereafter.
+
+If \code{steps} is set to 0, the function returns the initial population size \code{n0} immediately, without any simulation.
+}
+\examples{
+# Simulate a stochastic birth-death process with constant rates
+sim_stochastic_exponential(n0 = 10, lambda = 0.2, mu = 0.1, steps = 10, delta_t = 1)
+
+# Simulate with varying rates
+lambda_rates <- c(rep(0.3, 5), rep(0.1, 5), rep(0.9, 5))
+mu_rates <- c(rep(0.1, 5), rep(0.15, 5), rep(0.3, 5))
+sim_stochastic_exponential(n0 = 10, lambda = lambda_rates, mu = mu_rates, steps = 15, delta_t = .1)
+
 }

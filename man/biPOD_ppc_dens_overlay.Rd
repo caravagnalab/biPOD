@@ -7,16 +7,17 @@
 biPOD_ppc_dens_overlay(x, x_fit, n = 500)
 }
 \arguments{
-\item{x}{A \code{bipod} object that contains a 'counts' field with the observed data.}
+\item{x}{A \code{bipod} object containing a 'counts' field with the observed data. This data is typically a time series or count data.}
 
-\item{x_fit}{A fitted model object that contains posterior draws of the replicated data (yrep).}
+\item{x_fit}{A fitted model object that contains posterior draws of the replicated data (\code{yrep}). This model should have been fitted to the data.}
 
-\item{n}{Number of posterior predictive draws to use in the plot. (default is 500)}
+\item{n}{An integer specifying the number of posterior predictive draws to use in the plot. (default is 500). The more draws used, the smoother the density overlay will be.}
 }
 \value{
-A density overlay plot using \code{bayesplot::ppc_dens_overlay}.
+A density plot generated using \code{bayesplot::ppc_dens_overlay}. The plot overlays the posterior predictive distribution with the observed data.
 }
 \description{
-Creates an overlay of the posterior predictive density over the observed data.
-This function uses the posterior predictive draws to compare the observed data distribution with the model-predicted distribution.
+Creates a density plot overlaying the posterior predictive density over the observed data.
+This plot allows you to compare the distribution of observed data with the distribution predicted by the model, using posterior predictive draws.
+It is useful for evaluating how well the model captures the data distribution.
 }

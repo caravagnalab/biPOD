@@ -7,18 +7,16 @@
 plot_input(x, log_scale = F, add_highlights = F)
 }
 \arguments{
-\item{x}{A \code{bipod} object.}
+\item{x}{A \code{bipod} object containing population count data. The object must include a \code{counts} field with columns \code{time} (time points) and \code{count} (population counts).}
 
-\item{log_scale}{A logical value indicating whether to apply a logarithmic scale to the y-axis.
-If \code{TRUE}, the y-axis will be transformed to a log scale; otherwise, it will use a linear scale. (default is FALSE)}
+\item{log_scale}{A logical value indicating whether to apply a logarithmic scale to the y-axis. If \code{TRUE}, the y-axis will be transformed to a logarithmic scale, which can help visualize data with large differences in magnitude. If \code{FALSE} (default), the y-axis will use a linear scale.}
 
-\item{add_highlights}{A logical value indicating whether to highlight different groups in the plot.
-If \code{TRUE}, additional visual elements will be added to the plot to distinguish groups. (defaults if FALSE)}
+\item{add_highlights}{A logical value indicating whether to highlight different groups within the population data. If \code{TRUE}, the plot will include additional visual elements to differentiate between groups or categories. If \code{FALSE} (default), no highlighting will be applied.}
 }
 \value{
-A \code{ggplot2} object representing the evolution of the population counts over time.
+A \code{ggplot2} object representing the evolution of the population counts over time. The plot will include lines and points for the population counts and can be customized based on the provided arguments.
 }
 \description{
-Generates a plot of population counts over time from a \code{bipod} object.
-The plot can be customized to display counts on a logarithmic scale and to highlight different groups if specified.
+Generates a plot of population counts over time from a \code{bipod} object. This function allows customization of the plot, including the option to display counts on a logarithmic scale and to highlight different groups or categories within the data.
+The plot visualizes the evolution of population counts at each time point, helping to understand trends and fluctuations over time.
 }

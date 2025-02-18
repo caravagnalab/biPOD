@@ -1,13 +1,14 @@
 #' Overlay Posterior Predictive Density
 #'
-#' Creates an overlay of the posterior predictive density over the observed data.
-#' This function uses the posterior predictive draws to compare the observed data distribution with the model-predicted distribution.
+#' Creates a density plot overlaying the posterior predictive density over the observed data.
+#' This plot allows you to compare the distribution of observed data with the distribution predicted by the model, using posterior predictive draws.
+#' It is useful for evaluating how well the model captures the data distribution.
 #'
-#' @param x A `bipod` object that contains a 'counts' field with the observed data.
-#' @param x_fit A fitted model object that contains posterior draws of the replicated data (yrep).
-#' @param n Number of posterior predictive draws to use in the plot. (default is 500)
+#' @param x A `bipod` object containing a 'counts' field with the observed data. This data is typically a time series or count data.
+#' @param x_fit A fitted model object that contains posterior draws of the replicated data (`yrep`). This model should have been fitted to the data.
+#' @param n An integer specifying the number of posterior predictive draws to use in the plot. (default is 500). The more draws used, the smoother the density overlay will be.
 #'
-#' @return A density overlay plot using `bayesplot::ppc_dens_overlay`.
+#' @return A density plot generated using `bayesplot::ppc_dens_overlay`. The plot overlays the posterior predictive distribution with the observed data.
 #' @export
 biPOD_ppc_dens_overlay <- function(x, x_fit, n=500) {
   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
@@ -25,14 +26,14 @@ biPOD_ppc_dens_overlay <- function(x, x_fit, n=500) {
 
 #' Posterior Predictive Intervals Plot
 #'
-#' Creates a plot displaying the posterior predictive intervals for the observed data.
-#' This helps visualize how well the model captures the variation in the data over time.
+#' Creates a plot displaying posterior predictive intervals for the observed data, providing a visual assessment of how well the model captures data variation over time.
+#' The plot shows the credible intervals (uncertainty) of the posterior predictive distribution at each time point.
 #'
-#' @param x A `bipod` object that contains a 'counts' field with the observed data.
-#' @param x_fit A fitted model object that contains posterior draws of the replicated data (yrep).
-#' @param n Number of posterior predictive draws to use in the plot. (default is 500)
+#' @param x A `bipod` object containing a 'counts' field with the observed data. This data typically represents counts or time series values.
+#' @param x_fit A fitted model object containing posterior draws of the replicated data (`yrep`). This object should include posterior samples of the model predictions.
+#' @param n An integer specifying the number of posterior predictive draws to use in the plot. (default is 500). The higher the number, the more accurate the representation of the predictive intervals.
 #'
-#' @return A plot showing posterior predictive intervals using `bayesplot::ppc_intervals`.
+#' @return A plot displaying the posterior predictive intervals generated using `bayesplot::ppc_intervals`. The plot shows how well the model accounts for the observed data.
 #' @export
 biPOD_ppc_intervals <- function(x, x_fit, n=500) {
   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")
@@ -51,16 +52,17 @@ biPOD_ppc_intervals <- function(x, x_fit, n=500) {
 
 #' Posterior Predictive Ribbon Plot
 #'
-#' Creates a ribbon plot showing the central credible intervals (CI) and outer intervals of the posterior predictive distribution.
-#' The plot visualizes how well the model fits the data across a range of probability intervals.
+#' Creates a ribbon plot showing central credible intervals (CI) and outer intervals of the posterior predictive distribution.
+#' This plot helps visualize how well the model fits the observed data across a range of probability intervals.
+#' It can be used to assess the model's ability to capture the central tendency and variation in the data.
 #'
-#' @param x A `bipod` object that contains a 'counts' field with the observed data.
-#' @param x_fit A fitted model object that contains posterior draws of the replicated data (yrep).
-#' @param n Number of posterior predictive draws to use in the plot. (default is 500)
-#' @param prob Numeric value between 0 and 1 representing the probability mass for the inner interval. (default is 0.5)
-#' @param prob_outer Numeric value between 0 and 1 representing the probability mass for the outer interval. (default is 0.9)
+#' @param x A `bipod` object containing a 'counts' field with the observed data. This is typically a time series or count data.
+#' @param x_fit A fitted model object containing posterior draws of the replicated data (`yrep`). This model should be fitted using Bayesian methods.
+#' @param n An integer specifying the number of posterior predictive draws to use in the plot. (default is 500). A higher value results in a more stable representation of the posterior distribution.
+#' @param prob A numeric value between 0 and 1 representing the probability mass for the inner interval (e.g., the 50% CI). The default is 0.5.
+#' @param prob_outer A numeric value between 0 and 1 representing the probability mass for the outer interval (e.g., the 90% CI). The default is 0.9.
 #'
-#' @return A ribbon plot using `bayesplot::ppc_ribbon`.
+#' @return A ribbon plot created using `bayesplot::ppc_ribbon`. The plot shows the posterior predictive distribution with shaded regions representing credible intervals at different probability levels.
 #' @export
 biPOD_ppc_ribbon <- function(x, x_fit, n=500, prob = 0.5, prob_outer = 0.9) {
   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")

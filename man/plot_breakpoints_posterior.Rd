@@ -7,11 +7,11 @@
 plot_breakpoints_posterior(x, with_histogram = F, alpha = 0.6, colors = NULL)
 }
 \arguments{
-\item{x}{A \code{bipod} object that contains a 'breakpoints_fit' field.}
+\item{x}{A \code{bipod} object that contains a 'breakpoints_fit' field, which includes posterior samples of the inferred breakpoints.}
 
-\item{with_histogram}{A logical value indicating whether to overlay histograms of the breakpoint samples on the density plots. (default is FALSE)}
+\item{with_histogram}{A logical value indicating whether to overlay histograms of the breakpoint samples on the density plots. The default is \code{FALSE}.}
 
-\item{alpha}{A numeric value between 0 and 1 specifying the transparency level of the density plot. (default is 0.6)}
+\item{alpha}{A numeric value between 0 and 1 specifying the transparency level of the density plot. The default is 0.6.}
 
 \item{colors}{A character vector specifying colors to use for the different inferred breakpoints. If \code{NULL}, the default color 'darkgray' is used for all breakpoints.}
 }

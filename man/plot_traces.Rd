@@ -7,18 +7,18 @@
 plot_traces(x, fit, pars = c(), diagnose = FALSE)
 }
 \arguments{
-\item{x}{A \code{bipod} object that contains at least one fitted model.}
+\item{x}{A \code{bipod} object that contains at least one fitted Stan model. It must include the metadata and parameters related to the MCMC sampling process.}
 
-\item{fit}{The fit within the \code{bipod} object for which the traces should be plotted.}
+\item{fit}{The fit object within the \code{bipod} object, containing the MCMC results, including draws for parameters.}
 
-\item{pars}{A character vector specifying the names of the parameters to plot. If empty, plots all available parameters.}
+\item{pars}{A character vector specifying the names of the parameters to plot. If empty, all available parameters will be plotted.}
 
-\item{diagnose}{A logical value indicating whether to color the plots based on convergence diagnostics.
-If \code{TRUE}, the plots will include color coding based on the R-hat convergence statistic. (default is FALSE)}
+\item{diagnose}{A logical value indicating whether to color the plots based on convergence diagnostics. If \code{TRUE}, the plots will include color coding based on the R-hat convergence statistic, with red indicating problematic parameters (R-hat > 1.01). (default is \code{FALSE})}
 }
 \value{
-A \code{ggplot2} object displaying the trace plots for the specified parameters.
+A \code{ggplot2} object displaying the trace plots for the specified parameters. The plot includes lines for each chain, with optional color coding based on convergence.
 }
 \description{
-Generates trace plots for specified parameters from a fitted Stan model contained within a \code{bipod} object. The plots visualize the sampled values across iterations for each chain.
+Generates trace plots for specified parameters from a fitted Stan model contained within a \code{bipod} object.
+These plots visualize the sampled values of parameters across MCMC iterations for each chain, helping to assess convergence.
 }

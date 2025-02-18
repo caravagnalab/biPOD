@@ -1,10 +1,27 @@
-#' Print for class \code{'bipod'}.
+#' Print Method for Class \code{'bipod'}
 #'
-#' @param x An obj of class \code{'bipod'}.
-#' @param ... Default S3 method parameter.
+#' Custom print method for objects of class `bipod`. This method prints a summary of the `bipod` object,
+#' including details on the number of observations, the number of time windows, and the status of various tasks
+#' (such as breakpoints inference, two-population inference, and single-population inference).
+#' It also provides summaries of the inferred parameters, including mean values, standard deviations,
+#' quantiles, and Rhat values for each inference task.
 #'
-#' @return Nothing.
+#' @param x An object of class `bipod`. This object must contain various elements including metadata, counts,
+#'   and fitted model objects such as `fit`, `breakpoints_fit`, and `two_pop_fit`.
+#' @param ... Additional parameters for the default S3 method (not used).
 #'
+#' @return Nothing. This function prints output to the console, providing a detailed summary of the `bipod` object.
+#'
+#' @details
+#' The `print.bipod` function summarizes key information about the `bipod` object, such as:
+#' - The number of observations and time windows in the dataset.
+#' - The inference tasks performed, including breakpoints inference, two-population inference, and single-population inference.
+#' - The Rhat values, mean, standard deviation, and quantiles (5%, 50%, 95%) for the inferred parameters in each task.
+#' - The status of each task (pass or fail), including the use of variational sampling and any scale factors.
+#'
+#' The function uses the `cli` package to format the output with colors and other visual enhancements.
+#'
+#' @export
 #' @exportS3Method print bipod
 #' @export print.bipod
 print.bipod = function(x, ...) {

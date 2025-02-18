@@ -1,21 +1,36 @@
-#' Plot the Fit Over the Input Data
+#' Visualize Model Fit with Input Data
 #'
-#' Creates a plot showing the fit of the model over the input data.
-#' The plot can include a zoomed-in view, a secondary x-axis, and highlights for different time windows.
-#' Optionally, it can also display the posterior distribution for the parameter `t0`.
+#' @description
+#' Creates a comprehensive visualization of the model fit overlaid on the input data.
+#' The plot can include multiple visualization elements:
+#' * Main plot showing data points and model fit with confidence intervals
+#' * Optional zoomed-in view of the observations
+#' * Optional secondary x-axis for alternative time scales
+#' * Optional time window highlights
+#' * Optional posterior distribution for the t0 parameter
 #'
-#' @param x A `bipod` object that contains a 'fit' field.
-#' @param CI Numeric value between 0 and 1 representing the confidence interval for the fit. (default is 0.95)
-#' @param legend_labels Vector of labels for each unique group in `x$counts$group`. (default is NULL)
-#' @param legend_title Title for the legend. (default is "group")
-#' @param zoom Logical value indicating whether to present a zoomed-in view of the observations. (default is TRUE)
-#' @param full_process Logical value indicating whether to include the posterior for `t0` in the plot. (default is TRUE)
-#' @param sec_axis_breaks Vector of values specifying where breaks should appear on the secondary x-axis. (default is NULL)
-#' @param sec_axis_labels Vector of labels for the secondary x-axis. (default is NULL)
-#' @param t0_posterior_color Color to use for the posterior distribution of `t0`. (default is 'darkorange')
-#' @param shadows_colors Colors to use for highlighting different time windows. (default is NULL)
+#' @param x A `bipod` object containing a 'fit' field with model results
+#' @param CI Numeric value between 0 and 1 specifying the confidence interval width for the fit line.
+#'          For example, 0.95 shows the 95% confidence interval. Defaults to 0.95
+#' @param legend_labels Character vector providing custom labels for each group in `x$counts$group`.
+#'          Must match the number of unique groups. Defaults to NULL
+#' @param legend_title Character string specifying the title for the plot legend.
+#'          Defaults to "group"
+#' @param zoom Logical indicating whether to include a zoomed-in panel focusing on the
+#'          observation period. Defaults to TRUE
+#' @param full_process Logical indicating whether to display the posterior distribution
+#'          for the t0 parameter. Defaults to TRUE
+#' @param sec_axis_breaks Numeric vector specifying the positions of breaks on the secondary
+#'          x-axis. Must be provided together with sec_axis_labels. Defaults to NULL
+#' @param sec_axis_labels Character vector providing labels for the secondary x-axis breaks.
+#'          Must be provided together with sec_axis_breaks. Defaults to NULL
+#' @param t0_posterior_color Character string specifying the color for the t0 posterior
+#'          distribution plot. Defaults to "darkorange"
+#' @param shadows_colors Character vector specifying colors for highlighting different
+#'          time windows in the plot. Defaults to NULL
 #'
-#' @return A `ggplot2` object displaying the fit over the input data.
+#' @return A ggplot2 object containing the visualization
+#'
 #' @export
 plot_fit <- function(x,
                      CI = .95,
@@ -71,18 +86,32 @@ plot_fit <- function(x,
   return(p)
 }
 
-#' Plot Normalized Posterior Distributions of Growth Rates
+#' Visualize Normalized Growth Rate Posterior Distributions
 #'
-#' Creates a plot of the normalized posterior distributions of the growth rates.
-#' The distributions are renormalized so that their highest peak is at 1. Optionally, the prior distribution can be included in the plot.
+#' @description
+#' Creates a visualization comparing the posterior distributions of growth rates across
+#' different groups. The distributions are normalized so their peaks align at 1.0,
+#' making it easier to compare their shapes and spreads. The plot can optionally
+#' include the prior distribution for reference.
 #'
-#' @param x A `bipod` object that contains a 'fit' field.
-#' @param add_prior Logical value indicating whether to plot the prior distribution along with the posterior distributions. (default is FALSE)
-#' @param legend_labels Vector of labels for each unique fitted parameter. (default is NULL, in which case 'rho' is used)
-#' @param legend_title Title for the legend. (default is 'group')
-#' @param colors Colors to use for the different growth rate posteriors. (default is NULL, which uses the default group colors)
+#' @param x A `bipod` object containing a 'fit' field with model results
+#' @param add_prior Logical indicating whether to overlay the prior distribution
+#'          on the plot. Defaults to FALSE
+#' @param legend_labels Character vector providing custom labels for each growth rate
+#'          parameter. Must match the number of parameters. If NULL, uses rho_i
+#'          format. Defaults to NULL
+#' @param legend_title Character string specifying the title for the plot legend.
+#'          Defaults to "group"
+#' @param colors Character vector specifying colors for different growth rate
+#'          distributions. If NULL, uses default color palette. Defaults to NULL
 #'
-#' @return A `ggplot2` object containing the posterior density plots of the growth rates and optionally the prior density plot.
+#' @return A ggplot2 object showing the normalized posterior density plots
+#'
+#' @details
+#' The normalization process scales each distribution so its maximum density equals 1.
+#' This allows for easy comparison of distribution shapes regardless of their original
+#' scales. The prior distribution, if included, is also normalized in the same way.
+#'
 #' @export
 plot_normalized_growth_rate_posteriors <- function(x,
                                                    add_prior = F,
@@ -153,15 +182,28 @@ plot_normalized_growth_rate_posteriors <- function(x,
   return(p)
 }
 
-#' Plot Posteriors of t0
+#' Visualize t0 Parameter Posterior Distribution
 #'
-#' Creates a plot of the posterior distribution of the parameter `t0` from a `bipod` object. Optionally, the prior distribution can be included in the plot.
+#' @description
+#' Creates a visualization of the posterior distribution for the t0 parameter,
+#' which represents the theoretical start time of the growth process. The plot
+#' can optionally include the prior distribution for comparison.
 #'
-#' @param x A `bipod` object that contains a 'fit' field.
-#' @param add_prior Logical value indicating whether to plot the prior distribution along with the posterior distribution. (default is FALSE)
+#' @param x A `bipod` object containing a 'fit' field with model results
+#' @param add_prior Logical indicating whether to overlay the prior distribution
+#'          on the plot. Defaults to FALSE
 #'
-#' @return A `ggplot2` object containing the posterior density plot of `t0`, and optionally the prior density plot.
+#' @return A ggplot2 object showing the posterior density plot for t0
+#'
+#' @details
+#' This function is only applicable when t0 has been inferred during model fitting
+#' (i.e., when x$metadata$t0_inferred is TRUE). The plot shows the full posterior
+#' distribution, allowing assessment of the uncertainty in the estimated start time.
+#' When the prior is included, it helps visualize how the data has updated our
+#' beliefs about t0.
+#'
 #' @export
+
 plot_t0_posterior <- function(x, add_prior = F) {
   # Check input
   if (!(inherits(x, "bipod"))) stop("Input must be a bipod object")

@@ -1,16 +1,14 @@
 
 #' Plot Population Counts Over Time
 #'
-#' Generates a plot of population counts over time from a `bipod` object.
-#' The plot can be customized to display counts on a logarithmic scale and to highlight different groups if specified.
+#' Generates a plot of population counts over time from a `bipod` object. This function allows customization of the plot, including the option to display counts on a logarithmic scale and to highlight different groups or categories within the data.
+#' The plot visualizes the evolution of population counts at each time point, helping to understand trends and fluctuations over time.
 #'
-#' @param x A `bipod` object.
-#' @param log_scale A logical value indicating whether to apply a logarithmic scale to the y-axis.
-#'  If `TRUE`, the y-axis will be transformed to a log scale; otherwise, it will use a linear scale. (default is FALSE)
-#' @param add_highlights A logical value indicating whether to highlight different groups in the plot.
-#'  If `TRUE`, additional visual elements will be added to the plot to distinguish groups. (defaults if FALSE)
+#' @param x A `bipod` object containing population count data. The object must include a `counts` field with columns `time` (time points) and `count` (population counts).
+#' @param log_scale A logical value indicating whether to apply a logarithmic scale to the y-axis. If `TRUE`, the y-axis will be transformed to a logarithmic scale, which can help visualize data with large differences in magnitude. If `FALSE` (default), the y-axis will use a linear scale.
+#' @param add_highlights A logical value indicating whether to highlight different groups within the population data. If `TRUE`, the plot will include additional visual elements to differentiate between groups or categories. If `FALSE` (default), no highlighting will be applied.
 #'
-#' @return A `ggplot2` object representing the evolution of the population counts over time.
+#' @return A `ggplot2` object representing the evolution of the population counts over time. The plot will include lines and points for the population counts and can be customized based on the provided arguments.
 #' @export
 plot_input <- function(x, log_scale = F, add_highlights = F) {
   # Check input

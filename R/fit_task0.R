@@ -1,19 +1,53 @@
-#' Fit breakpoints to bipod object
+#' Identify and Fit Optimal Breakpoints in Population Growth Data
 #'
-#' @param x A bipod object.
-#' @param norm Logical value indicating whether to normalize the data.
-#'  If TRUE, the time and count data are standardized before fitting the model. (default is TRUE)
-#' @param n_trials Integer specifying the number of trials for the optimization algorithm.
-#'  This controls the number of iterations used to fit the breakpoints. (default is 500)
-#' @param avg_points_per_window Integer specifying the average number of data points per segment.
-#'  This parameter influences the granularity of the segments when searching for breakpoints. (default is 3)
-#' @param available_changepoints Integer vector specifying the range of available changepoints.
-#'  These values represent the possible number of breakpoints to be considered during model fitting. (default is 0:5)
-#' @param model_selection Character string specifying the model selection criterion.
-#'  Options include 'LOO' (Leave-One-Out cross-validation), 'AIC' (Akaike Information Criterion), and 'BIC' (Bayesian Information Criterion).  (default is "LOO")
-#' @param n_core Integer specifying the number of CPU cores to use for parallel processing. (default is 4)
+#' @description
+#' Analyzes population growth data to detect significant changes in growth patterns by:
+#' * Fitting piecewise linear models to log-transformed count data
+#' * Implementing model selection to determine optimal number of breakpoints
+#' * Identifying precise positions of growth pattern changes
+#' * Assigning data points to their respective growth segments
 #'
-#' @return The input bipod object with an added 'breakpoints_fit' slot containing the fitted model for the breakpoints.
+#' @param x A bipod object containing time series data of population counts
+#' @param norm Logical indicating whether to standardize the data (mean 0, SD 1) before fitting.
+#'        Standardization applies to both time and count data. Default is TRUE
+#' @param n_trials Integer controlling optimization iterations. Higher values increase likelihood
+#'        of finding global optima at the cost of longer computation time. Default is 500
+#' @param avg_points_per_window Integer specifying minimum average data points required between
+#'        breakpoints. Prevents overfitting by ensuring adequate data density per segment.
+#'        Default is 3
+#' @param available_changepoints Integer vector defining the range of breakpoint numbers to
+#'        consider during model selection. For example, c(0:5) evaluates models with
+#'        0 to 5 breakpoints. Default is 0:5
+#' @param model_selection Character string specifying model selection criterion:
+#'        * "LOO": Leave-One-Out cross-validation (recommended)
+#'        * "AIC": Akaike Information Criterion
+#'        * "BIC": Bayesian Information Criterion
+#'        Default is "LOO"
+#' @param n_core Integer specifying number of CPU cores for parallel processing.
+#'        Default is 4
+#'
+#' @return An enhanced bipod object containing:
+#'   * breakpoints_fit: Fitted breakpoint model
+#'   * metadata$breakpoints: Vector of identified breakpoint positions
+#'   * counts$group: Factor indicating segment membership for each observation
+#'
+#' @examples
+#' # Create a bipod object with your data
+#' data = biPOD::sim_stochastic_exponential(
+#' 100,
+#' c(rep(1,5), rep(0,5), rep(1,5)),
+#' c(rep(0,5),rep(.25,10)),
+#' 15,
+#' .1
+#' )
+#'
+#' # Fot your dataset
+#' x = biPOD::init(data, "sample w.o breakpoints")
+#' x = biPOD:::fit_breakpoints(x, n_core=1)
+#'
+#' # Plot inferred breakpoints
+#' biPOD::plot_breakpoints_posterior(x)
+#'
 #' @export
 fit_breakpoints = function(
     x,
@@ -170,7 +204,6 @@ find_breakpoints = function(d, avg_points_per_window, max_breakpoints, norm, n_t
     return(A)
   }
 
-
   max_breakpoints = min(max(available_changepoints), as.integer(length(x) / avg_points_per_window))
   available_changepoints <- available_changepoints[available_changepoints <= max_breakpoints & available_changepoints > 0] %>% sort()
   if (!length(available_changepoints)) {
@@ -309,6 +342,7 @@ find_breakpoints = function(d, avg_points_per_window, max_breakpoints, norm, n_t
     #loo_comp <- loo_comp %>% dplyr::filter(convergence) %>% dplyr::filter(elpd_diff == max(elpd_diff))
     loo_comp <- loo_comp %>% dplyr::filter(convergence) %>% dplyr::arrange(-as.numeric(.data$elpd_diff), -as.numeric(.data$se_diff))
     best_js <- loo_comp$j
+
   } else if (model_selection %in% c("AIC", "BIC")) {
 
     comp <- dplyr::tibble(value = unlist(criterion), n_breakpoints = c(0, proposed_breakpoints$n_breakpoints)) %>%

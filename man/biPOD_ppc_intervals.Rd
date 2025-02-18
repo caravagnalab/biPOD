@@ -7,16 +7,16 @@
 biPOD_ppc_intervals(x, x_fit, n = 500)
 }
 \arguments{
-\item{x}{A \code{bipod} object that contains a 'counts' field with the observed data.}
+\item{x}{A \code{bipod} object containing a 'counts' field with the observed data. This data typically represents counts or time series values.}
 
-\item{x_fit}{A fitted model object that contains posterior draws of the replicated data (yrep).}
+\item{x_fit}{A fitted model object containing posterior draws of the replicated data (\code{yrep}). This object should include posterior samples of the model predictions.}
 
-\item{n}{Number of posterior predictive draws to use in the plot. (default is 500)}
+\item{n}{An integer specifying the number of posterior predictive draws to use in the plot. (default is 500). The higher the number, the more accurate the representation of the predictive intervals.}
 }
 \value{
-A plot showing posterior predictive intervals using \code{bayesplot::ppc_intervals}.
+A plot displaying the posterior predictive intervals generated using \code{bayesplot::ppc_intervals}. The plot shows how well the model accounts for the observed data.
 }
 \description{
-Creates a plot displaying the posterior predictive intervals for the observed data.
-This helps visualize how well the model captures the variation in the data over time.
+Creates a plot displaying posterior predictive intervals for the observed data, providing a visual assessment of how well the model captures data variation over time.
+The plot shows the credible intervals (uncertainty) of the posterior predictive distribution at each time point.
 }

@@ -1,14 +1,14 @@
 #' Plot Traces of Specified Parameters from a Fitted Stan Model
 #'
-#' Generates trace plots for specified parameters from a fitted Stan model contained within a `bipod` object. The plots visualize the sampled values across iterations for each chain.
+#' Generates trace plots for specified parameters from a fitted Stan model contained within a `bipod` object.
+#' These plots visualize the sampled values of parameters across MCMC iterations for each chain, helping to assess convergence.
 #'
-#' @param x A `bipod` object that contains at least one fitted model.
-#' @param fit The fit within the `bipod` object for which the traces should be plotted.
-#' @param pars A character vector specifying the names of the parameters to plot. If empty, plots all available parameters.
-#' @param diagnose A logical value indicating whether to color the plots based on convergence diagnostics.
-#'  If `TRUE`, the plots will include color coding based on the R-hat convergence statistic. (default is FALSE)
+#' @param x A `bipod` object that contains at least one fitted Stan model. It must include the metadata and parameters related to the MCMC sampling process.
+#' @param fit The fit object within the `bipod` object, containing the MCMC results, including draws for parameters.
+#' @param pars A character vector specifying the names of the parameters to plot. If empty, all available parameters will be plotted.
+#' @param diagnose A logical value indicating whether to color the plots based on convergence diagnostics. If `TRUE`, the plots will include color coding based on the R-hat convergence statistic, with red indicating problematic parameters (R-hat > 1.01). (default is `FALSE`)
 #'
-#' @return A `ggplot2` object displaying the trace plots for the specified parameters.
+#' @return A `ggplot2` object displaying the trace plots for the specified parameters. The plot includes lines for each chain, with optional color coding based on convergence.
 #' @export
 plot_traces <- function(x, fit, pars = c(), diagnose = FALSE) {
   if (!(inherits(x, "bipod"))) stop("Input 'x' must be a 'bipod' object")
@@ -72,14 +72,14 @@ plot_traces <- function(x, fit, pars = c(), diagnose = FALSE) {
 
 #' Plot the Logarithm of the ELBO and Delta ELBO Mean
 #'
-#' Plots the logarithm of the Evidence Lower Bound (ELBO) and the mean change in ELBO (delta ELBO) obtained during variational inference. This helps to assess the convergence and quality of the variational fit.
+#' Plots the logarithm of the Evidence Lower Bound (ELBO) and the mean change in ELBO (delta ELBO) over iterations during variational inference.
+#' This helps assess the convergence and quality of the variational fit by examining how ELBO values evolve over iterations.
 #'
-#' @param x A `bipod` object of class `bipod` that contains the fitted model and ELBO data.
-#' @param elbo_data A data frame or tibble containing ELBO values over iterations. Must include columns `iter`, `ELBO`, and `delta_ELBO_mean`.
-#' @param diagnose A logical value indicating whether to color the plot based on the convergence of the ELBO.
-#'  If `TRUE`, the plot will include color coding based on whether the ELBO converged.
+#' @param x A `bipod` object that contains the fitted model and ELBO data.
+#' @param elbo_data A data frame or tibble containing ELBO values and their corresponding delta ELBO mean over iterations. Must include columns `iter`, `ELBO`, and `delta_ELBO_mean`.
+#' @param diagnose A logical value indicating whether to color the plot based on the convergence of the ELBO. If `TRUE`, the plot will include color coding to indicate whether the ELBO converged (green for convergence, red for lack of convergence). (default is `TRUE`)
 #'
-#' @return A `ggplot2` object displaying the ELBO and delta ELBO mean traces.
+#' @return A `ggplot2` object displaying the ELBO and delta ELBO mean traces. The plot includes a line for each variable and color coding to indicate convergence.
 #' @export
 plot_elbo <- function(x, elbo_data, diagnose = TRUE) {
   if (!(inherits(x, "bipod"))) stop("The input 'x' must be a 'bipod' object")

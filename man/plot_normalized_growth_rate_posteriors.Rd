@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_task1.R
 \name{plot_normalized_growth_rate_posteriors}
 \alias{plot_normalized_growth_rate_posteriors}
-\title{Plot Normalized Posterior Distributions of Growth Rates}
+\title{Visualize Normalized Growth Rate Posterior Distributions}
 \usage{
 plot_normalized_growth_rate_posteriors(
   x,
@@ -13,20 +13,32 @@ plot_normalized_growth_rate_posteriors(
 )
 }
 \arguments{
-\item{x}{A \code{bipod} object that contains a 'fit' field.}
+\item{x}{A \code{bipod} object containing a 'fit' field with model results}
 
-\item{add_prior}{Logical value indicating whether to plot the prior distribution along with the posterior distributions. (default is FALSE)}
+\item{add_prior}{Logical indicating whether to overlay the prior distribution
+on the plot. Defaults to FALSE}
 
-\item{legend_labels}{Vector of labels for each unique fitted parameter. (default is NULL, in which case 'rho' is used)}
+\item{legend_labels}{Character vector providing custom labels for each growth rate
+parameter. Must match the number of parameters. If NULL, uses rho_i
+format. Defaults to NULL}
 
-\item{legend_title}{Title for the legend. (default is 'group')}
+\item{legend_title}{Character string specifying the title for the plot legend.
+Defaults to "group"}
 
-\item{colors}{Colors to use for the different growth rate posteriors. (default is NULL, which uses the default group colors)}
+\item{colors}{Character vector specifying colors for different growth rate
+distributions. If NULL, uses default color palette. Defaults to NULL}
 }
 \value{
-A \code{ggplot2} object containing the posterior density plots of the growth rates and optionally the prior density plot.
+A ggplot2 object showing the normalized posterior density plots
 }
 \description{
-Creates a plot of the normalized posterior distributions of the growth rates.
-The distributions are renormalized so that their highest peak is at 1. Optionally, the prior distribution can be included in the plot.
+Creates a visualization comparing the posterior distributions of growth rates across
+different groups. The distributions are normalized so their peaks align at 1.0,
+making it easier to compare their shapes and spreads. The plot can optionally
+include the prior distribution for reference.
+}
+\details{
+The normalization process scales each distribution so its maximum density equals 1.
+This allows for easy comparison of distribution shapes regardless of their original
+scales. The prior distribution, if included, is also normalized in the same way.
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/fit_task0.R
 \name{fit_breakpoints}
 \alias{fit_breakpoints}
-\title{Fit breakpoints to bipod object}
+\title{Identify and Fit Optimal Breakpoints in Population Growth Data}
 \usage{
 fit_breakpoints(
   x,
@@ -15,28 +15,63 @@ fit_breakpoints(
 )
 }
 \arguments{
-\item{x}{A bipod object.}
+\item{x}{A bipod object containing time series data of population counts}
 
-\item{norm}{Logical value indicating whether to normalize the data.
-If TRUE, the time and count data are standardized before fitting the model. (default is TRUE)}
+\item{norm}{Logical indicating whether to standardize the data (mean 0, SD 1) before fitting.
+Standardization applies to both time and count data. Default is TRUE}
 
-\item{n_trials}{Integer specifying the number of trials for the optimization algorithm.
-This controls the number of iterations used to fit the breakpoints. (default is 500)}
+\item{n_trials}{Integer controlling optimization iterations. Higher values increase likelihood
+of finding global optima at the cost of longer computation time. Default is 500}
 
-\item{avg_points_per_window}{Integer specifying the average number of data points per segment.
-This parameter influences the granularity of the segments when searching for breakpoints. (default is 3)}
+\item{avg_points_per_window}{Integer specifying minimum average data points required between
+breakpoints. Prevents overfitting by ensuring adequate data density per segment.
+Default is 3}
 
-\item{available_changepoints}{Integer vector specifying the range of available changepoints.
-These values represent the possible number of breakpoints to be considered during model fitting. (default is 0:5)}
+\item{available_changepoints}{Integer vector defining the range of breakpoint numbers to
+consider during model selection. For example, c(0:5) evaluates models with
+0 to 5 breakpoints. Default is 0:5}
 
-\item{model_selection}{Character string specifying the model selection criterion.
-Options include 'LOO' (Leave-One-Out cross-validation), 'AIC' (Akaike Information Criterion), and 'BIC' (Bayesian Information Criterion).  (default is "LOO")}
+\item{model_selection}{Character string specifying model selection criterion:
+* "LOO": Leave-One-Out cross-validation (recommended)
+* "AIC": Akaike Information Criterion
+* "BIC": Bayesian Information Criterion
+Default is "LOO"}
 
-\item{n_core}{Integer specifying the number of CPU cores to use for parallel processing. (default is 4)}
+\item{n_core}{Integer specifying number of CPU cores for parallel processing.
+Default is 4}
 }
 \value{
-The input bipod object with an added 'breakpoints_fit' slot containing the fitted model for the breakpoints.
+An enhanced bipod object containing:
+\itemize{
+\item breakpoints_fit: Fitted breakpoint model
+\item metadata$breakpoints: Vector of identified breakpoint positions
+\item counts$group: Factor indicating segment membership for each observation
+}
 }
 \description{
-Fit breakpoints to bipod object
+Analyzes population growth data to detect significant changes in growth patterns by:
+\itemize{
+\item Fitting piecewise linear models to log-transformed count data
+\item Implementing model selection to determine optimal number of breakpoints
+\item Identifying precise positions of growth pattern changes
+\item Assigning data points to their respective growth segments
+}
+}
+\examples{
+# Create a bipod object with your data
+data = biPOD::sim_stochastic_exponential(
+100,
+c(rep(1,5), rep(0,5), rep(1,5)),
+c(rep(0,5),rep(.25,10)),
+15,
+.1
+)
+
+# Fot your dataset
+x = biPOD::init(data, "sample w.o breakpoints")
+x = biPOD:::fit_breakpoints(x, n_core=1)
+
+# Plot inferred breakpoints
+biPOD::plot_breakpoints_posterior(x)
+
 }

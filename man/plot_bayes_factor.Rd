@@ -10,7 +10,7 @@ plot_bayes_factor(x, with_categories = F)
 \item{x}{A \code{bipod} object that contains the results of a fitted model, including Bayes Factor and best growth model metadata.}
 
 \item{with_categories}{A logical value indicating whether to include Bayes Factor significance categories based on Jeffreys' scale.
-If \code{TRUE}, the plot will use categories to interpret the Bayes Factor. (default is F)}
+If \code{TRUE}, the plot will use categories to interpret the Bayes Factor. (default is FALSE)}
 }
 \value{
 A \code{ggplot2} object displaying the Bayes Factor with its significance, optionally categorized.

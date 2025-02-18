@@ -4,9 +4,10 @@
 #'
 #' @param x A `bipod` object that contains the results of a fitted model, including Bayes Factor and best growth model metadata.
 #' @param with_categories A logical value indicating whether to include Bayes Factor significance categories based on Jeffreys' scale.
-#'  If `TRUE`, the plot will use categories to interpret the Bayes Factor. (default is F)
+#'  If `TRUE`, the plot will use categories to interpret the Bayes Factor. (default is FALSE)
 #'
 #' @return A `ggplot2` object displaying the Bayes Factor with its significance, optionally categorized.
+#'
 #' @export
 plot_bayes_factor <- function(x, with_categories = F) {
   # Check input
@@ -138,6 +139,8 @@ empty_bayes_factor_plot <- function() {
 #' @param color A character string specifying the color to use for the plot elements. (default is 'maroon')
 #'
 #' @return A `ggplot2` object displaying the plot of omega values.
+#'
+
 #' @export
 plot_mixture_model_omega <- function(x, plot_type = "hist", color = "maroon") {
   # Check input

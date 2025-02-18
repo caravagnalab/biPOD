@@ -7,20 +7,21 @@
 biPOD_ppc_ribbon(x, x_fit, n = 500, prob = 0.5, prob_outer = 0.9)
 }
 \arguments{
-\item{x}{A \code{bipod} object that contains a 'counts' field with the observed data.}
+\item{x}{A \code{bipod} object containing a 'counts' field with the observed data. This is typically a time series or count data.}
 
-\item{x_fit}{A fitted model object that contains posterior draws of the replicated data (yrep).}
+\item{x_fit}{A fitted model object containing posterior draws of the replicated data (\code{yrep}). This model should be fitted using Bayesian methods.}
 
-\item{n}{Number of posterior predictive draws to use in the plot. (default is 500)}
+\item{n}{An integer specifying the number of posterior predictive draws to use in the plot. (default is 500). A higher value results in a more stable representation of the posterior distribution.}
 
-\item{prob}{Numeric value between 0 and 1 representing the probability mass for the inner interval. (default is 0.5)}
+\item{prob}{A numeric value between 0 and 1 representing the probability mass for the inner interval (e.g., the 50\% CI). The default is 0.5.}
 
-\item{prob_outer}{Numeric value between 0 and 1 representing the probability mass for the outer interval. (default is 0.9)}
+\item{prob_outer}{A numeric value between 0 and 1 representing the probability mass for the outer interval (e.g., the 90\% CI). The default is 0.9.}
 }
 \value{
-A ribbon plot using \code{bayesplot::ppc_ribbon}.
+A ribbon plot created using \code{bayesplot::ppc_ribbon}. The plot shows the posterior predictive distribution with shaded regions representing credible intervals at different probability levels.
 }
 \description{
-Creates a ribbon plot showing the central credible intervals (CI) and outer intervals of the posterior predictive distribution.
-The plot visualizes how well the model fits the data across a range of probability intervals.
+Creates a ribbon plot showing central credible intervals (CI) and outer intervals of the posterior predictive distribution.
+This plot helps visualize how well the model fits the observed data across a range of probability intervals.
+It can be used to assess the model's ability to capture the central tendency and variation in the data.
 }

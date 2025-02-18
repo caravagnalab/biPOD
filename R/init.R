@@ -6,8 +6,8 @@
 #'  It takes in a data frame of population counts, a sample name, and optional breakpoints to define groups within the data.
 #'
 #' @param counts A data frame with two columns:
-#' * `time`: Numeric or integer values representing the time steps at which population counts were recorded.
-#' * `count`: Integer values representing the population count at each time step.
+#' - `time`: Numeric or integer values representing the time steps at which population counts were recorded.
+#' - `count`: Integer values representing the population count at each time step.
 #'
 #' @param sample A character string specifying the name of the sample. This name is stored in the metadata of the resulting biPOD object.
 #' @param break_points A numeric vector specifying the breakpoints that define changes in the population dynamics.

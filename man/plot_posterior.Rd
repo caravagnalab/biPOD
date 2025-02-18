@@ -7,17 +7,23 @@
 plot_posterior(x, x_fit, par_name, color = "black")
 }
 \arguments{
-\item{x}{A \code{bipod} object of class \code{bipod}. Must contain a 'fit' field and should have been fitted with model selection.}
+\item{x}{A \code{bipod} object of class \code{bipod}. It must contain a 'fit' field, which includes the fitted model results.
+This object should have been fitted using model selection techniques.}
 
-\item{x_fit}{The fit object within \code{x} that contains the desired parameter.}
+\item{x_fit}{The fit object within \code{x} that contains the desired parameter. It should include the fitted parameter values and associated diagnostics.}
 
-\item{par_name}{The name of the parameter whose posterior distribution is to be plotted.}
+\item{par_name}{A character string specifying the name of the parameter whose posterior distribution is to be plotted.
+This should match one of the parameter names available in the model fit.}
 
-\item{color}{A character string specifying the color to use for the density plot. (default is 'black')}
+\item{color}{A character string specifying the color to use for the density plot. The default is \code{'black'}.
+This color will be used for filling the density plot, with a specified level of transparency.}
 }
 \value{
-A \code{ggplot2} object showing the density plot of the specified parameter.
+A \code{ggplot2} object representing the density plot of the specified parameter. The plot displays the posterior distribution
+and helps assess the uncertainty of the parameter estimate.
 }
 \description{
 Creates a density plot of the posterior distribution for a specified parameter from a fitted model within a \code{bipod} object.
+The plot helps visualize the distribution of the parameter values after fitting the model, indicating the uncertainty in the parameter estimate.
+This function is particularly useful for exploring the posterior distribution of individual model parameters in Bayesian analysis.
 }
