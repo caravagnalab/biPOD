@@ -312,3 +312,8 @@ sim_single_stochastic_logistic <- function(n0, lambda, mu, K, delta_t) {
   # Return the final population size after the simulation.
   pop_size
 }
+
+group_contiguous <- function(x) {
+  rle_x <- rle(x)
+  return(rep(seq_along(rle_x$lengths) - 1, times = rle_x$lengths))
+}
