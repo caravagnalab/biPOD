@@ -28,6 +28,8 @@ plot_growth_model_selection <- function(x) {
     stop("Criterion must be 'bic', 'BIC', 'loo', or 'LOO'")
   }
 
+  if (criterion == "loo") {model_table$loo = model_table$looic}
+
   if (!is.data.frame(model_table)) model_table <- as.data.frame(model_table)
 
   criterion_col <- NULL
@@ -37,6 +39,7 @@ plot_growth_model_selection <- function(x) {
       break
     }
   }
+
   if (is.null(criterion_col)) stop(paste("Could not find", toupper(criterion), "column in model_table"))
 
   df <- data.frame(
@@ -114,6 +117,10 @@ get_data_for_growth_plot = function(x, data, time_grid = NULL, CI = 0.9,
   draws <- posterior::as_draws_matrix(fit$draws)
   model_name <- x$best_model
 
+  # normalize model name to be safe
+  model_key <- tolower(model_name)
+  if (model_key == "exp_quadratic") model_key <- "quadraticexp"
+
   time_obs <- data[[time_col]]
   count_obs <- data[[count_col]]
   if (is.null(time_grid)) time_grid <- seq(min(time_obs), max(time_obs), length.out = 200)
@@ -126,10 +133,15 @@ get_data_for_growth_plot = function(x, data, time_grid = NULL, CI = 0.9,
 
   has_t0 <- "t0" %in% colnames(draws)
   has_n0 <- "n0" %in% colnames(draws)
+  has_K  <- "K"  %in% colnames(draws)
+  has_b  <- "b"  %in% colnames(draws)
+
   t0_vec <- if (has_t0) draws[, "t0"] else rep(min(time_obs), nrow(draws))
   n0_vec <- if (has_n0) draws[, "n0"] else rep(1, nrow(draws))
-  K_vec  <- if ("K" %in% colnames(draws)) draws[, "K"] else rep(NA, nrow(draws))
+  K_vec  <- if (has_K)  draws[, "K"]  else rep(NA_real_, nrow(draws))
+  b_vec  <- if (has_b)  draws[, "b"]  else rep(NA_real_, nrow(draws))
 
+  # piecewise integral of rho from t0 to t
   integrate_r_matrix <- function(t_grid, t0_vec, rho_mat) {
     n_draws <- nrow(rho_mat)
     n_times <- length(t_grid)
@@ -149,10 +161,12 @@ get_data_for_growth_plot = function(x, data, time_grid = NULL, CI = 0.9,
         if (!any(valid_idx)) next
 
         rho_vec <- rho_mat[, g]
-        contrib <- if (model_name == "powerlaw") {
+        contrib <- if (model_key == "powerlaw") {
+          # special case: ∫ rho(t)/t dt -> rho * log(t_end/t_start)
           ratio <- int_end / pmax(int_start, 1e-8)
           rho_vec * log(pmax(ratio, 1e-8))
         } else {
+          # default: ∫ rho dt over segment
           rho_vec * (int_end - int_start)
         }
 
@@ -165,34 +179,57 @@ get_data_for_growth_plot = function(x, data, time_grid = NULL, CI = 0.9,
 
   rint_mat <- integrate_r_matrix(time_grid, t0_vec, rho_mat)
 
-  mean_mat <- switch(model_name,
+  # convenience matrices
+  n_draws <- nrow(rho_mat)
+  n_times <- length(time_grid)
+  n0_mat  <- matrix(n0_vec, nrow = n_draws, ncol = n_times)
+  K_mat   <- matrix(K_vec,  nrow = n_draws, ncol = n_times)
+  b_mat   <- matrix(b_vec,  nrow = n_draws, ncol = n_times)
+
+  # dt = t - t0 (per-draw)
+  dt_mat <- sweep(matrix(rep(time_grid, each = n_draws), nrow = n_draws, ncol = n_times),
+                  1, t0_vec, FUN = "-")
+
+  # predictions by model
+  mean_mat <- switch(model_key,
                      exponential = {
-                       n0_mat <- matrix(n0_vec, nrow = length(n0_vec), ncol = ncol(rint_mat))
                        n0_mat * exp(rint_mat)
                      },
                      powerlaw = {
-                       n0_mat <- matrix(n0_vec, nrow = length(n0_vec), ncol = ncol(rint_mat))
                        n0_mat * exp(rint_mat)
                      },
                      logistic = {
-                       K_mat <- matrix(K_vec, nrow = length(K_vec), ncol = ncol(rint_mat))
-                       n0_mat <- matrix(n0_vec, nrow = length(n0_vec), ncol = ncol(rint_mat))
-                       n0_mat <- pmax(n0_mat, 1e-6)
-                       K_mat  <- pmax(K_mat, n0_mat + 1e-3)
-                       ratio  <- (K_mat - n0_mat) / n0_mat
+                       n0m <- pmax(n0_mat, 1e-6)
+                       Km  <- pmax(K_mat, n0m + 1e-3)  # ensure K > n0
+                       ratio  <- (Km - n0m) / n0m
                        denom  <- pmax(1 + ratio * exp(-rint_mat), 1e-6)
-                       pred   <- K_mat / denom
-                       pred[!is.finite(pred)] <- NA
+                       pred   <- Km / denom
+                       pred[!is.finite(pred)] <- NA_real_
                        pred
                      },
                      gompertz = {
-                       K_mat <- matrix(K_vec, nrow = length(K_vec), ncol = ncol(rint_mat))
-                       n0_mat <- matrix(n0_vec, nrow = length(n0_vec), ncol = ncol(rint_mat))
-                       loglog_n0_mat <- log(-log(n0_mat / pmax(K_mat, 1e-6)))
-                       exponent_mat <- loglog_n0_mat - rint_mat
-                       K_mat * exp(-exp(exponent_mat))
+                       Km  <- pmax(K_mat, 1e-6)
+                       n0m <- pmax(n0_mat, 1e-12) # avoid loglog issues
+                       loglog_n0 <- log(-log(pmin(n0m / Km, 1 - 1e-12)))
+                       exponent  <- loglog_n0 - rint_mat
+                       Km * exp(-exp(exponent))
                      },
-                     stop("Unknown model: ", model_name)
+                     monomolecular = {
+                       # y(t) = K - (K - n0) * exp(-∫rho)
+                       if (!has_K) stop("Monomolecular model requires parameter K in draws.")
+                       Km  <- pmax(K_mat, 1e-8)
+                       n0m <- pmax(n0_mat, 1e-12)
+                       Km - (Km - n0m) * exp(-rint_mat)
+                     },
+                     quadraticexp = ,  # alias: exp_quadratic
+                     `exp_quadratic` = {
+                       # y(t) = n0 * exp( ∫rho + b * (t - t0)^2 )
+                       if (!has_b) stop("Exponential quadratic model requires parameter b in draws.")
+                       n0_mat * exp(rint_mat + b_mat * (dt_mat ^ 2))
+                     },
+                     {
+                       stop("Unknown model: ", model_name)
+                     }
   )
 
   alpha <- (1 - CI) / 2
@@ -203,9 +240,6 @@ get_data_for_growth_plot = function(x, data, time_grid = NULL, CI = 0.9,
 
   ribbon_df$time <- time_grid
   rownames(ribbon_df) <- NULL
-
-  # (Optional backward-compat: also return 'mean' column equal to median)
-  # ribbon_df$mean <- ribbon_df$median
 
   ribbon_df[, c("time", "median", "lower", "upper")]
 }

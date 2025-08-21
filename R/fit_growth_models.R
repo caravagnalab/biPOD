@@ -32,8 +32,8 @@ fit_growth <- function(data,
                        iter = 2000,
                        seed = 123,
                        cores = 4,
-                       comparison = c("loo", "bic"),
-                       models_to_fit = c("exponential", "logistic", "gompertz"),
+                       comparison = c("bic", "loo"),
+                       models_to_fit = c("exponential", "logistic", "gompertz", "monomolecular", "quadraticexp"),
                        method = c("sampling", "vi"),
                        use_elbo = FALSE) {
 
