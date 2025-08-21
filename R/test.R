@@ -1,6 +1,29 @@
 
 test = function() {
 
+  # Monomolecular
+  monomolecular_f = function(xs, K, n0, alpha) {
+    K - ((K - n0) * exp(- alpha * (xs - 0)))
+  }
+
+  quadexp_f = function(xs, n0, rho, beta) {
+    n0 * exp(rho * (xs - 0) + beta * (xs - 0)**2)
+  }
+
+  xs = c(0:10)
+  ys = monomolecular_f(xs, 1000, 10, .25)
+  ys = quadexp_f(xs, 10, .25, .02)
+  plot(xs, ys)
+
+  d = dplyr::tibble(time = xs, count = ys)
+  x = biPOD:::fit_growth(d, with_initiation = F, models_to_fit = c("monomolecular", "exponential", "gompertz", "logistic", "quadraticexp"))
+
+  biPOD:::plot_ribbon(x$fit, d)
+  biPOD::plot_growth_model_selection(x)
+  biPOD:::plot_growth_fit(x, d)
+  x$fit$summary
+
+
   library(tidyverse)
   all_data = readRDS("/Users/jovoni/Dropbox/Zenodo_biPOD_v2/Zenodo/method_validation/sauer/data/processed_data.rds")
   data = all_data %>%

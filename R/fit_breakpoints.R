@@ -268,6 +268,12 @@ fit_breakpoints <- function(data,
                             t_prior_sd = 1) {
 
   comparison <- match.arg(comparison)
+
+  if (floor(nrow(data) / min_segment_size) < max_segments) {
+    message("Reducing max_segements due to low number of observations")
+    max_segments = floor(nrow(data) / min_segment_size)
+  }
+
   seg_res <- segment_fit(
     data = data,
     with_initiation = with_initiation,
@@ -285,7 +291,7 @@ fit_breakpoints <- function(data,
 
   eval_table <- seg_res$evaluation_table
   first_bp <- seg_res$best_breakpoints
-  
+
   final_fit <- fit_growth_model_breakpoints(
     data = data,
     breakpoints = first_bp,
