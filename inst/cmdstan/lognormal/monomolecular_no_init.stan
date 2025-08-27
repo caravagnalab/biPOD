@@ -29,44 +29,42 @@ data {
   array[S] int<lower=0> N;
   array[S] real T;
   vector[G - 1] t_array;          // breakpoints (increasing)
+  int<lower=0,upper=1> prior_only;
 }
 
 parameters {
-  real<lower=0> n0;               // intercept at t = T[1]
-  vector[G] rho;                  // segment rates
-  real<lower=0> K_plus;           // ensures K > n0 via K = n0 + exp(K_plus)
-  real<lower=0> sigma;            // log-normal noise sd
-}
-
-transformed parameters {
-  real K = n0 + exp(K_plus);      // enforce K > n0 without parameter-dependent bounds
+  real<lower=1> K;
+  vector[G] rho;
+  real<lower=0> n0;
+  real<lower=0> sigma;  // for log-normal observation noise
 }
 
 model {
-  // Priors (tune as needed)
   rho ~ normal(0, 1);
-  n0 ~ normal(N[1], N[1] / 20.0);
-  K_plus ~ normal(0, 1);
+  n0 ~ normal(N[1], N[1] / 5.0);
+  K ~ normal(max(N), max(N));
   sigma ~ exponential(1);
 
-  for (i in 2:S) {
-    real mu = mean_t(T[i], T[1], n0, K, t_array, rho);
-    mu = fmax(mu, 1e-6);
-    log(N[i] + 1e-3) ~ normal(log(mu), sigma);
+  if (prior_only == 0) {
+    vector[S] mu_log; // location for LogNormal (mean on log scale)
+    for (i in 1:S) {
+      real mu_pred = mean_t(T[i], T[1], n0, K, t_array, rho);
+      mu_log[i] = log(mu_pred);
+    }
+    N ~ lognormal(mu_log, sigma);
   }
 }
 
 generated quantities {
   vector[S] log_lik;
-  vector[S] yrep;
+  array[S] real yrep;
   vector[S] mu_pred;
 
-  for (i in 1:S) {
-    mu_pred[i] = mean_t(T[i], T[1], n0, K, t_array, rho);
-    mu_pred[i] = fmax(mu_pred[i], 1e-6);
-    yrep[i] = exp(normal_rng(log(mu_pred[i]), sigma));
-    log_lik[i] = (i >= 2)
-      ? normal_lpdf(log(N[i] + 1e-3) | log(mu_pred[i]), sigma)
-      : 0;
+  if (prior_only == 0) {
+    for (i in 1:S) {
+      mu_pred[i] = mean_t(T[i], T[1], n0, K, t_array, rho);
+      log_lik[i] = lognormal_lpdf(N[i] | log(mu_pred[i]), sigma);
+      yrep[i]    = lognormal_rng(log(mu_pred[i]), sigma);
+    }
   }
 }

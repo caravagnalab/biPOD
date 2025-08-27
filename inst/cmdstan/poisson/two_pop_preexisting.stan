@@ -2,12 +2,13 @@ data {
   int<lower=1> S; // Number of steps
   array[S] int<lower=0> N; // observations
   array[S] real T;         // observations
+  int<lower=0,upper=1> prior_only;
 }
 
 parameters {
   real<lower=0> rho_r;        // Parameter rho_r (rate for recoverN)
   real<lower=0> rho_s;        // Parameter rho_s (rate for signal decaN)
-  real<lower=T[1]> t0_r;                   // Parameter t_r (time shift)
+  real<upper=T[1]> t0_r;                   // Parameter t_r (time shift)
   real<lower=T[1]> t_end;
   // real<lower=0, upper=1.5> f_s;
 }

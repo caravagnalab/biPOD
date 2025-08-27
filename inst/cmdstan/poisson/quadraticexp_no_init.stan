@@ -1,3 +1,4 @@
+
 functions {
   real integrated_r(real t, real t0, vector t_array, vector rho_array) {
     int n_t = num_elements(t_array);
@@ -29,40 +30,40 @@ data {
   array[S] int<lower=0> N;
   array[S] real T;
   vector[G - 1] t_array;
+  int<lower=0,upper=1> prior_only;
 }
 
 parameters {
   real<lower=0> n0;               // intercept at t = T[1]
   vector[G] rho;                  // segment rates
   real b;                         // quadratic curvature
-  real<lower=0> sigma;            // log-normal noise sd
 }
 
 model {
   // Priors (tune as needed)
   rho ~ normal(0, 1);
-  n0 ~ normal(N[1], N[1] / 20.0);
+  n0 ~ normal(N[1], N[1] / 5.0);
   b ~ normal(0, 0.5);
-  sigma ~ exponential(1);
 
-  for (i in 2:S) {
-    real mu = mean_t(T[i], T[1], n0, b, t_array, rho);
-    mu = fmax(mu, 1e-6);
-    log(N[i] + 1e-3) ~ normal(log(mu), sigma);
+  if (prior_only == 0) {
+    vector[S] mu_pred;
+    for (i in 1:S) {
+      mu_pred[i] = mean_t(T[i], T[1], n0, b, t_array, rho);
+    }
+    N ~ poisson(mu_pred);
   }
 }
 
 generated quantities {
   vector[S] log_lik;
-  vector[S] yrep;
+  array[S] real yrep;
   vector[S] mu_pred;
 
-  for (i in 1:S) {
-    mu_pred[i] = mean_t(T[i], T[1], n0, b, t_array, rho);
-    mu_pred[i] = fmax(mu_pred[i], 1e-6);
-    yrep[i] = exp(normal_rng(log(mu_pred[i]), sigma));
-    log_lik[i] = (i >= 2)
-      ? normal_lpdf(log(N[i] + 1e-3) | log(mu_pred[i]), sigma)
-      : 0;
+  if (prior_only == 0) {
+    for (i in 1:S) {
+      mu_pred[i] = mean_t(T[i], T[1], n0, b, t_array, rho);
+      log_lik[i] = poisson_lpmf(N[i] | mu_pred[i]);
+      yrep[i]    = poisson_rng(mu_pred[i]);
+    }
   }
 }

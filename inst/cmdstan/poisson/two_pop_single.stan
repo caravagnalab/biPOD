@@ -2,6 +2,7 @@ data {
   int<lower=1> S; // Number of steps
   array[S] int<lower=0> N; // observations
   array[S] real T;         // observations
+  int<lower=0,upper=1> prior_only;
 }
 
 parameters {

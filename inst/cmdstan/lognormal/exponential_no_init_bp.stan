@@ -36,6 +36,7 @@ data {
   array[S] real T;                // observed times (sorted)
   vector[G-1] t_prior;            // prior centers for breakpoints
   real<lower=0> t_prior_sd;       // prior standard deviation for breakpoints
+  int<lower=0,upper=1> prior_only;
 }
 
 parameters {
@@ -48,29 +49,31 @@ parameters {
 model {
   // Priors
   rho ~ normal(0, 1);
-  n0 ~ normal(N[1], N[1] / 20.0);
+  n0 ~ normal(N[1], N[1] / 5.0);
   sigma ~ exponential(1);
 
   // Breakpoints prior: centered on provided t_prior
   t_array ~ normal(t_prior, t_prior_sd);
 
-  // Likelihood
-  for (i in 1:S) {
-    real mu = mean_t(T[i], T[1], n0, t_array, rho);
-    mu = fmax(mu, 1e-6);
-    N[i] ~ lognormal(log(mu), sigma);
+  if (prior_only == 0) {
+    vector[S] mu_log; // location for LogNormal (mean on log scale)
+    for (i in 1:S) {
+      real mu_pred = mean_t(T[i], T[1], n0, t_array, rho);
+      mu_log[i] = log(mu_pred);
+    }
+    N ~ lognormal(mu_log, sigma);
   }
 }
 
 generated quantities {
   vector[S] log_lik;
-  vector[S] yrep;
+  array[S] real yrep;
   vector[S] mu_pred;
 
-  for (i in 1:S) {
+  if (prior_only == 0) {
+    for (i in 1:S) {
     mu_pred[i] = mean_t(T[i], T[1], n0, t_array, rho);
-    mu_pred[i] = fmax(mu_pred[i], 1e-6);
-    yrep[i] = lognormal_rng(log(mu_pred[i]), sigma);
     log_lik[i] = lognormal_lpdf(N[i] | log(mu_pred[i]), sigma);
+    yrep[i]    = lognormal_rng(log(mu_pred[i]), sigma);
   }
-}
+}}

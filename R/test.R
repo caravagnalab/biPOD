@@ -12,17 +12,31 @@ test = function() {
 
   xs = c(0:10)
   ys = monomolecular_f(xs, 1000, 10, .25)
-  ys = quadexp_f(xs, 10, .25, .02)
-  plot(xs, ys)
+  #ys = quadexp_f(xs, 10, .25, .02)
+  ys = rpois(length(ys), ys)
 
   d = dplyr::tibble(time = xs, count = ys)
-  x = biPOD:::fit_growth(d, with_initiation = F, models_to_fit = c("monomolecular", "exponential", "gompertz", "logistic", "quadraticexp"))
 
-  biPOD:::plot_ribbon(x$fit, d)
+  d$count = as.integer(d$count)
+  x = biPOD:::fit_growth(data = d,
+                         with_initiation = T,
+                         noise_model = "lognormal",
+                         models_to_fit = c("monomolecular", "exponential", "gompertz", "logistic", "quadraticexp"),
+                         chains = 4,
+                         iter = 4000,
+                         seed = 1234,
+                         comparison = "loo",
+                         cores = 4,
+                         method = "sampling",
+                         use_elbo = F,
+                         breakpoints = NULL)
+
+  biPOD:::plot_ribbon(x$fit, d) +
+    ggplot2::scale_y_continuous(transform = "log10")
+
+
   biPOD::plot_growth_model_selection(x)
-  biPOD:::plot_growth_fit(x, d)
-  x$fit$summary
-
+  biPOD:::plot_growth_fit(x=x, data = d, CI = 0.95)
 
   library(tidyverse)
   all_data = readRDS("/Users/jovoni/Dropbox/Zenodo_biPOD_v2/Zenodo/method_validation/sauer/data/processed_data.rds")
@@ -31,16 +45,22 @@ test = function() {
     dplyr::filter(time <= 20, time >= -10)
 
   # Fit changepoints
-  bp_fit = biPOD:::fit_breakpoints(data = data, with_initiation = F, max_segments = 3, min_segment_size = 2, comparison = "bic",
-                           chains = 4, iter = 4000, cores = 4, t_prior_sd = 1,
-                           enforce_rho_separation = T, alpha_rho = .05, models_to_fit = c("exponential"),
-                           seed = 1234)
+  bp_fit = biPOD:::fit_breakpoints(data = data,
+                                   with_initiation = F,
+                                   max_segments = 3,
+                                   min_segment_size = 2,
+                                   comparison = "bic",
+                                   chains = 4, iter = 4000, cores = 4, t_prior_sd = 0.5, noise_model = "poisson",
+                                   enforce_rho_separation = T, alpha_rho = .05, models_to_fit = c("exponential"),
+                                   seed = 1234)
 
 
   biPOD:::plot_breakpoint_model_selection(bp_fit)
 
   p = biPOD:::plot_ribbon(bp_fit$final_fit, data = data, ci = .9, shadow_breakpoints = bp_fit$final_breakpoints)
   biPOD:::plot_breakpoint_posterior(bp_fit = bp_fit, data = data, colors = NULL)
+
+
 
   # Extract best breakpoints
   bps = bp_fit$final_breakpoints
@@ -49,11 +69,8 @@ test = function() {
             chains = 4, iter = 4000,
             seed = 123, cores = 4, comparison = "bic", method = "sampling", use_elbo = F)
 
-  res = biPOD:::fit_growth(data = data, breakpoints = bps, with_initiation = T,
-                           chains = 4, iter = 4000,
-                           seed = 123, cores = 4, comparison = "bic", method = "vi", use_elbo = F)
-
   biPOD:::plot_growth_model_selection(res)
+
 
   biPOD::plot_growth_fit(x = res, data = data, color = "black")
 
@@ -70,13 +87,14 @@ test = function() {
   data_u = data %>% dplyr::filter(time >= 0)
   u_results = biPOD:::fit_best_recovery_model(data = data_u,
                                               chains = 4,
+                                              noise_model = "poisson",
                                               iter = 4000,
                                               seed = 123,
                                               cores = 4,
                                               comparison = c("bic"))
 
   x = u_results
-  biPOD:::plot_growth_model_selection(u_results)
+  #biPOD:::plot_growth_model_selection(u_results)
   biPOD::plot_u_ribbon(fit = u_results, data = data_u, ci = .5)
 
 }

@@ -42,25 +42,27 @@ plot_growth_model_selection <- function(x) {
 
   if (is.null(criterion_col)) stop(paste("Could not find", toupper(criterion), "column in model_table"))
 
-  df <- data.frame(
+  df = data.frame(
     model = factor(rownames(model_table), levels = rownames(model_table)),
     score = model_table[[criterion_col]],
+    QC = model_table$qc,
+    is_best = model_table$model == x$best_model,
     stringsAsFactors = FALSE
-  ) %>%
-    dplyr::mutate(is_best = score == min(score))
+  )
 
   y_label <- ifelse(tolower(criterion) == "bic", "BIC", "LOOIC")
 
-  ggplot2::ggplot(df, ggplot2::aes(x = model, y = score)) +
+  ggplot2::ggplot(df, ggplot2::aes(x = model, y = score, col = QC)) +
     ggplot2::geom_line(ggplot2::aes(group = 1), color = "grey60") +
-    ggplot2::geom_point(size = 3, color = "black") +
+    ggplot2::geom_point(size = 3) +
     ggplot2::geom_point(
       data = dplyr::filter(df, is_best),
       ggplot2::aes(x = model, y = score),
-      size = 5, shape = 1, color = "red", stroke = 1.2
+      size = 5, shape = 1, color = "black", stroke = 1.2
     ) +
     ggplot2::labs(x = "Model", y = y_label) +
-    ggplot2::theme_bw()
+    ggplot2::theme_bw() +
+    ggplot2::scale_color_manual(values = c("FAIL"="indianred", "PASS"="forestgreen"))
 }
 
 #' Plot fitted growth model with uncertainty intervals
@@ -88,7 +90,7 @@ plot_growth_model_selection <- function(x) {
 #' @export
 plot_growth_fit <- function(x, data,
                             time_grid = NULL, time_col = "time", count_col = "count",
-                            color = "black", alpha = 0.3, CI = 0.9) {
+                            color = "black", alpha = 0.3, CI = 0.95) {
 
   ribbon_df = get_data_for_growth_plot(x = x, data = data, time_grid = time_grid, CI = CI, time_col = time_col, count_col = count_col)
   breakpoints <- x$breakpoints
@@ -110,7 +112,7 @@ plot_growth_fit <- function(x, data,
 }
 
 
-get_data_for_growth_plot = function(x, data, time_grid = NULL, CI = 0.9,
+old_get_data_for_growth_plot = function(x, data, time_grid = NULL, CI = 0.9,
                                     time_col = "time", count_col = "count") {
   fit <- x$fit
   breakpoints <- x$breakpoints
@@ -242,4 +244,121 @@ get_data_for_growth_plot = function(x, data, time_grid = NULL, CI = 0.9,
   rownames(ribbon_df) <- NULL
 
   ribbon_df[, c("time", "median", "lower", "upper")]
+}
+
+get_data_for_growth_plot <- function(x, data, time_grid = NULL, CI = 0.95,
+                                        time_col = "time", count_col = "count") {
+
+  fit <- x$fit
+  breakpoints <- x$breakpoints
+  draws <- posterior::as_draws_matrix(fit$draws)
+  model_name <- x$best_model
+  model_key <- tolower(as.character(model_name))
+
+  time_obs <- data[[time_col]]
+  count_obs <- data[[count_col]]
+  if (is.null(time_grid)) time_grid <- seq(min(time_obs), max(time_obs), length.out = 200)
+
+  # Indices / presence of parameters in draws
+  rho_idx <- grep("^rho\\[", colnames(draws))
+  rho_mat <- draws[, rho_idx, drop = FALSE]
+
+  has_t0 <- "t0" %in% colnames(draws)
+  has_n0 <- "n0" %in% colnames(draws)
+  has_K  <- "K"  %in% colnames(draws)
+  has_A  <- "A"  %in% colnames(draws)  # optional, for monomolecular if available
+  has_s  <- "sigma" %in% colnames(draws)
+
+  # Fallbacks
+  t0_vec <- if (has_t0) draws[, "t0"] else rep(min(time_obs), nrow(draws))
+  n0_vec <- if (has_n0) draws[, "n0"] else rep(1, nrow(draws))
+  K_vec  <- if (has_K)  draws[, "K"]  else rep(NA_real_, nrow(draws))
+  A_vec  <- if (has_A)  draws[, "A"]  else if (has_K) draws[, "K"] else rep(NA_real_, nrow(draws)) # reuse K for A if needed
+  s_vec  <- if (has_s)  draws[, "sigma"] else rep(NA_real_, nrow(draws))
+
+  # Pick the appropriate mean function and a small adapter to call it
+  # mean_fun_scalar <- switch(
+  #   model_key,
+  #   "exponential"    = function(t, t0, n0, rho, K, A) mean_piecewise_exponential(t, t0, n0, breakpoints, rho),
+  #   "logistic"       = function(t, t0, n0, rho, K, A) mean_piecewise_logistic(t, t0, n0, breakpoints, rho, L = K),
+  #   "gompertz"       = function(t, t0, n0, rho, K, A) mean_piecewise_gompertz(t, t0, n0, breakpoints, rho, K = K),
+  #   "monomolecular"  = function(t, t0, n0, rho, K, A) mean_piecewise_monomolecular(t, t0, n0, breakpoints, rho, A = A),
+  #   "quadraticexp"   = function(t, t0, n0, rho, K, A) mean_piecewise_quadraticexp(t, t0, n0, breakpoints, rho),
+  #   # default fallback
+  #   function(t, t0, n0, rho, K, A) mean_piecewise_exponential(t, t0, n0, breakpoints, rho)
+  # )
+  #
+  # # Vectorize over time_grid safely (the mean_* functions are scalar in 't')
+  # mean_fun_vec <- function(tt, t0, n0, rho, K, A) {
+  #   unlist(lapply(tt, function(x) {mean_fun_scalar(x, t0, n0, rho, K, A)}))
+  # }
+
+  mean_fun_vec <- switch(
+    model_key,
+    "exponential"    = function(t, t0, n0, rho, K, A) mean_piecewise_exponential_vec(t, t0, n0, breakpoints, rho),
+    "logistic"       = function(t, t0, n0, rho, K, A) mean_piecewise_logistic_vec(t, t0, n0, breakpoints, rho, L = K),
+    "gompertz"       = function(t, t0, n0, rho, K, A) mean_piecewise_gompertz_vec(t, t0, n0, breakpoints, rho, K = K),
+    "monomolecular"  = function(t, t0, n0, rho, K, A) mean_piecewise_monomolecular_vec(t, t0, n0, breakpoints, rho, A = A),
+    "quadraticexp"   = function(t, t0, n0, rho, K, A) mean_piecewise_quadraticexp_vec(t, t0, n0, breakpoints, rho),
+    # default fallback
+    function(t, t0, n0, rho, K, A) mean_piecewise_exponential_vec(t, t0, n0, breakpoints, rho)
+  )
+
+  # Build predictive draws matrix (rows = posterior draws, cols = |time_grid|)
+  n_draws <- nrow(draws)
+  mean_mat <- matrix(0, nrow = n_draws, ncol = length(time_grid))
+
+  for (i in seq_len(n_draws)) {
+    if (has_t0) {
+      mu <- mean_fun_vec(time_grid, t0 = t0_vec[i], n0 = 1, rho = rho_mat[i, ], K = K_vec[i], A = A_vec[i])
+    } else {
+      mu <- mean_fun_vec(time_grid, t0 = time_obs[1], n0 = n0_vec[i], rho = rho_mat[i, ], K = K_vec[i], A = A_vec[i])
+    }
+
+    if (has_s && !any(is.na(mu))) {
+      mean_mat[i, ] <- rlnorm(length(mu), meanlog = log(pmax(mu, 1e-12)), sdlog = s_vec[i])
+    } else {
+      mean_mat[i, ] <- rpois(length(mu), lambda = pmax(mu, 0))
+    }
+  }
+
+  # Credible ribbon
+  alpha <- (1 - CI) / 2
+  probs <- c(alpha, 0.5, 1 - alpha)
+
+  # Use apply with pre-defined quantile function for efficiency
+  ribbon_array <- apply(mean_mat, 2, quantile, probs = probs, na.rm = TRUE, names = FALSE)
+
+  ribbon_df <- data.frame(
+    time = time_grid,
+    median = ribbon_array[2, ],
+    lower = ribbon_array[1, ],
+    upper = ribbon_array[3, ]
+  )
+
+  # IMPROVEMENT 5: Optional CI smoothing
+  smooth_bandwidth = 0.1
+  if (length(time_grid) > 10) {
+    # Use loess smoothing for CI bounds to reduce noise
+    time_range <- max(time_grid) - min(time_grid)
+    span <- min(smooth_bandwidth, 1.0)  # Ensure span <= 1
+
+    tryCatch({
+      # Smooth the CI bounds but keep median as is (or smooth lightly)
+      lower_smooth <- stats::loess(lower ~ time, data = ribbon_df, span = span)$fitted
+      upper_smooth <- stats::loess(upper ~ time, data = ribbon_df, span = span)$fitted
+
+      # Optional: light smoothing for median
+      median_smooth <- stats::loess(median ~ time, data = ribbon_df, span = span * 0.5)$fitted
+
+      ribbon_df$lower <- lower_smooth
+      ribbon_df$upper <- upper_smooth
+      ribbon_df$median <- median_smooth
+
+    }, error = function(e) {
+      warning("CI smoothing failed, using original values: ", e$message)
+    })
+  }
+
+  return(ribbon_df[, c("time", "median", "lower", "upper")])
 }
