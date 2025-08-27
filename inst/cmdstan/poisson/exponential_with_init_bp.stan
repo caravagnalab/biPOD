@@ -27,12 +27,12 @@ data {
   array[S] real T;                // observed times (sorted)
   vector[G-1] t_prior;            // prior centers for breakpoints
   real<lower=0> t_prior_sd;       // prior standard deviation for breakpoints
+  int<lower=0,upper=1> prior_only;
 }
 
 parameters {
   vector[G] rho;                             // growth rates per segment
   real<upper=T[1]> t0;                       // initiation time
-  real<lower=0> sigma;                       // noise on log observations
   ordered[G-1] t_array;                      // breakpoints to infer
 }
 
@@ -40,28 +40,31 @@ model {
   // Priors
   rho ~ normal(0, 1);
   t0 ~ normal(T[1], 30);
-  sigma ~ exponential(1);
+  
 
   // Breakpoints prior: centered on provided t_prior
   t_array ~ normal(t_prior, t_prior_sd);
 
-  // Likelihood
-  for (i in 1:S) {
-    real mu = mean_t(T[i], t0, t_array, rho);
-    mu = fmax(mu, 1e-6);
-    log(N[i] + 1e-3) ~ normal(log(mu), sigma);
+  if (prior_only == 0) {
+    vector[S] mu_pred;
+    for (i in 1:S) {
+      mu_pred[i] = mean_t(T[i], t0, t_array, rho);
+      
+    }
+    N ~ poisson(mu_pred);
   }
 }
 
 generated quantities {
   vector[S] log_lik;
-  vector[S] yrep;
+  array[S] real yrep;
   vector[S] mu_pred;
 
-  for (i in 1:S) {
-    mu_pred[i] = mean_t(T[i], t0, t_array, rho);
-    mu_pred[i] = fmax(mu_pred[i], 1e-6);
-    yrep[i] = exp(normal_rng(log(mu_pred[i]), sigma));
-    log_lik[i] = normal_lpdf(log(N[i] + 1e-3) | log(mu_pred[i]), sigma);
+  if (prior_only == 0) {
+    for (i in 1:S) {
+      mu_pred[i] = mean_t(T[i], t0, t_array, rho);
+      log_lik[i] = poisson_lpmf(N[i] | mu_pred[i]);
+      yrep[i]    = poisson_rng(mu_pred[i]);
+    }
   }
 }

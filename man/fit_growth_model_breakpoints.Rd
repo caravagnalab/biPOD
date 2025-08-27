@@ -7,6 +7,7 @@
 fit_growth_model_breakpoints(
   data,
   breakpoints,
+  noise_model,
   with_initiation = TRUE,
   chains = 4,
   iter = 4000,

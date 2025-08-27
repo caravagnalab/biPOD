@@ -12,7 +12,7 @@ plot_growth_fit(
   count_col = "count",
   color = "black",
   alpha = 0.3,
-  CI = 0.9
+  CI = 0.95
 )
 }
 \arguments{

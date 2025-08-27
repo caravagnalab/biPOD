@@ -35,46 +35,65 @@ fit_growth <- function(data,
                        comparison = c("bic", "loo"),
                        models_to_fit = c("exponential", "logistic", "gompertz", "monomolecular", "quadraticexp"),
                        method = c("sampling", "vi"),
+                       noise_model = c("lognormal", "poisson"),
                        use_elbo = FALSE) {
 
   comparison <- match.arg(comparison)
+  noise_model <- match.arg(noise_model)
   method <- match.arg(method)
 
   res <- if (method == "sampling") {
     fit_growth_models(
       data = data, breakpoints = breakpoints, with_initiation = with_initiation,
       chains = chains, iter = iter, seed = seed, cores = cores,
-      comparison = comparison, models_to_fit = models_to_fit
+      comparison = comparison, models_to_fit = models_to_fit, noise_model = noise_model
     )
   } else {
     fit_growth_models_VI(
       data = data, breakpoints = breakpoints, with_initiation = with_initiation,
       chains = chains, iter = iter, seed = seed, cores = cores,
-      comparison = comparison, models_to_fit = models_to_fit,
+      comparison = comparison, models_to_fit = models_to_fit, noise_model = noise_model,
       method = "vi", use_elbo = use_elbo
     )
   }
 
-  res$model_table$model = rownames(res$model_table)
+  res$model_table$qc = unlist(lapply(res$model_table$model, function(n) res$fits_qc[[n]]$verdict))
 
+  # Candidate rows: all PASS if any; otherwise all rows (all FAIL case)
+  pass_idx <- which(res$model_table$qc == "PASS")
+  cand_idx <- if (length(pass_idx) > 0) pass_idx else seq_len(nrow(res$model_table))
+
+  # Pick best among candidates according to criterion
   if (res$criterion %in% c("bic", "elbo")) {
-    best_model <- rownames(res$model_table)[which.min(res$model_table[[1]])]
+    # Use a named metric column if available; otherwise fall back to first column (as in original)
+    metric_values <- if (res$criterion %in% names(res$model_table)) {
+      res$model_table[[res$criterion]]
+    } else {
+      res$model_table[[1]]
+    }
+    best_idx   <- cand_idx[which.min(metric_values[cand_idx])]
+    best_model <- rownames(res$model_table)[best_idx]
+
   } else if (res$criterion == "loo") {
-    best_model <- as.character(res$model_table$model[1])
+    # Assume model_table already sorted by LOO (best first), keep first among candidates
+    best_model <- as.character(res$model_table$model[cand_idx][1])
+
   } else {
     stop("Unknown criterion: cannot select best model")
   }
 
   best_fit <- res$fits[[best_model]]
 
-  list(
+  x = list(
     best_model = best_model,
     fit = parse_stan_fit(best_fit),
+    qc = res$fits_qc[[best_model]],
     model_table = res$model_table,
     criterion = res$criterion,
     method = method,
     breakpoints = breakpoints
   )
+  x
 }
 
 #' Fit growth models via MCMC sampling
@@ -86,33 +105,41 @@ fit_growth <- function(data,
 fit_growth_models <- function(data, breakpoints, with_initiation = TRUE,
                               chains = 4, iter = 2000, seed = 123, cores = 4,
                               comparison = c("loo", "bic"),
-                              models_to_fit = c("exponential", "logistic", "gompertz")) {
+                              models_to_fit = c("exponential", "logistic", "gompertz"),
+                              noise_model = c("lognormal", "poisson")) {
   comparison <- match.arg(comparison)
+  noise_model <- match.arg(noise_model)
   stopifnot(all(c("time", "count") %in% colnames(data)))
   data <- data[order(data$time), ]
 
   t_array <- if (length(breakpoints) == 0) array(0, dim = 0) else as.vector(breakpoints)
   G <- length(breakpoints) + 1
 
-  stan_data <- list(S = nrow(data), G = G, N = data$count, T = data$time, t_array = t_array)
+  stan_data <- list(S = nrow(data), G = G, N = data$count, T = data$time, t_array = t_array, prior_only = 0)
   model_files <- paste0(models_to_fit, if (with_initiation) "_with_init" else "_no_init")
 
   fits <- list()
+  fits_qc <- list()
   comparisons <- list()
   info_criteria <- numeric(length(models_to_fit))
   names(info_criteria) <- models_to_fit
 
+  i = 1
   for (i in seq_along(models_to_fit)) {
     model_name <- models_to_fit[i]
-    model <- get_model(model_files[i])
+    model <- get_model(model_files[i], noise_model)
 
+    stan_data$prior_only == 0
     message(sprintf("Fitting model: %s", model_name))
     fit <- suppressMessages(suppressWarnings(model$sample(
       data = stan_data, chains = chains, iter_warmup = iter, iter_sampling = iter,
       seed = seed, parallel_chains = cores, refresh = 0
     )))
 
+    qc_result <- stan_qc(model, fit, stan_data, require_no_tdhit = F, require_no_div = F)
+
     fits[[model_name]] <- fit
+    fits_qc[[model_name]] <- qc_result
     draws <- fit$draws(format = "draws_matrix")
     log_lik <- draws[, grep("^log_lik", colnames(draws)), drop = FALSE]
 
@@ -130,16 +157,17 @@ fit_growth_models <- function(data, breakpoints, with_initiation = TRUE,
   }
 
   comp_table <- if (comparison == "bic") {
-    data.frame(BIC = sort(info_criteria))
+    tbl = data.frame(BIC = sort(info_criteria))
+    tbl$model = models_to_fit
+    tbl
   } else {
     tbl <- loo::loo_compare(comparisons)
     tbl <- as.data.frame(tbl)
     tbl$model <- rownames(tbl)
     tbl[, c("model", setdiff(names(tbl), "model"))]
   }
-  comp_table$model = models_to_fit
 
-  list(fits = fits, comparisons = comparisons, model_table = comp_table, criterion = comparison)
+  list(fits = fits, fits_qc = fits_qc, comparisons = comparisons, model_table = comp_table, criterion = comparison)
 }
 
 #' Fit growth models using variational inference (VI)
@@ -181,7 +209,7 @@ fit_growth_models_VI <- function(data, breakpoints, with_initiation = TRUE,
 
   for (i in seq_along(models_to_fit)) {
     model_name <- models_to_fit[i]
-    model = get_model(model_files[i])
+    model = get_model(model_files[i], noise_model)
     # model_path <- file.path(stan_dir, model_files[i])
     # model <- cmdstanr::cmdstan_model(model_path)
 
@@ -308,23 +336,25 @@ fit_growth_models_VI <- function(data, breakpoints, with_initiation = TRUE,
 #' }
 #' @export
 fit_best_recovery_model <- function(data,
+                                    noise_model = c("lognormal", "poisson"),
                                     chains = 4,
                                     iter = 4000,
                                     seed = 123,
                                     cores = 4,
                                     comparison = c("loo", "bic")) {
   comparison <- match.arg(comparison)
+  noise_model <- match.arg(noise_model)
   stopifnot(all(c("time", "count") %in% colnames(data)))
   data <- data[order(data$time), ]
 
-  stan_data <- list(S = nrow(data), N = data$count, T = data$time)
+  stan_data <- list(S = nrow(data), N = data$count, T = data$time, prior_only = 0)
   model_files <- c("two_pop_both", "two_pop_single")
 
   fits <- list()
   ic_values <- numeric(length(model_files))
 
   for (i in seq_along(model_files)) {
-    mod <- biPOD:::get_model(model_files[i])
+    mod <- biPOD:::get_model(model_files[i], noise_model)
     fit <- suppressMessages(suppressWarnings(mod$sample(
       data = stan_data, chains = chains, iter_warmup = iter, iter_sampling = iter,
       seed = seed, parallel_chains = cores, refresh = 0
@@ -350,10 +380,10 @@ fit_best_recovery_model <- function(data,
     t0_draws = unlist(lapply(draws, function(c) {c[["t0_r"]]}))
 
     if (stats::median(t0_draws) <= min(data$time)) {
-      mod = biPOD:::get_model("two_pop_preexisting")
+      mod = biPOD:::get_model("two_pop_preexisting", noise_model)
       best_model = "pre-existing"
     } else {
-      mod = biPOD:::get_model("two_pop_denovo")
+      mod = biPOD:::get_model("two_pop_denovo", noise_model)
       best_model = "de-novo"
     }
 

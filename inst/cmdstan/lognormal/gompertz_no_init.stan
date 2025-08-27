@@ -45,57 +45,42 @@ data {
   array[S] int<lower=0> N;
   array[S] real T;
   vector[G - 1] t_array;
-}
-
-transformed data {
-  // Compute some useful quantities for priors
-  real min_N = min(N);
-  real max_N = max(N);
-  real mean_N = mean(to_vector(N));
-  real sd_N = sd(to_vector(N));
+  int<lower=0,upper=1> prior_only;
 }
 
 parameters {
-  real<lower=0> K_raw;        // Raw parameter for K
-  real<lower=0> n0_ratio;     // n0 as fraction of K
-  vector[G] rho_raw;          // Raw parameters for rho
-  real<lower=0> sigma;  // standard deviation of log-observation noise
-}
-
-transformed parameters {
-  // More stable parameterization
-  real K = mean_N + K_raw * (max_N - mean_N + sd_N);  // K around observed range
-  real n0 = n0_ratio * K * 0.95;  // n0 is fraction of K, max 95% of K
-  vector[G] rho = rho_raw * 0.1;  // Scale down rho to prevent extreme values
+  real<lower=1> K;
+  vector[G] rho;
+  real<lower=0> n0;
+  real<lower=0> sigma;  // for log-normal observation noise
 }
 
 model {
-  // Informative priors based on data
-  K_raw ~ exponential(2);     // Keeps K reasonable
-  n0_ratio ~ beta(2, 3);      // Favors n0 being smaller fraction of K
-  rho_raw ~ std_normal();     // Standard normal, scaled in transformed params
+  rho ~ normal(0, 1);
+  n0 ~ normal(N[1], N[1] / 5.0);
+  K ~ normal(max(N), max(N));
   sigma ~ exponential(1);
 
-  for (i in 1:S) {
-    real mu = mean_t(T[i], T[1], n0, K, t_array, rho);
-    mu = fmax(mu, 1e-6);  // still guard against log(0)
-    log(N[i] + 1e-3) ~ normal(log(mu), sigma);  // log-normal likelihood
+  if (prior_only == 0) {
+    vector[S] mu_log; // location for LogNormal (mean on log scale)
+    for (i in 1:S) {
+      real mu_pred = mean_t(T[i], T[1], n0, K, t_array, rho);
+      mu_log[i] = log(mu_pred);
+    }
+    N ~ lognormal(mu_log, sigma);
   }
 }
 
 generated quantities {
   vector[S] log_lik;
-  vector[S] yrep;
+  array[S] real yrep;
   vector[S] mu_pred;
 
-  for (i in 1:S) {
-    mu_pred[i] = mean_t(T[i], T[1], n0, K, t_array, rho);
-    mu_pred[i] = fmax(mu_pred[i], 1e-6);
-    
-    // Sample from the log-normal predictive distribution
-    yrep[i] = exp(normal_rng(log(mu_pred[i]), sigma));
-    
-    // Compute log-likelihood using the same log-normal model
-    log_lik[i] = normal_lpdf(log(N[i] + 1e-3) | log(mu_pred[i]), sigma);
+  if (prior_only == 0) {
+    for (i in 1:S) {
+      mu_pred[i] = mean_t(T[i], T[1], n0, K, t_array, rho);
+      log_lik[i] = lognormal_lpdf(N[i] | log(mu_pred[i]), sigma);
+      yrep[i]    = lognormal_rng(log(mu_pred[i]), sigma);
+    }
   }
 }

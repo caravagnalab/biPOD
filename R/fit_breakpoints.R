@@ -117,6 +117,7 @@ propose_breakpoints_DE <- function(d, K, avg_points_per_window = 5, n_trials = 1
 #' @return A list with candidate evaluations and the best segmentation.
 segment_fit <- function(data,
                         with_initiation,
+                        noise_model,
                         max_segments = 4,
                         min_segment_size = 3,
                         comparison = c("bic", "loo"),
@@ -148,7 +149,7 @@ segment_fit <- function(data,
     fit_growth_models(
       data = data, breakpoints = breaks, with_initiation = with_initiation,
       chains = chains, iter = iter, seed = seed, cores = cores,
-      comparison = comparison, models_to_fit = models_to_fit
+      comparison = comparison, models_to_fit = models_to_fit, noise_model = noise_model
     )
   }
 
@@ -206,6 +207,7 @@ segment_fit <- function(data,
 #' @return A list with the fitted object and summary statistics.
 fit_growth_model_breakpoints <- function(data,
                                          breakpoints,
+                                         noise_model,
                                          with_initiation = TRUE,
                                          chains = 4,
                                          iter = 4000,
@@ -216,8 +218,8 @@ fit_growth_model_breakpoints <- function(data,
   data <- data[order(data$time), ]
   G <- length(breakpoints) + 1
   stan_data <- list(S = nrow(data), G = G, N = data$count, T = data$time,
-                    t_prior = as.vector(breakpoints), t_prior_sd = t_prior_sd)
-  model <- if (with_initiation) get_model("exponential_with_init_bp") else get_model("exponential_no_init_bp")
+                    t_prior = as.vector(breakpoints), t_prior_sd = t_prior_sd, prior_only = 0)
+  model <- if (with_initiation) get_model("exponential_with_init_bp", noise_model) else get_model("exponential_no_init_bp", noise_model)
   message("Fitting breakpoint growth model")
   fit <- suppressMessages(suppressWarnings(model$sample(
     data = stan_data, chains = chains, iter_warmup = iter / 2, iter_sampling = iter / 2,
@@ -261,13 +263,15 @@ fit_breakpoints <- function(data,
                             enforce_rho_separation = TRUE,
                             alpha_rho = 0.05,
                             models_to_fit = c("exponential"),
+                            noise_model = c("lognormal", "poisson"),
                             chains = 4,
                             iter = 4000,
                             seed = 1234,
                             cores = 4,
-                            t_prior_sd = 1) {
+                            t_prior_sd = 0.5) {
 
   comparison <- match.arg(comparison)
+  noise_model <- match.arg(noise_model)
 
   if (floor(nrow(data) / min_segment_size) < max_segments) {
     message("Reducing max_segements due to low number of observations")
@@ -277,6 +281,7 @@ fit_breakpoints <- function(data,
   seg_res <- segment_fit(
     data = data,
     with_initiation = with_initiation,
+    noise_model = noise_model,
     max_segments = max_segments,
     min_segment_size = min_segment_size,
     comparison = comparison,
@@ -296,6 +301,7 @@ fit_breakpoints <- function(data,
     data = data,
     breakpoints = first_bp,
     with_initiation = with_initiation,
+    noise_model = noise_model,
     chains = chains,
     iter = iter,
     seed = seed,

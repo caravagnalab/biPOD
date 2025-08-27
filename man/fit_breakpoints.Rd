@@ -13,11 +13,12 @@ fit_breakpoints(
   enforce_rho_separation = TRUE,
   alpha_rho = 0.05,
   models_to_fit = c("exponential"),
+  noise_model = c("lognormal", "poisson"),
   chains = 4,
   iter = 4000,
   seed = 1234,
   cores = 4,
-  t_prior_sd = 1
+  t_prior_sd = 0.5
 )
 }
 \arguments{

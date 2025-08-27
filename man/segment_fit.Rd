@@ -7,6 +7,7 @@
 segment_fit(
   data,
   with_initiation,
+  noise_model,
   max_segments = 4,
   min_segment_size = 3,
   comparison = c("bic", "loo"),

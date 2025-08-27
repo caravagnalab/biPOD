@@ -16,6 +16,7 @@ fit_growth(
   models_to_fit = c("exponential", "logistic", "gompertz", "monomolecular",
     "quadraticexp"),
   method = c("sampling", "vi"),
+  noise_model = c("lognormal", "poisson"),
   use_elbo = FALSE
 )
 }

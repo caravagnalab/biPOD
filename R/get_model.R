@@ -1,5 +1,5 @@
 
-get_model <- function(model_name) {
+get_model <- function(model_name, noise_model) {
   # Define available models and their file names
   all_paths <- list(
     "exponential_no_init_bp"    = "exponential_no_init_bp.stan",
@@ -28,7 +28,9 @@ get_model <- function(model_name) {
 
   # Get the model file path from package
   model_file <- all_paths[[model_name]]
-  model_path <- system.file("cmdstan", model_file, package = "biPOD", mustWork = TRUE)
+  model_path <- system.file("cmdstan", noise_model, model_file, package = "biPOD", mustWork = TRUE)
+
+  if (!file.exists(model_path)) stop(paste0(model_path, " model does not exist"))
 
   # Compile model quietly
   suppressMessages({
