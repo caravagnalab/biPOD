@@ -6,12 +6,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Get started • biPOD</title>
-<!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
-<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
-<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png">
-<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
-<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
+<!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
+<link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+<link rel="icon" sizes="any" href="../favicon.ico">
+<link rel="manifest" href="../site.webmanifest">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
@@ -72,17 +71,84 @@
 
     
     
-<div class="section level3">
-<h3 id="installation-of-the-package">Installation of the package<a class="anchor" aria-label="anchor" href="#installation-of-the-package"></a>
-</h3>
-<p>You can install biPOD from GitHub using <code>devtools</code>.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"caravagnalab/biPOD"</span><span class="op">)</span></span></code></pre></div>
-<p>Load the package.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://caravagnalab.github.io/biPOD/">biPOD</a></span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
+<span><span class="co"># devtools::install_github("caravagnalab/biPOD")</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://caravagnalab.github.io/biPOD/">biPOD</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+<div class="section level2">
+<h2 id="what-is-bipod">What is biPOD?<a class="anchor" aria-label="anchor" href="#what-is-bipod"></a>
+</h2>
+<p>biPOD is an R package for <strong>model-based Bayesian inference of
+population dynamics</strong> from heterogeneous longitudinal data. It
+supports: (i) fitting growth with <strong>known breakpoints</strong>,
+(ii) <strong>inferring breakpoints</strong> when unknown, and (iii) a
+<strong>two-population (sensitive/resistant)</strong> model typical in
+treatment–relapse settings.</p>
 </div>
-  </main>
+<div class="section level2">
+<h2 id="quick-tour-with-the-built-in-dataset">1) Quick tour with the built-in dataset<a class="anchor" aria-label="anchor" href="#quick-tour-with-the-built-in-dataset"></a>
+</h2>
+<p>The package ships the <code>xenografts</code> mouse model
+dataset:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">xenografts</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">xenografts</span><span class="op">)</span></span></code></pre></div>
+<p>We initialize a <code>bipod</code> object and plot inputs:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">mouse_id</span> <span class="op">=</span> <span class="fl">544</span></span>
+<span><span class="va">df</span> <span class="op">=</span> <span class="va">xenografts</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">mouse</span> <span class="op">==</span> <span class="va">mouse_id</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>count <span class="op">=</span> <span class="va">tumour_volume</span><span class="op">)</span></span>
+<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/init.html">init</a></span><span class="op">(</span>counts <span class="op">=</span> <span class="va">df</span>, sample <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">mouse</span><span class="op">)</span>, break_points <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plot_input.html">plot_input</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
+<p><img src="biPOD_files/figure-html/unnamed-chunk-3-1.png" width="80%" style="display: block; margin: auto;"></p>
+<div class="section level3">
+<h3 id="fit-with-known-breakpoints">Fit with known breakpoints<a class="anchor" aria-label="anchor" href="#fit-with-known-breakpoints"></a>
+</h3>
+<p>Suppose change-points (e.g., treatment start and end) are known:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">biPOD</span><span class="fu">::</span><span class="fu"><a href="../reference/init.html">init</a></span><span class="op">(</span></span>
+<span>  counts <span class="op">=</span> <span class="va">df</span>,</span>
+<span>  sample <span class="op">=</span> <span class="va">mouse_id</span>,</span>
+<span>  break_points <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">50</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">biPOD</span><span class="fu">::</span><span class="fu"><a href="../reference/fit.html">fit</a></span><span class="op">(</span></span>
+<span>  x <span class="op">=</span> <span class="va">x</span>, </span>
+<span>  growth_type <span class="op">=</span> <span class="st">"exponential"</span>, </span>
+<span>  infer_t0 <span class="op">=</span> <span class="cn">T</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plot_fit.html">plot_fit</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
+<p><img src="biPOD_files/figure-html/unnamed-chunk-4-1.png" width="80%" style="display: block; margin: auto;"></p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_posteriors.html">plot_posteriors</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, x_fit <span class="op">=</span> <span class="va">x</span><span class="op">$</span><span class="va">fit</span>, par_list <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"rho[1]"</span>, <span class="st">"rho[2]"</span>, <span class="st">"rho[3]"</span><span class="op">)</span><span class="op">)</span>     <span class="co"># posterior densities for parameters</span></span></code></pre></div>
+<p><img src="biPOD_files/figure-html/unnamed-chunk-4-2.png" width="80%" style="display: block; margin: auto;"></p>
+</div>
+<div class="section level3">
+<h3 id="infer-breakpoints">Infer breakpoints<a class="anchor" aria-label="anchor" href="#infer-breakpoints"></a>
+</h3>
+<p>When transition times are <strong>unknown</strong>, estimate them
+directly from the data:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">biPOD</span><span class="fu">::</span><span class="fu"><a href="../reference/init.html">init</a></span><span class="op">(</span></span>
+<span>  counts <span class="op">=</span> <span class="va">df</span>,</span>
+<span>  sample <span class="op">=</span> <span class="va">mouse_id</span>,</span>
+<span>  break_points <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">biPOD</span><span class="fu">::</span><span class="fu"><a href="../reference/fit_breakpoints.html">fit_breakpoints</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, available_changepoints <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">2</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plot_breakpoints_posterior.html">plot_breakpoints_posterior</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">+</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_vline</a></span><span class="op">(</span>xintercept <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">50</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="biPOD_files/figure-html/unnamed-chunk-5-1.png" width="80%" style="display: block; margin: auto;"></p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="session-info">Session info<a class="anchor" aria-label="anchor" href="#session-info"></a>
+</h2>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+</div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside>
 </div>
 
 
@@ -92,7 +158,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
     </footer>
