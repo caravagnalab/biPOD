@@ -39,6 +39,17 @@ to:
     - Modeling the characteristic U-shaped dynamics that emerge from the
       interplay between these populations
 
+#### Citation
+
+[![](https://img.shields.io/badge/doi-10.1101/2024.12.30.630757-red.svg)](https://doi.org/10.1101/2024.12.30.630757)
+
+If you use `biPOD`, please cite:
+
+- G. Santacatterina, R. Bergamin, A. Zucchetto, R. Laureana, M.I. del
+  Principe, V. Gattei, L. Egidi, G. Caravagna. Predicting tumour
+  evolution and drug resistance from heterogenous longitudinal cancer
+  data. biorxiv (2024).
+
 #### Help and support
 
 ## [![](https://img.shields.io/badge/GitHub%20Pages-https://caravagnalab.github.io/biPOD/-yellow.svg)](https://caravagnalab.github.io/biPOD)

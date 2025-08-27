@@ -62,6 +62,12 @@ d = dplyr::filter(d, mouse == mouse_id)
 x <- biPOD::init(d, "543 U-shape")
 # Fit a two-population growth model using MCMC
 x <- biPOD::fit_two_pop_model(x, variational = FALSE, factor_size = 1)
-biPOD::plot_two_pop_fit(x, split_process = FALSE, f_posteriors = FALSE, t_posteriors = FALSE, r_posteriors = FALSE)
+biPOD::plot_two_pop_fit(
+  x,
+  split_process = FALSE,
+  f_posteriors = FALSE,
+  t_posteriors = FALSE,
+  r_posteriors = FALSE
+)
 
 }

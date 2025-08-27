@@ -7,21 +7,92 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r message=FALSE, warning=FALSE, include=FALSE}
+```{r, include=FALSE}
 knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
+  message = FALSE, warning = FALSE,           # hide messages/warnings by default
+  fig.align = "center",                       # center all figures
+  out.width = "80%",                          # shrink images a bit
+  dpi = 200,                                  # crisper plots
+  fig.retina = 2,                             # nicer on HiDPI screens
+  dev = "png",
+  echo = TRUE,
+  collapse = TRUE,                            # console-style output
+  comment = "#>"                              # prefix for outputs
 )
 ```
 
-### Installation of the package
-
-You can install biPOD from GitHub using `devtools`.
-```{r install_pkg, eval=FALSE, include=TRUE}
-devtools::install_github("caravagnalab/biPOD")
+```{r}
+#| message: false
+#| warning: false
+# install.packages("devtools")
+# devtools::install_github("caravagnalab/biPOD")
+library(biPOD)
+library(tidyverse)
+set.seed(1)
 ```
 
-Load the package.
-```{r load_pkg, message=FALSE, warning=FALSE}
-library(biPOD)
+## What is biPOD?
+
+biPOD is an R package for **model-based Bayesian inference of population dynamics** from heterogeneous longitudinal data.
+It supports: (i) fitting growth with **known breakpoints**, (ii) **inferring breakpoints** when unknown, and (iii) a **two-population (sensitive/resistant)** model typical in treatment–relapse settings.
+
+## 1) Quick tour with the built-in dataset
+
+The package ships the `xenografts` mouse model dataset:
+
+```r
+data(xenografts)
+head(xenografts)
+```
+
+We initialize a `bipod` object and plot inputs:
+
+```{r}
+mouse_id = 544
+df = xenografts %>% 
+  dplyr::filter(mouse == mouse_id) %>% 
+  dplyr::mutate(count = tumour_volume)
+x <- init(counts = df, sample = unique(df$mouse), break_points = NULL)
+plot_input(x)
+```
+
+
+### Fit with known breakpoints
+
+Suppose change-points (e.g., treatment start and end) are known:
+
+```{r}
+x <- biPOD::init(
+  counts = df,
+  sample = mouse_id,
+  break_points = c(0, 50)
+)
+x <- biPOD::fit(
+  x = x, 
+  growth_type = "exponential", 
+  infer_t0 = T
+)
+plot_fit(x)
+plot_posteriors(x = x, x_fit = x$fit, par_list = c("rho[1]", "rho[2]", "rho[3]"))     # posterior densities for parameters
+```
+
+### Infer breakpoints
+
+When transition times are **unknown**, estimate them directly from the data:
+
+```{r}
+x <- biPOD::init(
+  counts = df,
+  sample = mouse_id,
+  break_points = NULL
+)
+x <- biPOD::fit_breakpoints(x = x, available_changepoints = 0:2)
+plot_breakpoints_posterior(x) + ggplot2::geom_vline(xintercept = c(0, 50))
+```
+
+
+## Session info
+
+```r
+sessionInfo()
 ```
