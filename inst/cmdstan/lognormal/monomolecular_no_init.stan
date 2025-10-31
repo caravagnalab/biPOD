@@ -33,7 +33,7 @@ data {
 }
 
 parameters {
-  real<lower=1> K;
+  real<lower=max(N) * 0.9> K;
   vector[G] rho;
   real<lower=0> n0;
   real<lower=0> sigma;  // for log-normal observation noise

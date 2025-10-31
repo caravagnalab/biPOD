@@ -49,6 +49,8 @@ plot_growth_model_selection <- function(x) {
     is_best = model_table$model == x$best_model,
     stringsAsFactors = FALSE
   )
+  df = df %>% dplyr::arrange(score)
+  df$model = factor(df$model, levels = df$model)
 
   y_label <- ifelse(tolower(criterion) == "bic", "BIC", "LOOIC")
 
@@ -312,13 +314,13 @@ get_data_for_growth_plot <- function(x, data, time_grid = NULL, CI = 0.95,
     if (has_t0) {
       mu <- mean_fun_vec(time_grid, t0 = t0_vec[i], n0 = 1, rho = rho_mat[i, ], K = K_vec[i], A = A_vec[i])
     } else {
-      mu <- mean_fun_vec(time_grid, t0 = time_obs[1], n0 = n0_vec[i], rho = rho_mat[i, ], K = K_vec[i], A = A_vec[i])
+      mu <- mean_fun_vec(time_grid, t0 = min(time_obs), n0 = n0_vec[i], rho = rho_mat[i, ], K = K_vec[i], A = A_vec[i])
     }
 
     if (has_s && !any(is.na(mu))) {
-      mean_mat[i, ] <- rlnorm(length(mu), meanlog = log(pmax(mu, 1e-12)), sdlog = s_vec[i])
+      mean_mat[i, ] <- stats::rlnorm(length(mu), meanlog = log(pmax(mu, 1e-12)), sdlog = s_vec[i])
     } else {
-      mean_mat[i, ] <- rpois(length(mu), lambda = pmax(mu, 0))
+      mean_mat[i, ] <- stats::rpois(length(mu), lambda = pmax(mu, 0))
     }
   }
 
@@ -327,7 +329,7 @@ get_data_for_growth_plot <- function(x, data, time_grid = NULL, CI = 0.95,
   probs <- c(alpha, 0.5, 1 - alpha)
 
   # Use apply with pre-defined quantile function for efficiency
-  ribbon_array <- apply(mean_mat, 2, quantile, probs = probs, na.rm = TRUE, names = FALSE)
+  ribbon_array <- apply(mean_mat, 2, stats::quantile, probs = probs, na.rm = TRUE, names = FALSE)
 
   ribbon_df <- data.frame(
     time = time_grid,

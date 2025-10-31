@@ -86,8 +86,8 @@ plot_u_ribbon <- function(fit, data = NULL, ci = 0.9) {
     ggplot2::geom_line(ggplot2::aes(y = .data$median, color = .data$series)) +
     ggplot2::labs(x = "Time", y = "Predicted value", fill = "Series", color = "Series") +
     ggplot2::theme_bw() +
-    scale_color_manual(values = c("N total" = "black", "N sensitive" = "mediumpurple", "N resistant" = "goldenrod")) +
-    scale_fill_manual(values = c("N total" = "black", "N sensitive" = "mediumpurple", "N resistant" = "goldenrod"))
+    ggplot2::scale_color_manual(values = c("N total" = "black", "N sensitive" = "mediumpurple", "N resistant" = "goldenrod")) +
+    ggplot2::scale_fill_manual(values = c("N total" = "black", "N sensitive" = "mediumpurple", "N resistant" = "goldenrod"))
 
   # Optional observed data overlay
   if (!is.null(data)) {

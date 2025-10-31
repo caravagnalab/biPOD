@@ -187,7 +187,7 @@ mean_piecewise_logistic_vec <- function(t, t0, n0, t_array, rho, L) {
   result <- rep(0, n)
 
   if (length(t_array) == 0) {
-    exp_term <- exp(pmax(pmin(-rho[1] * (t - t0), 700), -700))
+    exp_term <- exp(-rho[1] * (t - t0))
     return(L / (1 + ((L - n0) / n0) * exp_term))
   }
 

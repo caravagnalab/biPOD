@@ -157,7 +157,7 @@ fit_growth_models <- function(data, breakpoints, with_initiation = TRUE,
   }
 
   comp_table <- if (comparison == "bic") {
-    tbl = data.frame(BIC = sort(info_criteria))
+    tbl = data.frame(BIC = info_criteria)
     tbl$model = models_to_fit
     tbl
   } else {
