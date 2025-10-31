@@ -33,7 +33,7 @@ data {
 parameters {
   vector[G] rho;              // segment rates
   real<upper=T[1]> t0;        // initiation time
-  real<lower=1> K;            // asymptote
+  real<lower=max(N) * 0.9> K;            // asymptote
 }
 
 model {

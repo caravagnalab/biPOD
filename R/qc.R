@@ -2,24 +2,21 @@
 stan_qc <- function(model, fit, stan_data,
                     y_name      = "count",
                     loglik_name = "log_lik",
-                    # ----- Thresholds (tweak to taste) -----
                     thr_rhat         = 1.01,
                     thr_ess_min      = 200,      # bulk ESS minimum
                     require_no_div   = TRUE,
                     require_no_tdhit = TRUE,
                     thr_pareto_k     = 1.0,
-                    thr_info_gain    = 1.25,
+                    thr_info_gain    = 1.1,
+                    thr_z_shift_abs  = 0.25,
                     max_pareto_k     = 1
 ) {
-  suppressPackageStartupMessages({
-    library(cmdstanr); library(posterior); library(bayesplot); library(loo)
-  })
-
   out <- list()
-  draws_df <- as_draws_df(fit$draws())
+
+  draws_df <- posterior::as_draws_df(fit$draws())
 
   # ---------------- Convergence / NUTS ----------------
-  summ <- summarise_draws(draws_df)
+  summ <- posterior::summarise_draws(draws_df)
   out$summary <- summ[, c("variable","mean","sd","rhat","ess_bulk","ess_tail")]
 
   nuts <- fit$sampler_diagnostics()
@@ -46,21 +43,25 @@ stan_qc <- function(model, fit, stan_data,
 
   # ---------------- Identifiability -------------------
   # Prior-only run
-  fit$summary()
 
+  # ---- Prior-only run (unchanged) ----
   stan_data$prior_only = 1
-  fit_prior <- model$sample(
-    data = stan_data, iter_sampling = 2000, chains = 1, refresh = 0
-  )
+  fit_prior <- model$sample(data = stan_data, iter_sampling = 2000, chains = 1, refresh = 0)
+  prior_df <- posterior::as_draws_df(fit_prior$draws())
 
-  prior_df <- as_draws_df(fit_prior$draws())
-
-  # prior–posterior contraction (sd_prior / sd_post)
+  # ---- Prior–posterior table: info_gain + z_shift only ----
   pp <- lapply(pars, function(p) {
-    sd_prior <- tryCatch(sd(prior_df[[p]], na.rm = TRUE), error = function(e) NA_real_)
-    sd_post  <- tryCatch(sd(draws_df[[p]], na.rm = TRUE), error = function(e) NA_real_)
-    data.frame(parameter = p, sd_prior = sd_prior, sd_post = sd_post,
-               info_gain = sd_prior / sd_post)
+    pr <- prior_df[[p]]; po <- draws_df[[p]]
+    mu_prior <- tryCatch(mean(pr, na.rm = TRUE), error = function(e) NA_real_)
+    mu_post  <- tryCatch(mean(po, na.rm = TRUE), error = function(e) NA_real_)
+    sd_prior <- tryCatch(sd(pr,   na.rm = TRUE), error = function(e) NA_real_)
+    sd_post  <- tryCatch(sd(po,   na.rm = TRUE), error = function(e) NA_real_)
+    info_gain <- sd_prior / sd_post
+    z_shift <- if (is.finite(sd_prior) && sd_prior > 0) (mu_post - mu_prior) / sd_prior else NA_real_
+    data.frame(parameter = p,
+               mu_prior = mu_prior, sd_prior = sd_prior,
+               mu_post  = mu_post,  sd_post  = sd_post,
+               info_gain = info_gain, z_shift = z_shift)
   })
   out$prior_posterior <- do.call(rbind, pp)
 
@@ -95,14 +96,16 @@ stan_qc <- function(model, fit, stan_data,
     fails <- c(fails, sprintf("LOO Pareto-k > %.2f for %d point(s)", thr_pareto_k, n_bad))
   }
 
-  # Identifiability rules
+  # Identifiability rules (info_gain + z_shift)
   if (!is.null(out$prior_posterior) && nrow(out$prior_posterior) > 0) {
     ig <- out$prior_posterior
-    bad_ig_idx <- which(!is.na(ig$info_gain) & ig$info_gain < thr_info_gain)
-    if (length(bad_ig_idx) > 0) {
-      fails <- c(fails, sprintf("Weak prior→posterior contraction (info_gain < %.2f) for: %s",
-                                thr_info_gain,
-                                paste(ig$parameter[bad_ig_idx], collapse=", ")))
+    weak_contr_idx <- which(!is.na(ig$info_gain) & ig$info_gain < thr_info_gain)
+    weak_shift_idx <- which(!is.na(ig$z_shift) & abs(ig$z_shift) < thr_z_shift_abs)
+    to_fail <- intersect(weak_contr_idx, weak_shift_idx)
+    if (length(to_fail) > 0) {
+      fails <- c(fails, sprintf("Uninformative posterior (info_gain < %.2f & |z_shift| < %.2f) for: %s",
+                                thr_info_gain, thr_z_shift_abs,
+                                paste(ig$parameter[to_fail], collapse = ", ")))
     }
   }
 
@@ -112,36 +115,3 @@ stan_qc <- function(model, fit, stan_data,
   class(out) <- c("stan_qc_report", class(out))
   return(out)
 }
-#
-# print.stan_qc_report <- function(x, ...) {
-#   cat("\n=== Stan QC Report ===\n")
-#   cat("Verdict:", x$verdict, "\n")
-#   if (length(x$fail_reasons)) {
-#     cat("Reasons:\n -", paste(x$fail_reasons, collapse = "\n - "), "\n")
-#   }
-#   cat("\nConvergence:\n")
-#   cat("  Divergences per chain:", paste(x$divergences, collapse=", "), "\n")
-#   cat("  Treedepth hits per chain:", paste(x$treedepth_hits, collapse=", "), "\n")
-#
-#   if (!is.null(x$loo)) {
-#     cat("\nLOO:\n")
-#     print(x$loo)
-#   }
-#
-#   if (!is.null(x$prior_posterior)) {
-#     cat("\nPrior→Posterior contraction (first 10):\n")
-#     print(utils::head(x$prior_posterior[order(x$prior_posterior$info_gain), ], 10))
-#   }
-#
-#   if (!is.null(x$posterior_PCs)) {
-#     cat("\nPosterior principal directions (variance fractions):\n")
-#     print(utils::head(x$posterior_PCs, 5))
-#   }
-#
-#   if (!is.null(x$sensitivity)) {
-#     cat("\nSensitivity (PRCC to", deparse(substitute(x$target_name)), "):\n")
-#     print(x$sensitivity)
-#   }
-#   invisible(x)
-# }
-

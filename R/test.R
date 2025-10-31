@@ -23,9 +23,9 @@ test = function() {
                          noise_model = "lognormal",
                          models_to_fit = c("monomolecular", "exponential", "gompertz", "logistic", "quadraticexp"),
                          chains = 4,
-                         iter = 4000,
+                         iter = 1000,
                          seed = 1234,
-                         comparison = "loo",
+                         comparison = "bic",
                          cores = 4,
                          method = "sampling",
                          use_elbo = F,
@@ -33,7 +33,6 @@ test = function() {
 
   biPOD:::plot_ribbon(x$fit, d) +
     ggplot2::scale_y_continuous(transform = "log10")
-
 
   biPOD::plot_growth_model_selection(x)
   biPOD:::plot_growth_fit(x=x, data = d, CI = 0.95)
@@ -54,13 +53,10 @@ test = function() {
                                    enforce_rho_separation = T, alpha_rho = .05, models_to_fit = c("exponential"),
                                    seed = 1234)
 
-
   biPOD:::plot_breakpoint_model_selection(bp_fit)
 
   p = biPOD:::plot_ribbon(bp_fit$final_fit, data = data, ci = .9, shadow_breakpoints = bp_fit$final_breakpoints)
   biPOD:::plot_breakpoint_posterior(bp_fit = bp_fit, data = data, colors = NULL)
-
-
 
   # Extract best breakpoints
   bps = bp_fit$final_breakpoints
@@ -68,6 +64,9 @@ test = function() {
   res = biPOD:::fit_growth(data = data, breakpoints = bps, with_initiation = T,
             chains = 4, iter = 4000,
             seed = 123, cores = 4, comparison = "bic", method = "sampling", use_elbo = F)
+
+
+
 
   biPOD:::plot_growth_model_selection(res)
 
@@ -94,8 +93,42 @@ test = function() {
                                               comparison = c("bic"))
 
   x = u_results
-  #biPOD:::plot_growth_model_selection(u_results)
+  biPOD:::plot_growth_model_selection(u_results)
   biPOD::plot_u_ribbon(fit = u_results, data = data_u, ci = .5)
+
+
+  # Fit CLL
+  all_data = readRDS("/Users/jovoni/Dropbox/Zenodo_biPOD_v2/Zenodo/case_studies/CRO/data/data.rds")
+  dati_clinici = readRDS("/Users/jovoni/Dropbox/Zenodo_biPOD_v2/Zenodo/case_studies/CRO/data/dati_clinici.rds")
+  id = sample(all_data$codice, 1)
+  id = "L-478R"
+
+  d = all_data %>% dplyr::filter(codice == id) %>% dplyr::mutate(count = value) %>%
+    dplyr::mutate(time = time / 12)
+  dati_clinici %>% dplyr::filter(codice == id)
+
+  x = biPOD:::fit_growth(data = d,
+                         with_initiation = F,
+                         noise_model = "lognormal",
+                         models_to_fit = c("monomolecular", "exponential", "gompertz", "logistic"),
+                         chains = 4,
+                         iter = 4000,
+                         seed = 1234,
+                         comparison = "loo",
+                         cores = 4,
+                         method = "sampling",
+                         use_elbo = F,
+                         breakpoints = NULL)
+
+  biPOD::plot_growth_model_selection(x)
+
+  biPOD:::plot_ribbon(x$fit, d) +
+    ggplot2::scale_y_continuous(transform = "log10")
+
+  biPOD:::plot_parameter_posteriors(x$fit$draws, params = "rho[1]")
+
+  biPOD:::plot_growth_fit(x=x, data = d, CI = 0.95)
+
 
 }
 
