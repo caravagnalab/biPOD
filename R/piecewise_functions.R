@@ -165,9 +165,11 @@ mean_piecewise_exponential_vec <- function(t, t0, n0, t_array, rho) {
       exp_term <- pmax(pmin(rho[1] * (t_array[1] - t0), 700), -700)
       cumulative_growth <- cumulative_growth * exp(exp_term)
 
-      for (i in 2:length(t_array)) {
-        exp_term <- pmax(pmin(rho[i] * (t_array[i] - t_array[i-1]), 700), -700)
-        cumulative_growth <- cumulative_growth * exp(exp_term)
+      if (length(t_array) >= 2) {
+        for (i in 2:length(t_array)) {
+          exp_term <- pmax(pmin(rho[i] * (t_array[i] - t_array[i-1]), 700), -700)
+          cumulative_growth <- cumulative_growth * exp(exp_term)
+        }
       }
 
       # Apply final segment growth
@@ -232,9 +234,11 @@ mean_piecewise_logistic_vec <- function(t, t0, n0, t_array, rho, L) {
       exp_term <- exp(pmax(pmin(-rho[1] * (t_array[1] - t0), 700), -700))
       cumulative_result <- L / (1 + ((L - cumulative_result) / cumulative_result) * exp_term)
 
-      for (i in 2:length(t_array)) {
-        exp_term <- exp(pmax(pmin(-rho[i] * (t_array[i] - t_array[i-1]), 700), -700))
-        cumulative_result <- L / (1 + ((L - cumulative_result) / cumulative_result) * exp_term)
+      if (length(t_array) >= 2) {
+        for (i in 2:length(t_array)) {
+          exp_term <- exp(pmax(pmin(-rho[i] * (t_array[i] - t_array[i-1]), 700), -700))
+          cumulative_result <- L / (1 + ((L - cumulative_result) / cumulative_result) * exp_term)
+        }
       }
 
       # Apply final segment growth
@@ -299,9 +303,11 @@ mean_piecewise_gompertz_vec <- function(t, t0, n0, t_array, rho, K) {
       exp_term <- exp(pmax(pmin(-rho[1] * (t_array[1] - t0), 700), -700))
       cumulative_result <- K * exp(log(pmax(cumulative_result / K, 1e-10)) * exp_term)
 
-      for (i in 2:length(t_array)) {
-        exp_term <- exp(pmax(pmin(-rho[i] * (t_array[i] - t_array[i-1]), 700), -700))
-        cumulative_result <- K * exp(log(pmax(cumulative_result / K, 1e-10)) * exp_term)
+      if (length(t_array) >= 2) {
+        for (i in 2:length(t_array)) {
+          exp_term <- exp(pmax(pmin(-rho[i] * (t_array[i] - t_array[i-1]), 700), -700))
+          cumulative_result <- K * exp(log(pmax(cumulative_result / K, 1e-10)) * exp_term)
+        }
       }
 
       # Apply final segment growth
@@ -366,9 +372,11 @@ mean_piecewise_monomolecular_vec <- function(t, t0, n0, t_array, rho, A) {
       exp_term <- exp(pmax(pmin(-rho[1] * (t_array[1] - t0), 700), -700))
       cumulative_result <- A - (A - cumulative_result) * exp_term
 
-      for (i in 2:length(t_array)) {
-        exp_term <- exp(pmax(pmin(-rho[i] * (t_array[i] - t_array[i-1]), 700), -700))
-        cumulative_result <- A - (A - cumulative_result) * exp_term
+      if (length(t_array) >= 2) {
+        for (i in 2:length(t_array)) {
+          exp_term <- exp(pmax(pmin(-rho[i] * (t_array[i] - t_array[i-1]), 700), -700))
+          cumulative_result <- A - (A - cumulative_result) * exp_term
+        }
       }
 
       # Apply final segment growth
@@ -432,9 +440,11 @@ mean_piecewise_quadraticexp_vec <- function(t, t0, n0, t_array, rho) {
       quad_term <- pmax(pmin(rho[1] * (t_array[1] - t0)^2, 700), -700)
       cumulative_growth <- cumulative_growth * exp(quad_term)
 
-      for (i in 2:length(t_array)) {
-        quad_term <- pmax(pmin(rho[i] * (t_array[i] - t_array[i-1])^2, 700), -700)
-        cumulative_growth <- cumulative_growth * exp(quad_term)
+      if (length(t_array) >= 2) {
+        for (i in 2:length(t_array)) {
+          quad_term <- pmax(pmin(rho[i] * (t_array[i] - t_array[i-1])^2, 700), -700)
+          cumulative_growth <- cumulative_growth * exp(quad_term)
+        }
       }
 
       # Apply final segment growth
