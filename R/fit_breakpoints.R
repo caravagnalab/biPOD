@@ -257,6 +257,8 @@ fit_growth_model_breakpoints <- function(data,
 #' @export
 fit_breakpoints <- function(data,
                             with_initiation,
+                            user_breakpoints = NULL,
+                            user_breakpoints_ci_level = 0.95,
                             max_segments = 4,
                             min_segment_size = 3,
                             comparison = c("bic", "loo"),
@@ -278,7 +280,7 @@ fit_breakpoints <- function(data,
     max_segments = floor(nrow(data) / min_segment_size)
   }
 
-  seg_res <- segment_fit(
+  seg_res <- biPOD(
     data = data,
     with_initiation = with_initiation,
     noise_model = noise_model,
@@ -297,7 +299,7 @@ fit_breakpoints <- function(data,
   eval_table <- seg_res$evaluation_table
   first_bp <- seg_res$best_breakpoints
 
-  final_fit <- fit_growth_model_breakpoints(
+  final_fit <- biPOD:::fit_growth_model_breakpoints(
     data = data,
     breakpoints = first_bp,
     with_initiation = with_initiation,
@@ -314,7 +316,96 @@ fit_breakpoints <- function(data,
     dplyr::pull(.data$median) %>%
     sort()
 
+  # Validate, if present, user breakpoints
+  # Validate, if present, user breakpoints
+  if (!is.null(user_breakpoints)) {
+
+    user_bp_validation <- validate_user_breakpoints(
+      fit = final_fit$fit,
+      user_breakpoints = user_breakpoints,
+      ci_level = user_breakpoints_ci_level
+    )
+
+    # keep only validated user breakpoints
+    user_bp_validation <- user_bp_validation %>%
+      dplyr::filter(pass)
+
+    # if at least one user breakpoint is validated
+    if (nrow(user_bp_validation) > 0) {
+
+      # replace inferred breakpoint(s) with user-specified ones
+      final_bps[user_bp_validation$matched_index] <- user_bp_validation$user_breakpoint
+    }
+  }
+
   list(evaluation_table = eval_table, first_breakpoints = first_bp,
        final_breakpoints = final_bps, final_fit = final_fit$fit,
        final_summary = final_fit$summary)
+}
+
+
+#' Validate user breakpoints using posterior overlap
+#'
+#' A user breakpoint b is validated if it is in the bayesian confidence
+#' interval of one inferred breakpoint.
+#'
+#' @param fit A fitted breakpoint model (CmdStanR fit or parse_stan_fit output).
+#' @param user_breakpoints Numeric vector of user-supplied breakpoints.
+#' @param ci_level Posterior probability threshold (e.g. 0.5, 0.8).
+#'
+#' @return A tibble with posterior overlap probability and validation flag
+#'         for each user breakpoint.
+validate_user_breakpoints <- function(fit,
+                                      user_breakpoints,
+                                      ci_level = 0.95) {
+
+  stopifnot(is.numeric(user_breakpoints))
+
+  # ---- extract posterior draws for t_array[*] ----
+  draws_mat <- posterior::as_draws_matrix(fit$draws)
+  t_cols <- grep("^t_array\\[", colnames(draws_mat))
+  if (length(t_cols) == 0) stop("No t_array[...] parameters found in posterior draws.")
+
+  t_draws <- as.matrix(draws_mat[, t_cols, drop = FALSE])
+
+  # mitigate label switching
+  t_draws <- t(apply(t_draws, 1, sort))
+
+  # ---- posterior CI for each inferred breakpoint ----
+  alpha <- (1 - ci_level) / 2
+  t_med <- apply(t_draws, 2, stats::median, na.rm = TRUE)
+  t_lo  <- apply(t_draws, 2, stats::quantile, probs = alpha, na.rm = TRUE)
+  t_hi  <- apply(t_draws, 2, stats::quantile, probs = 1 - alpha, na.rm = TRUE)
+
+  # ---- for each user breakpoint: find a CI that contains it (if any) ----
+  res <- lapply(user_breakpoints, function(b) {
+    inside <- which(b >= t_lo & b <= t_hi)
+
+    if (length(inside) == 0) {
+      data.frame(
+        user_breakpoint = b,
+        matched_index = NA_integer_,
+        matched_median = NA_real_,
+        ci_low = NA_real_,
+        ci_high = NA_real_,
+        pass = FALSE,
+        stringsAsFactors = FALSE
+      )
+    } else {
+      # if multiple CIs contain it, pick the closest median
+      j <- inside[which.min(abs(t_med[inside] - b))]
+
+      data.frame(
+        user_breakpoint = b,
+        matched_index = j,
+        matched_median = unname(t_med[j]),
+        ci_low = unname(t_lo[j]),
+        ci_high = unname(t_hi[j]),
+        pass = TRUE,
+        stringsAsFactors = FALSE
+      )
+    }
+  })
+
+  dplyr::as_tibble(do.call(rbind, res))
 }

@@ -1,3 +1,4 @@
+
 #' Fit growth models and select the best one
 #'
 #' Fits multiple candidate growth models (exponential, logistic, Gompertz) to time-series
@@ -37,6 +38,9 @@ fit_growth <- function(data,
                        method = c("sampling", "vi"),
                        noise_model = c("lognormal", "poisson"),
                        use_elbo = FALSE) {
+
+  data = x$counts
+  breakpoints = x$breakpoints
 
   comparison <- match.arg(comparison)
   noise_model <- match.arg(noise_model)

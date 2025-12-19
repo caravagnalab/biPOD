@@ -7,6 +7,8 @@
 fit_breakpoints(
   data,
   with_initiation,
+  user_breakpoints = NULL,
+  user_breakpoints_ci_level = 0.95,
   max_segments = 4,
   min_segment_size = 3,
   comparison = c("bic", "loo"),
