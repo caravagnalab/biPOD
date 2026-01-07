@@ -32,17 +32,16 @@ xenografts <- xenografts %>%
   dplyr::mutate(time = time / 7)
 ```
 
-## Fit - Variational and no breakpoints
+## Fit - No breakpoints
 
 Let's take a sample which does not undergo treatment and should therefore exhibit a natural growth with a single parameter.
 Hence, we are not going to consider any breakpoints for this sample.
 
 ```{r}
 mouse_id <- 537
-d <- xenografts %>% dplyr::filter(mouse == mouse_id)
+d <- xenografts %>% dplyr::filter(mouse == mouse_id) %>% dplyr::mutate(id = mouse)
 x <- biPOD::init(
   counts = d,
-  sample = mouse_id,
   break_points = NULL
 )
 ```
@@ -53,27 +52,22 @@ Once the `bipod` object has been initialized it is possible to visualize the dat
 biPOD::plot_input(x, log_scale = F, add_highlights = T)
 ```
 
-Now, to fit the data for the first task one has to use the `fit` function. 
+Now, to fit the data for the first task one has to use the `fit_growth` function. 
 
-If you want to fit one specific type of growth (`exponential` or `logistic`) you have to pass one of the two to the parameter `growth_type`. Otherwise, if you want to test both of them and choose the best one you have to set the `growth_type` parameter to `both`.
+If you want to fit specific type of growths (`exponential` or `logistic`) you have to pass those to the `models_to_fit` paramater.
 
-Sometimes it might be helpful to scale the input data by a `factor_size`, so that all the counts will be divided by it.
-
-When a population is decreasing or growing extremely slowly ($\rho \sim 0$) the instant of time in which the population was born might be impossible to infer. To deal with such situations, or when $t_0$ is of no interest, just set the `infer_t0` parameter to `FALSE`. 
-
-In order to use a Variational Inference algorithm it suffice to set the `variational` parameter to `TRUE`.
-
+When a population is decreasing or growing extremely slowly ($\rho \sim 0$) the instant of time in which the population was born might be impossible to infer. To deal with such situations, or when $t_0$ is of no interest, just set the `with_initiation` parameter to `FALSE`. 
 
 ```{r}
-x <- biPOD::fit(
-  x,
-  growth_type = "both",
-  model_selection_algo = "mixture_model",
-  factor_size = 1,
-  variational = T
+x <- biPOD::fit_growth(
+  x, 
+  with_initiation = F, 
+  noise_model = "poisson", 
+  comparison = "bic", 
+  models_to_fit = c("exponential", "logistic", "gompertz")
 )
 ```
-## Plot - Variational and no breakpoints
+## Plot - No breakpoints
 
 ### Diagnostics
 
@@ -81,7 +75,7 @@ The first plot to look at would be the one regarding the diagnostic of the infer
 To do so, let's use the `plot_elbo` function which requires a `bipod` object and the specification of which elbo data we want to use since there might be multiple if we perform different task on the same object.
 
 ```{r, warning=F}
-biPOD::plot_elbo(x, elbo_data = x$fit_elbo, diagnose = T)
+biPOD::plot_trace_parameters(x$growth_fit$fit)
 ```
 
 ### Plot of fit

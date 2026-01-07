@@ -4,18 +4,16 @@
 \alias{plot_breakpoint_model_selection}
 \title{Plot model selection results for breakpoint detection}
 \usage{
-plot_breakpoint_model_selection(bp_fit)
+plot_breakpoint_model_selection(x)
 }
 \arguments{
-\item{bp_fit}{A list returned by \code{\link{fit_breakpoints}} containing
-\code{evaluation_table} with columns \code{num_segments}, \code{score}, and \code{criterion},
-as well as \code{final_breakpoints} to identify the best segmentation.}
+\item{x}{A biPOD object which must have passed through the \code{fit_breakpoints} function.}
 }
 \value{
 A \code{ggplot} object showing the model selection curve with the best
 segmentation highlighted.
 }
 \description{
-Visualizes the model comparison scores (BIC or LOOIC) across candidate segmentations,
-highlighting the best number of segments.
+Visualizes the model comparison scores (BIC or LOOIC) across candidate
+segmentations, highlighting the best number of segments.
 }

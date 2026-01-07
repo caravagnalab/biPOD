@@ -27,7 +27,7 @@ plot_input <- function(x, log_scale = F, add_highlights = F) {
     my_ggplot_theme()
 
   if (add_highlights) {
-    p <- add_breakpoint_shadows(p = p, shadow_breakpoints = x$breakpoints, colors = NULL)
+    p <- add_breakpoint_shadows(p = p, shadow_breakpoints = x$metadata$breakpoints, colors = NULL)
   }
 
   # add style

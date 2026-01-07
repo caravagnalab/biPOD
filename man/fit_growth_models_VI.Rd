@@ -19,10 +19,6 @@ fit_growth_models_VI(
 )
 }
 \arguments{
-\item{data}{Data frame with columns \code{time} and \code{count}.}
-
-\item{breakpoints}{Numeric vector of breakpoints.}
-
 \item{with_initiation}{Logical; whether to include an initiation parameter in the models.}
 
 \item{chains}{Number of MCMC chains.}
