@@ -14,16 +14,15 @@
 #'
 #' @export
 plot_growth_model_selection <- function(x) {
-  growth_fit = x$growth_fit
 
   # Validate inputs
-  if (!is.list(growth_fit) || !all(c("criterion", "model_table") %in% names(growth_fit))) {
+  if (!is.list(x) || !all(c("criterion", "model_table") %in% names(x))) {
     stop("Input must be a list with 'criterion' and 'model_table' elements")
   }
 
-  criterion <- growth_fit$criterion
-  model_table <- growth_fit$model_table
-  rownames(model_table) <- growth_fit$model_table$model
+  criterion <- x$criterion
+  model_table <- x$model_table
+  rownames(model_table) <- x$model_table$model
 
   if (!criterion %in% c("bic", "BIC", "loo", "LOO")) {
     stop("Criterion must be 'bic', 'BIC', 'loo', or 'LOO'")
@@ -47,7 +46,7 @@ plot_growth_model_selection <- function(x) {
     model = factor(rownames(model_table), levels = rownames(model_table)),
     score = model_table[[criterion_col]],
     QC = model_table$qc,
-    is_best = model_table$model == growth_fit$best_model,
+    is_best = model_table$model == x$best_model,
     stringsAsFactors = FALSE
   )
   df = df %>% dplyr::arrange(score)
@@ -65,8 +64,7 @@ plot_growth_model_selection <- function(x) {
     ) +
     ggplot2::labs(x = "Model", y = y_label) +
     ggplot2::theme_bw() +
-    ggplot2::scale_color_manual(values = c("FAIL"="indianred", "PASS"="forestgreen")) +
-    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 25, hjust = 1))
+    ggplot2::scale_color_manual(values = c("FAIL"="indianred", "PASS"="forestgreen"))
 }
 
 #' Plot fitted growth model with uncertainty intervals
@@ -92,23 +90,18 @@ plot_growth_model_selection <- function(x) {
 #' @return A `ggplot` object showing the model fit, credible intervals, and observed data.
 #'
 #' @export
-plot_growth_fit <- function(x,
-                            time_grid = NULL,
-                            color = "black",
-                            alpha = 0.3,
-                            CI = 0.95) {
+plot_growth_fit <- function(x, data,
+                            time_grid = NULL, time_col = "time", count_col = "count",
+                            color = "black", alpha = 0.3, CI = 0.95) {
 
-  data = x$counts
-  growth_fit = x$growth_fit
-  breakpoints = x$metadata$breakpoints
-
-  ribbon_df = get_data_for_growth_plot(growth_fit, data = data, time_grid = time_grid, CI = CI, time_col = "time", count_col = "count")
+  ribbon_df = get_data_for_growth_plot(x = x, data = data, time_grid = time_grid, CI = CI, time_col = time_col, count_col = count_col)
+  breakpoints <- x$breakpoints
   model_name <- x$best_model
 
   p = ggplot2::ggplot(ribbon_df, ggplot2::aes(x = time)) +
     ggplot2::geom_ribbon(ggplot2::aes(ymin = lower, ymax = upper), fill = color, alpha = alpha) +
     ggplot2::geom_line(ggplot2::aes(y = median), color = color) +
-    ggplot2::geom_point(data = data, ggplot2::aes_string(x = "time", y = "count"), color = "black", size = 2) +
+    ggplot2::geom_point(data = data, ggplot2::aes_string(x = time_col, y = count_col), color = "black", size = 2) +
     ggplot2::geom_vline(xintercept = breakpoints, linetype = "dashed", color = "gray") +
     ggplot2::labs(title = paste("Growth fit:", model_name), x = "Time", y = "Count") +
     ggplot2::theme_bw()
@@ -370,91 +363,4 @@ get_data_for_growth_plot <- function(x, data, time_grid = NULL, CI = 0.95,
   }
 
   return(ribbon_df[, c("time", "median", "lower", "upper")])
-}
-
-
-#' Plot posterior predictive ribbon
-#'
-#' Creates a ribbon plot showing the median and credible intervals of the posterior
-#' predictive distribution (`y_rep`) extracted from a fitted model.
-#'
-#' @param x A biPOD object
-#' @param ci Credible interval width (default `0.9`).
-#'
-#' @return A `ggplot` object showing the posterior predictive ribbon and observed data.
-#' @examples
-#' \dontrun{
-#'   plot_ribbon(fit_object, data = my_data)
-#' }
-#'
-#' @export
-plot_ribbon <- function(x, ci = 0.9) {
-
-  data = x$counts
-  fit = x$growth_fit$fit
-  shadow_breakpoints = x$metadata$breakpoints
-
-  draws_list <- fit$draws
-  if (!is.list(draws_list)) stop("fit$draws must be a list of chains.")
-
-  extract_chain <- function(chain) {
-    param_names <- names(chain)
-    yrep_pattern <- grep("y[_]?rep\\[", param_names, value = TRUE)
-    if (length(yrep_pattern) == 0) stop("No y_rep[...] parameters found.")
-    y_rep_mat <- sapply(yrep_pattern, function(p) unlist(chain[[p]]))
-    if (is.null(dim(y_rep_mat))) y_rep_mat <- matrix(y_rep_mat, ncol = length(yrep_pattern))
-    colnames(y_rep_mat) <- gsub(".*\\[|\\]", "", yrep_pattern)
-    as.data.frame(y_rep_mat)
-  }
-
-  chain_dfs <- lapply(draws_list, extract_chain)
-  draws_df <- dplyr::bind_rows(chain_dfs, .id = "chain") %>%
-    dplyr::mutate(iter = stats::ave(rep(1, dplyr::n()), chain, FUN = seq_along))
-
-  draws_long <- draws_df %>%
-    tidyr::pivot_longer(-c(.data$chain, .data$iter), names_to = "time_index", values_to = "y_rep") %>%
-    dplyr::mutate(time_index = as.numeric(.data$time_index))
-
-  alpha <- (1 - ci) / 2
-  ribbon_df <- draws_long %>%
-    dplyr::group_by(.data$time_index) %>%
-    dplyr::summarise(
-      median = stats::median(.data$y_rep),
-      lower = stats::quantile(.data$y_rep, alpha),
-      upper = stats::quantile(.data$y_rep, 1 - alpha),
-      .groups = "drop"
-    ) %>%
-    dplyr::arrange(.data$time_index)
-
-  if (!is.null(data) && "time" %in% names(data)) {
-    time_mapping <- data.frame(time_index = seq_len(nrow(data)), time = data$time)
-    ribbon_df <- ribbon_df %>%
-      dplyr::left_join(time_mapping, by = "time_index") %>%
-      dplyr::filter(!is.na(.data$time))
-  } else if (!is.null(fit$time)) {
-    time_mapping <- data.frame(time_index = seq_along(fit$time), time = fit$time)
-    ribbon_df <- ribbon_df %>%
-      dplyr::left_join(time_mapping, by = "time_index") %>%
-      dplyr::filter(!is.na(.data$time))
-  } else {
-    ribbon_df <- ribbon_df %>%
-      dplyr::mutate(time = .data$time_index)
-  }
-
-  p <- ggplot2::ggplot(ribbon_df, ggplot2::aes(x = .data$time)) +
-    ggplot2::geom_ribbon(ggplot2::aes(ymin = .data$lower, ymax = .data$upper), fill = "gray80", alpha = 0.3) +
-    ggplot2::geom_line(ggplot2::aes(y = .data$median), color = "black") +
-    ggplot2::labs(x = "Time", y = "Predicted Count") +
-    ggplot2::theme_bw()
-
-  if (!is.null(data)) {
-    stopifnot(all(c("time", "count") %in% names(data)))
-    p <- p + ggplot2::geom_point(data = data, ggplot2::aes(x = .data$time, y = .data$count), color = "black")
-  }
-
-  if (!is.null(shadow_breakpoints)) {
-    p = add_breakpoint_shadows(p, shadow_breakpoints, colors = shadow_colors)
-  }
-
-  p
 }

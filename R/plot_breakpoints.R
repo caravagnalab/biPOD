@@ -3,14 +3,16 @@
 #' Plots posterior densities of the inferred breakpoint times (`t_array[j]`)
 #' from a fitted breakpoint model.
 #'
-#' @param bp_fit A list containing the fitted breakpoint model, with element
-#' `final_fit$draws` as a list of chains (each chain is a named list of parameter draws).
-#' @param data Optional data frame with column `time` to restrict the x-axis to observed times.
+#' @param x A biPOD object which must have passed through the `fit_breakpoints` function.
 #'
 #' @return A `ggplot` object showing the posterior densities for each breakpoint parameter.
 #'
 #' @export
-plot_breakpoint_posterior <- function(bp_fit, data = NULL, colors = NULL) {
+plot_breakpoint_posterior <- function(x, colors = NULL, zoom = FALSE) {
+
+  if (!c("breakpoints_fit" %in% names(x))) stop("x must be a biPOD object passed through the `fit_breakpoints` function.")
+  bp_fit = x$breakpoints_fit
+  data = x$counts
 
   chains <- bp_fit$final_fit$draws
   if (!is.list(chains)) stop("bp_fit$final_fit$draws must be a list of chains.")
@@ -47,7 +49,7 @@ plot_breakpoint_posterior <- function(bp_fit, data = NULL, colors = NULL) {
     ggplot2::theme(legend.position = "none") +
     ggplot2::scale_fill_manual(values = colors)
 
-  if (!is.null(data) && "time" %in% names(data)) {
+  if (!is.null(data) && "time" %in% names(data) & !zoom) {
     p <- p + ggplot2::scale_x_continuous(limits = c(min(data$time), max(data$time)))
   }
 
@@ -56,18 +58,18 @@ plot_breakpoint_posterior <- function(bp_fit, data = NULL, colors = NULL) {
 
 #' Plot model selection results for breakpoint detection
 #'
-#' Visualizes the model comparison scores (BIC or LOOIC) across candidate segmentations,
-#' highlighting the best number of segments.
+#' Visualizes the model comparison scores (BIC or LOOIC) across candidate
+#' segmentations, highlighting the best number of segments.
 #'
-#' @param bp_fit A list returned by \code{\link{fit_breakpoints}} containing
-#'   `evaluation_table` with columns `num_segments`, `score`, and `criterion`,
-#'   as well as `final_breakpoints` to identify the best segmentation.
+#' @param x A biPOD object which must have passed through the `fit_breakpoints` function.
 #'
 #' @return A `ggplot` object showing the model selection curve with the best
 #' segmentation highlighted.
 #'
 #' @export
-plot_breakpoint_model_selection <- function(bp_fit) {
+plot_breakpoint_model_selection <- function(x) {
+
+  bp_fit = x$breakpoints_fit
 
   best_num_segments <- length(bp_fit$final_breakpoints) + 1
   df <- bp_fit$evaluation_table %>%

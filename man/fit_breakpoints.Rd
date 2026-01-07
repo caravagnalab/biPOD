@@ -5,9 +5,8 @@
 \title{Fit breakpoints and final growth model}
 \usage{
 fit_breakpoints(
-  data,
+  x,
   with_initiation,
-  user_breakpoints = NULL,
   user_breakpoints_ci_level = 0.95,
   max_segments = 4,
   min_segment_size = 3,
@@ -24,8 +23,6 @@ fit_breakpoints(
 )
 }
 \arguments{
-\item{data}{Data frame with columns \code{time} and \code{count}.}
-
 \item{with_initiation}{Logical; fit model with initiation parameter.}
 
 \item{max_segments}{Maximum number of segments to test.}
@@ -49,6 +46,8 @@ fit_breakpoints(
 \item{cores}{Parallel chains.}
 
 \item{t_prior_sd}{Standard deviation for breakpoint prior.}
+
+\item{data}{Data frame with columns \code{time} and \code{count}.}
 }
 \value{
 A list with:

@@ -11,9 +11,8 @@ init(counts, sample, break_points = NULL)
 \itemize{
 \item \code{time}: Numeric or integer values representing the time steps at which population counts were recorded.
 \item \code{count}: Integer values representing the population count at each time step.
+\item \code{id} : A character string specifying the name of the sample. This name is stored in the metadata of the resulting biPOD object.
 }}
-
-\item{sample}{A character string specifying the name of the sample. This name is stored in the metadata of the resulting biPOD object.}
 
 \item{break_points}{A numeric vector specifying the breakpoints that define changes in the population dynamics.
 If provided, these breakpoints are used to group the time steps. If \code{NULL}, no grouping is applied. (default is NULL)}

@@ -4,13 +4,10 @@
 \alias{plot_breakpoint_posterior}
 \title{Plot posterior distributions of inferred breakpoints}
 \usage{
-plot_breakpoint_posterior(bp_fit, data = NULL, colors = NULL)
+plot_breakpoint_posterior(x, colors = NULL, zoom = FALSE)
 }
 \arguments{
-\item{bp_fit}{A list containing the fitted breakpoint model, with element
-\code{final_fit$draws} as a list of chains (each chain is a named list of parameter draws).}
-
-\item{data}{Optional data frame with column \code{time} to restrict the x-axis to observed times.}
+\item{x}{A biPOD object which must have passed through the \code{fit_breakpoints} function.}
 }
 \value{
 A \code{ggplot} object showing the posterior densities for each breakpoint parameter.

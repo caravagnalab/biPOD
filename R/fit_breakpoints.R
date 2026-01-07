@@ -255,9 +255,8 @@ fit_growth_model_breakpoints <- function(data,
 #' \item{final_fit}{Final fitted model object.}
 #' \item{final_summary}{Summary of the final fit.}
 #' @export
-fit_breakpoints <- function(data,
+fit_breakpoints <- function(x,
                             with_initiation,
-                            user_breakpoints = NULL,
                             user_breakpoints_ci_level = 0.95,
                             max_segments = 4,
                             min_segment_size = 3,
@@ -275,12 +274,15 @@ fit_breakpoints <- function(data,
   comparison <- match.arg(comparison)
   noise_model <- match.arg(noise_model)
 
+  data = x$counts
+  user_breakpoints = x$metadata$breakpoints
+
   if (floor(nrow(data) / min_segment_size) < max_segments) {
     message("Reducing max_segements due to low number of observations")
     max_segments = floor(nrow(data) / min_segment_size)
   }
 
-  seg_res <- biPOD(
+  seg_res <- segment_fit(
     data = data,
     with_initiation = with_initiation,
     noise_model = noise_model,
@@ -317,7 +319,6 @@ fit_breakpoints <- function(data,
     sort()
 
   # Validate, if present, user breakpoints
-  # Validate, if present, user breakpoints
   if (!is.null(user_breakpoints)) {
 
     user_bp_validation <- validate_user_breakpoints(
@@ -338,9 +339,11 @@ fit_breakpoints <- function(data,
     }
   }
 
-  list(evaluation_table = eval_table, first_breakpoints = first_bp,
-       final_breakpoints = final_bps, final_fit = final_fit$fit,
-       final_summary = final_fit$summary)
+  x$breakpoints_fit = list(evaluation_table = eval_table, first_breakpoints = first_bp,
+                           final_breakpoints = final_bps, final_fit = final_fit$fit,
+                           final_summary = final_fit$summary)
+  x$metadata$breakpoints = final_bps
+  x
 }
 
 
@@ -361,7 +364,7 @@ validate_user_breakpoints <- function(fit,
 
   stopifnot(is.numeric(user_breakpoints))
 
-  # ---- extract posterior draws for t_array[*] ----
+  # extract posterior draws for t_array[*]
   draws_mat <- posterior::as_draws_matrix(fit$draws)
   t_cols <- grep("^t_array\\[", colnames(draws_mat))
   if (length(t_cols) == 0) stop("No t_array[...] parameters found in posterior draws.")
@@ -371,13 +374,13 @@ validate_user_breakpoints <- function(fit,
   # mitigate label switching
   t_draws <- t(apply(t_draws, 1, sort))
 
-  # ---- posterior CI for each inferred breakpoint ----
+  # posterior CI for each inferred breakpoint
   alpha <- (1 - ci_level) / 2
   t_med <- apply(t_draws, 2, stats::median, na.rm = TRUE)
   t_lo  <- apply(t_draws, 2, stats::quantile, probs = alpha, na.rm = TRUE)
   t_hi  <- apply(t_draws, 2, stats::quantile, probs = 1 - alpha, na.rm = TRUE)
 
-  # ---- for each user breakpoint: find a CI that contains it (if any) ----
+  # for each user breakpoint: find a CI that contains it (if any)
   res <- lapply(user_breakpoints, function(b) {
     inside <- which(b >= t_lo & b <= t_hi)
 

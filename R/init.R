@@ -9,8 +9,8 @@
 #' @param counts A data frame with two columns:
 #' - `time`: Numeric or integer values representing the time steps at which population counts were recorded.
 #' - `count`: Integer values representing the population count at each time step.
-#'
-#' @param sample A character string specifying the name of the sample. This name is stored in the metadata of the resulting biPOD object.
+#' - `id` : A character string specifying the name of the sample. This name is stored in the metadata of the resulting biPOD object.
+#
 #' @param break_points A numeric vector specifying the breakpoints that define changes in the population dynamics.
 #'  If provided, these breakpoints are used to group the time steps. If `NULL`, no grouping is applied. (default is NULL)
 #'
@@ -28,8 +28,11 @@ init <- function(counts, sample, break_points = NULL) {
   class(bipod) <- "bipod"
 
   # Add sample to metadata
-  bipod$metadata <- list(sample = sample)
-  cli::cli_alert_info("Using sample named: {.field {sample}}.")
+  if (!("id" %in% colnames(counts))) stop("Input dataframe should contain a column named 'id'")
+  id = unique(counts$id)
+  if (length(id) != 1) stop("Input dataframe should contain unique value in 'id' column")
+  bipod$metadata <- list(sample = id)
+  cli::cli_alert_info("Using sample named: {.field {id}}.")
 
   # Parse input
   counts <- check_input_data(counts)
@@ -52,8 +55,8 @@ init <- function(counts, sample, break_points = NULL) {
 
 
 check_input_data <- function(counts) {
-  if (!("count" %in% names(counts))) stop("Input dataframe should contain a column named either 'count'")
-  if (!("time" %in% names(counts))) stop("Input dataframe should contain a column named either 'time'")
+  if (!("count" %in% names(counts))) stop("Input dataframe should contain a column named 'count'")
+  if (!("time" %in% names(counts))) stop("Input dataframe should contain a column named 'time'")
   if (!(all(counts$count >= 0))) stop("The values of the 'count' column should be all be positive or equal to zero")
 
   if (is.unsorted(counts$time)) {

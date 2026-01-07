@@ -5,8 +5,7 @@
 \title{Fit growth models and select the best one}
 \usage{
 fit_growth(
-  data,
-  breakpoints = numeric(0),
+  x,
   with_initiation = TRUE,
   chains = 4,
   iter = 2000,
@@ -21,9 +20,7 @@ fit_growth(
 )
 }
 \arguments{
-\item{data}{Data frame with columns \code{time} and \code{count}.}
-
-\item{breakpoints}{Numeric vector of breakpoints.}
+\item{x}{biPOD object}
 
 \item{with_initiation}{Logical; whether to include an initiation parameter in the models.}
 

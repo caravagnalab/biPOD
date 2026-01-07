@@ -5,8 +5,7 @@
 #' count data with optional breakpoints, using either MCMC sampling or variational inference (VI).
 #' The best model is selected based on the specified criterion (LOO, BIC, or ELBO).
 #'
-#' @param data Data frame with columns `time` and `count`.
-#' @param breakpoints Numeric vector of breakpoints.
+#' @param x biPOD object
 #' @param with_initiation Logical; whether to include an initiation parameter in the models.
 #' @param chains Number of MCMC chains.
 #' @param iter Number of iterations (or output samples for VI).
@@ -26,8 +25,7 @@
 #'   \item{breakpoints}{Breakpoints used in the fit.}
 #'
 #' @export
-fit_growth <- function(data,
-                       breakpoints = numeric(0),
+fit_growth <- function(x,
                        with_initiation = TRUE,
                        chains = 4,
                        iter = 2000,
@@ -40,7 +38,7 @@ fit_growth <- function(data,
                        use_elbo = FALSE) {
 
   data = x$counts
-  breakpoints = x$breakpoints
+  breakpoints = x$metadata$breakpoints
 
   comparison <- match.arg(comparison)
   noise_model <- match.arg(noise_model)
@@ -88,7 +86,7 @@ fit_growth <- function(data,
 
   best_fit <- res$fits[[best_model]]
 
-  x = list(
+  x$growth_fit = list(
     best_model = best_model,
     fit = parse_stan_fit(best_fit),
     qc = res$fits_qc[[best_model]],

@@ -50,8 +50,7 @@ Let's use one of the sample coming from the `xenograft` data along with a made u
 ```{r}
 mouse_id <- 529
 x <- biPOD::init(
-  counts = xenografts %>% dplyr::filter(mouse == mouse_id) %>% dplyr::mutate(count = tumour_volume),
-  sample = mouse_id,
+  counts = xenografts %>% dplyr::filter(mouse == mouse_id) %>% dplyr::mutate(count = tumour_volume, id = mouse),
   break_points = c(0, 20)
 )
 ```
