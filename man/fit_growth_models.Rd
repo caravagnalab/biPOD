@@ -14,7 +14,7 @@ fit_growth_models(
   cores = 4,
   comparison = c("loo", "bic"),
   models_to_fit = c("exponential", "logistic", "gompertz"),
-  noise_model = c("lognormal", "poisson")
+  noise_model = c("lognormal", "poisson", "negbinomial")
 )
 }
 \arguments{

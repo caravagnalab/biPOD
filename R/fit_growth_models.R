@@ -34,7 +34,7 @@ fit_growth <- function(x,
                        comparison = c("bic", "loo"),
                        models_to_fit = c("exponential", "logistic", "gompertz", "monomolecular", "quadraticexp"),
                        method = c("sampling", "vi"),
-                       noise_model = c("lognormal", "poisson"),
+                       noise_model = c("lognormal", "poisson", "negbinomial"),
                        use_elbo = FALSE) {
 
   data = x$counts
@@ -108,7 +108,7 @@ fit_growth_models <- function(data, breakpoints, with_initiation = TRUE,
                               chains = 4, iter = 2000, seed = 123, cores = 4,
                               comparison = c("loo", "bic"),
                               models_to_fit = c("exponential", "logistic", "gompertz"),
-                              noise_model = c("lognormal", "poisson")) {
+                              noise_model = c("lognormal", "poisson", "negbinomial")) {
   comparison <- match.arg(comparison)
   noise_model <- match.arg(noise_model)
   stopifnot(all(c("time", "count") %in% colnames(data)))
@@ -126,12 +126,11 @@ fit_growth_models <- function(data, breakpoints, with_initiation = TRUE,
   info_criteria <- numeric(length(models_to_fit))
   names(info_criteria) <- models_to_fit
 
-  i = 1
   for (i in seq_along(models_to_fit)) {
     model_name <- models_to_fit[i]
     model <- get_model(model_files[i], noise_model)
 
-    stan_data$prior_only == 0
+    stan_data$prior_only <- 0
     message(sprintf("Fitting model: %s", model_name))
     fit <- suppressMessages(suppressWarnings(model$sample(
       data = stan_data, chains = chains, iter_warmup = iter, iter_sampling = iter,
@@ -182,10 +181,12 @@ fit_growth_models_VI <- function(data, breakpoints, with_initiation = TRUE,
                                  chains = 4, iter = 2000, seed = 123, cores = 4,
                                  comparison = c("loo", "bic"),
                                  models_to_fit = c("exponential", "logistic", "gompertz"),
+                                 noise_model = c("lognormal", "poisson", "negbinomial"),
                                  method = c("sampling", "vi"),
                                  use_elbo = FALSE) {
 
   comparison <- match.arg(comparison)
+  noise_model <- match.arg(noise_model)
   method <- match.arg(method)
 
   stopifnot(all(c("time", "count") %in% colnames(data)))
@@ -205,6 +206,7 @@ fit_growth_models_VI <- function(data, breakpoints, with_initiation = TRUE,
   model_files <- paste0(models_to_fit, if (with_initiation) "_with_init" else "_no_init")
 
   fits <- list()
+  fits_qc <- list()
   comparisons <- list()
   info_criteria <- numeric(length(models_to_fit))
   names(info_criteria) <- models_to_fit
@@ -287,6 +289,7 @@ fit_growth_models_VI <- function(data, breakpoints, with_initiation = TRUE,
     }
 
     fits[[model_name]] <- fit
+    fits_qc[[model_name]] <- list(verdict = "SKIPPED", fail_reasons = "QC diagnostics not available for VI fits")
   }
 
   comp_table <- if (use_elbo) {
@@ -306,6 +309,7 @@ fit_growth_models_VI <- function(data, breakpoints, with_initiation = TRUE,
 
   list(
     fits = fits,
+    fits_qc = fits_qc,
     comparisons = comparisons,
     model_table = comp_table,
     criterion = if (use_elbo) "elbo" else comparison,
@@ -338,7 +342,7 @@ fit_growth_models_VI <- function(data, breakpoints, with_initiation = TRUE,
 #' }
 #' @export
 fit_best_recovery_model <- function(data,
-                                    noise_model = c("lognormal", "poisson"),
+                                    noise_model = c("lognormal", "poisson", "negbinomial"),
                                     chains = 4,
                                     iter = 4000,
                                     seed = 123,

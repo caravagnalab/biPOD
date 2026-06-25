@@ -14,7 +14,7 @@ fit_breakpoints(
   enforce_rho_separation = TRUE,
   alpha_rho = 0.05,
   models_to_fit = c("exponential"),
-  noise_model = c("lognormal", "poisson"),
+  noise_model = c("lognormal", "poisson", "negbinomial"),
   chains = 4,
   iter = 4000,
   seed = 1234,

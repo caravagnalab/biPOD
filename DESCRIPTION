@@ -4,7 +4,9 @@ Title: biPOD
 Version: 0.99.0
 Authors@R: 
     person("Giovanni", "Santacatterina", , "santacatterinagiovanni@gmail.com", role = c("aut", "cre"))
-Description: biPOD does.
+Description: Bayesian inference of kinetic parameters (growth rates, birth time,
+    change points) from time-series population count data, using Stan via 'cmdstanr'
+    for MCMC and variational inference with model selection via LOO-IC or BIC.
 License: GPL (>= 3)
 URL: https://caravagnalab.github.io/biPOD/
 Depends: 

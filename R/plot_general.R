@@ -65,7 +65,8 @@ plot_parameter_posteriors <- function(fit_draws, params, faceted = TRUE, colors 
 #' }
 #'
 #' @export
-plot_trace_parameters <- function(fit) {
-  draws_df <- posterior::as_draws_df(fit$draws, parameters)
+plot_trace_parameters <- function(fit, params = NULL) {
+  draws_df <- posterior::as_draws_df(fit$draws())
+  if (!is.null(params)) draws_df <- posterior::subset_draws(draws_df, variable = params)
   bayesplot::mcmc_trace(draws_df)
 }

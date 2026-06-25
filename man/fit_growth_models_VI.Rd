@@ -14,6 +14,7 @@ fit_growth_models_VI(
   cores = 4,
   comparison = c("loo", "bic"),
   models_to_fit = c("exponential", "logistic", "gompertz"),
+  noise_model = c("lognormal", "poisson", "negbinomial"),
   method = c("sampling", "vi"),
   use_elbo = FALSE
 )

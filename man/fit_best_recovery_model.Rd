@@ -6,7 +6,7 @@
 \usage{
 fit_best_recovery_model(
   data,
-  noise_model = c("lognormal", "poisson"),
+  noise_model = c("lognormal", "poisson", "negbinomial"),
   chains = 4,
   iter = 4000,
   seed = 123,

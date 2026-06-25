@@ -8,7 +8,7 @@
 \description{
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 
-biPOD does.
+Bayesian inference of kinetic parameters (growth rates, birth time, change points) from time-series population count data, using Stan via 'cmdstanr' for MCMC and variational inference with model selection via LOO-IC or BIC.
 }
 \seealso{
 Useful links:
