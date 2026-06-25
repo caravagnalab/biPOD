@@ -45,7 +45,9 @@ init <- function(counts, sample, break_points = NULL) {
     break_points <- check_break_points(d = counts, break_points = break_points)
     bipod$counts$group <- bp_to_groups(counts, break_points)
     min_group_numerosity <- bipod$counts$group %>% table() %>% min()
-    # if (min_group_numerosity <= 1) { stop("With the given breakpoints some time windows contain less than 2 observations, which makes the inference not possible") }
+    if (min_group_numerosity <= 1) {
+      cli::cli_alert_warning("Some time windows contain fewer than 2 observations. Inference in those windows may be unreliable.")
+    }
   }
 
   bipod$metadata$breakpoints <- break_points

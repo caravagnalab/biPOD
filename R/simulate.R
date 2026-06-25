@@ -67,7 +67,7 @@ sim_stochastic_exponential <- function(n0, lambda, mu, steps, delta_t) {
 
   # Return the initial population size if no steps are requested
   if (steps == 0) {
-    return(c(n0))
+    return(dplyr::tibble(time = 0, count = n0, group = 0))
   }
 
   # Initialize the population size vector
@@ -224,7 +224,7 @@ sim_stochastic_logistic <- function(n0, lambda, mu, K, steps, delta_t) {
 
   # Return the initial population size if no steps are requested
   if (steps == 0) {
-    return(c(n0))
+    return(dplyr::tibble(time = 0, count = n0, group = 0))
   }
 
   # Initialize the population size vector

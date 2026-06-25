@@ -4,7 +4,7 @@
 \alias{plot_trace_parameters}
 \title{Plot MCMC trace plots for parameters}
 \usage{
-plot_trace_parameters(fit)
+plot_trace_parameters(fit, params = NULL)
 }
 \arguments{
 \item{fit}{A fitted model object containing posterior draws in \code{fit$draws}.}

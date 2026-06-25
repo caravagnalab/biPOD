@@ -193,7 +193,7 @@ segment_fit <- function(data,
   if (length(valid_candidates) == 0) stop("No valid segmentations found.")
   best <- valid_candidates[[which.min(sapply(valid_candidates, function(x) x$metric))]]
 
-  list(fit = parse_stan_fit(best$result$fits$exponential), criterion = comparison,
+  list(fit = parse_stan_fit(best$result$fits[[models_to_fit[1]]]), criterion = comparison,
        best_breakpoints = best$breakpoints, evaluation_table = do.call(rbind, all_evaluations))
 }
 
@@ -264,7 +264,7 @@ fit_breakpoints <- function(x,
                             enforce_rho_separation = TRUE,
                             alpha_rho = 0.05,
                             models_to_fit = c("exponential"),
-                            noise_model = c("lognormal", "poisson"),
+                            noise_model = c("lognormal", "poisson", "negbinomial"),
                             chains = 4,
                             iter = 4000,
                             seed = 1234,
