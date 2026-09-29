@@ -8,6 +8,7 @@ data {
 parameters {
   real<lower=0> rho_s;        // Parameter rho_s (rate for decay)
   real<lower=T[1]> t_end;     // Parameter t_end (time shift)
+  real<lower=0> phi;           // NB overdispersion
 }
 
 model {
@@ -28,9 +29,8 @@ model {
   // Priors
   rho_s ~ normal(0, 1);       // Prior for rho_s
   t_end ~ normal(T[S], T[S] - T[1]);    // Prior for t_end
-
-  // Likelihood
-  N ~ poisson(mu);
+  phi ~ gamma(2, 0.1);
+  N ~ neg_binomial_2(mu, phi);
 }
 
 generated quantities {
@@ -47,6 +47,6 @@ generated quantities {
     }
     nr[i] = 0.0;
     yrep[i] = ns[i] + nr[i];
-    log_lik[i] = poisson_lpmf(N[i] | yrep[i]); // Log-likelihood calculation
+    log_lik[i] = neg_binomial_2_lpmf(N[i] | yrep[i], phi); // Log-likelihood calculation
   }
 }

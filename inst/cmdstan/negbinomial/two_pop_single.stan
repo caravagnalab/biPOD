@@ -8,6 +8,7 @@ data {
 parameters {
   real<lower=0> rho_r;        // Parameter rho_r (rate for recover)
   real<upper=T[1]> t0_r;                   // Parameter t_r (time shift)
+  real<lower=0> phi;           // NB overdispersion
 }
 
 model {
@@ -25,9 +26,8 @@ model {
   // Priors
   rho_r ~ normal(0, 1);       // Prior for rho_r
   t0_r ~ normal(T[1], T[S] - T[1]);         // Prior for t_r
-
-  // Likelihood (assuming normallN distributed noise)
-  N ~ poisson(mu);
+  phi ~ gamma(2, 0.1);
+  N ~ neg_binomial_2(mu, phi);
 }
 
 generated quantities {
@@ -40,6 +40,6 @@ generated quantities {
     nr[i] = exp(rho_r * (T[i] - t0_r));
     ns[i] = 0.0;
     yrep[i] =  nr[i] + ns[i];
-    log_lik[i] = poisson_lpmf(N[i] | yrep[i]); // Log-likelihood calculation
+    log_lik[i] = neg_binomial_2_lpmf(N[i] | yrep[i], phi); // Log-likelihood calculation
   }
 }

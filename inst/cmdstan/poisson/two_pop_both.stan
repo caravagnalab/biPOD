@@ -23,8 +23,8 @@ model {
   // n0 ~ normal(N[1], 0.1 * N[1]);
   rho_r ~ normal(0, 1);       // Prior for rho_r
   rho_s ~ normal(0, 1);       // Prior for rho_s
-  t0_r ~ normal(T[1], 5);         // Prior for t_r
-  t_end ~ normal(T[S], 5);
+  t0_r ~ normal(T[1], T[S] - T[1]);         // Prior for t_r
+  t_end ~ normal(T[S], T[S] - T[1]);
 
   for (i in 1:S) {
     if (T[i] >= t_end) {

@@ -11,6 +11,7 @@ parameters {
   real<upper=T[1]> t0_r;                   // Parameter t_r (time shift)
   real<lower=T[1]> t_end;
   // real<lower=0, upper=1.5> f_s;
+  real<lower=0> phi;           // NB overdispersion
 }
 
 
@@ -41,9 +42,8 @@ model {
 
     mu[i] = nr[i] + ns[i];
   }
-
-  // Likelihood (assuming normallN distributed noise)
-  N ~ poisson(mu);
+  phi ~ gamma(2, 0.1);
+  N ~ neg_binomial_2(mu, phi);
 }
 
 generated quantities {
@@ -65,6 +65,6 @@ generated quantities {
       nr[i] = 1e-9;
     }
     yrep[i] = nr[i] + ns[i];
-    log_lik[i] = poisson_lpmf(N[i] | yrep[i]); // Log-likelihood calculation
+    log_lik[i] = neg_binomial_2_lpmf(N[i] | yrep[i], phi); // Log-likelihood calculation
   }
 }
