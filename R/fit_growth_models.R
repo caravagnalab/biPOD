@@ -317,6 +317,77 @@ fit_growth_models_VI <- function(data, breakpoints, with_initiation = TRUE,
   )
 }
 
+#' Initial values for the recovery models
+#'
+#' Rates are taken from the decline to the minimum (sensitive) and the rise from
+#' the minimum to the last observation (resistant); `t_end` and `t0_r` are set so
+#' that the curves pass through the first and last observations, then clipped
+#' to each model's constraints. Chains after the first are jittered.
+#'
+#' @param data Data frame with `time` and `count`, sorted by time.
+#' @param model_name One of the recovery model names.
+#' @param noise_model `"poisson"` or `"negbinomial"`.
+#' @param chain_id Chain index.
+#' @return A named list of initial values for one chain.
+recovery_inits <- function(data, model_name, noise_model, chain_id = 1) {
+  t <- data$time
+  y <- pmax(data$count, 1)
+  S <- length(t)
+  i_min <- which.min(y)
+  jit <- if (chain_id == 1) 1 else exp(stats::rnorm(1, 0, 0.3))
+  shift <- if (chain_id == 1) 0 else stats::rnorm(1, 0, 0.01 * (t[S] - t[1]))
+
+  rho_s <- max(1e-3, log(y[1] / y[i_min]) / max(t[i_min] - t[1], 1)) * jit
+  rho_r <- max(1e-3, log(y[S] / y[i_min]) / max(t[S] - t[i_min], 1)) * jit
+  t_end <- t[1] + max(log(y[1]), 0.5) / rho_s + abs(shift)
+  t0_r <- t[S] - max(log(y[S]), 0.5) / rho_r + shift
+  rho_single <- max(1e-3, log(y[S] / y[1]) / max(t[S] - t[1], 1)) * jit
+  rho_decay <- max(1e-3, log(y[1]) / max(t[S] - t[1], 1)) * jit
+
+  init <- switch(model_name,
+    two_pop_both        = list(rho_s = rho_s, rho_r = rho_r, t0_r = t0_r, t_end = t_end),
+    two_pop_preexisting = list(rho_s = rho_s, rho_r = rho_r, t0_r = min(t0_r, t[1] - 1), t_end = t_end),
+    two_pop_denovo      = list(rho_s = rho_s, rho_r = rho_r, t0_r = max(t0_r, t[1] + 1), t_end = t_end),
+    two_pop_single      = list(rho_r = rho_single, t0_r = t[1] - 1),
+    single_pop_decay    = list(rho_s = rho_decay, t_end = t[1] + max(log(y[1]), 0.5) / rho_decay)
+  )
+  if (noise_model == "negbinomial") init$phi <- 10
+  init
+}
+
+# Sampled parameters of each recovery model (the BIC penalty counts these only)
+recovery_model_params <- function(model_name, noise_model) {
+  p <- switch(model_name,
+    two_pop_both = , two_pop_preexisting = , two_pop_denovo = c("rho_s", "rho_r", "t0_r", "t_end"),
+    two_pop_single = c("rho_r", "t0_r"),
+    single_pop_decay = c("rho_s", "t_end")
+  )
+  if (noise_model == "negbinomial") p <- c(p, "phi")
+  p
+}
+
+sample_recovery_model <- function(model_name, stan_data, data, noise_model, chains,
+                                  iter, seed, cores) {
+  mod <- get_model(model_name, noise_model)
+  run <- function(seed) {
+    set.seed(seed)
+    inits <- lapply(seq_len(chains), function(i) recovery_inits(data, model_name, noise_model, i))
+    # cmdstanr names output CSVs by model and minute; a unique directory per
+    # run stops a garbage-collected earlier fit from deleting these files
+    out_dir <- tempfile("biPOD_recovery_")
+    dir.create(out_dir)
+    fit <- suppressMessages(suppressWarnings(mod$sample(
+      data = stan_data, chains = chains, iter_warmup = iter, iter_sampling = iter,
+      seed = seed, parallel_chains = cores, refresh = 0, init = inits,
+      output_dir = out_dir, show_messages = FALSE
+    )))
+    fit$draws("lp__")
+    fit
+  }
+  # one retry with another seed if a chain fails
+  tryCatch(run(seed), error = function(e) run(seed + 1000))
+}
+
 #' Fit and compare tumor recovery models
 #'
 #' Fits and compares three candidate recovery models: a two-population mixture
@@ -328,20 +399,29 @@ fit_growth_models_VI <- function(data, breakpoints, with_initiation = TRUE,
 #' check on the resistant clone's birth time (`t0_r`) refits with either the
 #' de-novo or pre-existing resistant-clone model.
 #'
+#' Every chain is initialised from data-driven values (see `recovery_inits`).
+#' BIC is computed from the maximum log-likelihood over draws and the number of
+#' sampled parameters, so a chain stuck in a poor mode cannot decide the model
+#' choice. Convergence of the final fit is reported in `converged`.
+#'
 #' @param data Data frame with `time` and `count` columns.
+#' @param noise_model `"poisson"` or `"negbinomial"`.
 #' @param chains Number of MCMC chains.
-#' @param iter Number of iterations.
+#' @param iter Number of warmup and of sampling iterations per chain.
 #' @param seed Random seed.
 #' @param cores Number of CPU cores.
-#' @param comparison Criterion for model selection: `"loo"` or `"bic"`.
+#' @param comparison Criterion for model selection: `"bic"` or `"loo"`.
+#' @param max_rhat Rhat threshold used for the `converged` flag.
 #'
 #' @return A list containing:
 #'   \item{best_model}{Name of the best recovery model: `"pre-existing"`, `"de-novo"`,
 #'     `"single-pop-growing"`, or `"single-pop-shrinking"`.}
-#'   \item{best_fit}{Parsed Stan fit object for the best model.}
-#'   \item{all_fits}{List of all fitted models.}
-#'   \item{model_table}{Comparison table with IC values.}
+#'   \item{first_fit}{Parsed Stan fit of the selected candidate model.}
+#'   \item{final_fit}{Parsed Stan fit of the final model.}
+#'   \item{model_table}{Comparison table with IC values and Rhat per candidate.}
 #'   \item{criterion}{Criterion used for model selection.}
+#'   \item{max_rhat}{Maximum Rhat of the final fit's parameters.}
+#'   \item{converged}{Whether `max_rhat` is below the threshold.}
 #'
 #' @examples
 #' \dontrun{
@@ -349,86 +429,59 @@ fit_growth_models_VI <- function(data, breakpoints, with_initiation = TRUE,
 #' }
 #' @export
 fit_best_recovery_model <- function(data,
-                                    noise_model = c("lognormal", "poisson", "negbinomial"),
+                                    noise_model = c("poisson", "negbinomial"),
                                     chains = 4,
-                                    iter = 4000,
+                                    iter = 2000,
                                     seed = 123,
                                     cores = 4,
-                                    comparison = c("loo", "bic")) {
+                                    comparison = c("bic", "loo"),
+                                    max_rhat = 1.05) {
   comparison <- match.arg(comparison)
   noise_model <- match.arg(noise_model)
   stopifnot(all(c("time", "count") %in% colnames(data)))
   data <- data[order(data$time), ]
+  n <- nrow(data)
 
-  stan_data <- list(S = nrow(data), N = data$count, T = data$time, prior_only = 0)
+  stan_data <- list(S = n, N = as.integer(round(data$count)), T = data$time, prior_only = 0)
   model_files <- c("two_pop_both", "two_pop_single", "single_pop_decay")
 
   fits <- list()
-  ic_values <- numeric(length(model_files))
-
-  for (i in seq_along(model_files)) {
-    mod <- biPOD:::get_model(model_files[i], noise_model)
-    fit <- suppressMessages(suppressWarnings(mod$sample(
-      data = stan_data, chains = chains, iter_warmup = iter, iter_sampling = iter,
-      seed = seed, parallel_chains = cores, refresh = 0
-    )))
-    fits[[i]] <- fit
-
-    log_lik <- fit$draws("log_lik") %>% posterior::as_draws_matrix()
-    if (comparison == "loo") {
-      ic_values[i] <- loo::loo(log_lik)$estimates["elpd_loo", "Estimate"]
+  model_table <- dplyr::bind_rows(lapply(model_files, function(m) {
+    fit <- sample_recovery_model(m, stan_data, data, noise_model, chains, iter, seed, cores)
+    fits[[m]] <<- fit
+    log_lik <- posterior::as_draws_matrix(fit$draws("log_lik"))
+    params <- recovery_model_params(m, noise_model)
+    ic <- if (comparison == "loo") {
+      suppressWarnings(loo::loo(log_lik)$estimates["elpd_loo", "Estimate"])
     } else {
-      log_lik_sum <- sum(apply(log_lik, 1, mean))
-      # fit$metadata()$parameters does not exist in current cmdstanr
-      # (always NULL); this silently zeroed BIC's complexity penalty for
-      # every candidate model. model_params is the correct field. Note it
-      # counts ALL stan variables incl. generated quantities (log_lik, yrep,
-      # ns, nr), not just sampled parameters, so the absolute k is inflated by
-      # a constant -- but that constant is identical across two_pop_both,
-      # two_pop_single and single_pop_decay (they share the same generated-
-      # quantities block) and n is fixed within one call, so it cancels
-      # exactly in the which.min() comparison below.
-      k <- length(fit$metadata()$model_params)
-      n <- nrow(data)
-      ic_values[i] <- -2 * log_lik_sum + k * log(n)
+      -2 * max(rowSums(log_lik)) + length(params) * log(n)
     }
+    row <- dplyr::tibble(model = m, ic = ic, rhat = max(fit$summary(params)$rhat, na.rm = TRUE))
+    names(row)[2] <- toupper(comparison)
+    row
+  }))
+
+  ic_values <- model_table[[toupper(comparison)]]
+  best <- model_files[if (comparison == "loo") which.max(ic_values) else which.min(ic_values)]
+
+  best_fit <- fits[[best]]
+  final_name <- best
+  best_model <- switch(best, two_pop_single = "single-pop-growing",
+                       single_pop_decay = "single-pop-shrinking", NA_character_)
+  if (best == "two_pop_both") {
+    t0 <- stats::median(posterior::as_draws_matrix(best_fit$draws("t0_r")))
+    final_name <- if (t0 <= min(data$time)) "two_pop_preexisting" else "two_pop_denovo"
+    best_model <- if (final_name == "two_pop_preexisting") "pre-existing" else "de-novo"
+    best_fit <- sample_recovery_model(final_name, stan_data, data, noise_model, chains,
+                                      2 * iter, seed, cores)
   }
 
-  best_idx <- if (comparison == "loo") which.max(ic_values) else which.min(ic_values)
-  #all_fits <- lapply(fits, biPOD:::parse_stan_fit)
-
-  if (model_files[best_idx] == "two_pop_both") {
-    draws = fits[[best_idx]]$draws(format = "draws_list")
-    t0_draws = unlist(lapply(draws, function(c) {c[["t0_r"]]}))
-
-    if (stats::median(t0_draws) <= min(data$time)) {
-      mod = biPOD:::get_model("two_pop_preexisting", noise_model)
-      best_model = "pre-existing"
-    } else {
-      mod = biPOD:::get_model("two_pop_denovo", noise_model)
-      best_model = "de-novo"
-    }
-
-    best_fit = suppressMessages(suppressWarnings(mod$sample(
-      data = stan_data, chains = chains, iter_warmup = iter, iter_sampling = iter,
-      seed = seed, parallel_chains = cores, refresh = 0
-    )))
-  } else if (model_files[best_idx] == "two_pop_single") {
-    best_fit = fits[[best_idx]]
-    best_model = "single-pop-growing"
-  } else {
-    best_fit = fits[[best_idx]]
-    best_model = "single-pop-shrinking"
+  final_rhat <- max(best_fit$summary(recovery_model_params(final_name, noise_model))$rhat, na.rm = TRUE)
+  if (final_rhat >= max_rhat) {
+    cli::cli_alert_warning("Recovery model {final_name} did not converge (max Rhat {round(final_rhat, 2)}).")
   }
 
-  best_fit <- biPOD:::parse_stan_fit(best_fit)
-
-  model_table <- if (comparison == "loo") {
-    dplyr::tibble(model = model_files, LOO = ic_values)
-  } else {
-    dplyr::tibble(model = model_files, BIC = ic_values)
-  }
-
-  list(best_model = best_model, first_fit = biPOD:::parse_stan_fit(fits[[best_idx]]),
-       final_fit = best_fit, model_table = model_table, criterion = comparison)
+  list(best_model = best_model, first_fit = parse_stan_fit(fits[[best]]),
+       final_fit = parse_stan_fit(best_fit), model_table = model_table, criterion = comparison,
+       max_rhat = final_rhat, converged = final_rhat < max_rhat)
 }

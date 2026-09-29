@@ -6,35 +6,42 @@
 \usage{
 fit_best_recovery_model(
   data,
-  noise_model = c("lognormal", "poisson", "negbinomial"),
+  noise_model = c("poisson", "negbinomial"),
   chains = 4,
-  iter = 4000,
+  iter = 2000,
   seed = 123,
   cores = 4,
-  comparison = c("loo", "bic")
+  comparison = c("bic", "loo"),
+  max_rhat = 1.05
 )
 }
 \arguments{
 \item{data}{Data frame with \code{time} and \code{count} columns.}
 
+\item{noise_model}{\code{"poisson"} or \code{"negbinomial"}.}
+
 \item{chains}{Number of MCMC chains.}
 
-\item{iter}{Number of iterations.}
+\item{iter}{Number of warmup and of sampling iterations per chain.}
 
 \item{seed}{Random seed.}
 
 \item{cores}{Number of CPU cores.}
 
-\item{comparison}{Criterion for model selection: \code{"loo"} or \code{"bic"}.}
+\item{comparison}{Criterion for model selection: \code{"bic"} or \code{"loo"}.}
+
+\item{max_rhat}{Rhat threshold used for the \code{converged} flag.}
 }
 \value{
 A list containing:
 \item{best_model}{Name of the best recovery model: \code{"pre-existing"}, \code{"de-novo"},
 \code{"single-pop-growing"}, or \code{"single-pop-shrinking"}.}
-\item{best_fit}{Parsed Stan fit object for the best model.}
-\item{all_fits}{List of all fitted models.}
-\item{model_table}{Comparison table with IC values.}
+\item{first_fit}{Parsed Stan fit of the selected candidate model.}
+\item{final_fit}{Parsed Stan fit of the final model.}
+\item{model_table}{Comparison table with IC values and Rhat per candidate.}
 \item{criterion}{Criterion used for model selection.}
+\item{max_rhat}{Maximum Rhat of the final fit's parameters.}
+\item{converged}{Whether \code{max_rhat} is below the threshold.}
 }
 \description{
 Fits and compares three candidate recovery models: a two-population mixture
@@ -45,6 +52,12 @@ modeling a tumor that never relapses). The best of the three is selected using
 either LOO or BIC. If the two-population mixture wins, a further posterior-median
 check on the resistant clone's birth time (\code{t0_r}) refits with either the
 de-novo or pre-existing resistant-clone model.
+}
+\details{
+Every chain is initialised from data-driven values (see \code{recovery_inits}).
+BIC is computed from the maximum log-likelihood over draws and the number of
+sampled parameters, so a chain stuck in a poor mode cannot decide the model
+choice. Convergence of the final fit is reported in \code{converged}.
 }
 \examples{
 \dontrun{
