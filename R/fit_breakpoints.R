@@ -6,12 +6,15 @@
 #' @param d A data frame with columns `time` and `count`.
 #' @param K Integer. Number of segments.
 #' @param avg_points_per_window Minimum average number of points per segment.
-#' @param n_trials Number of optimization iterations.
+#' @param n_trials Maximum number of DE generations. Short runs do not converge
+#'   (different seeds then give different segmentations); the search stops
+#'   earlier once the best value has not improved for 200 generations.
+#' @param seed Random seed for the DE search.
 #'
 #' @return A list with:
 #' \item{optimal_breakpoints}{Vector of optimal breakpoint positions.}
 #' \item{segment_sizes}{Number of points in each resulting segment.}
-propose_breakpoints_DE <- function(d, K, avg_points_per_window = 5, n_trials = 10) {
+propose_breakpoints_DE <- function(d, K, avg_points_per_window = 5, n_trials = 2000, seed = 123) {
   # Input validation
   stopifnot(
     is.data.frame(d),
@@ -63,8 +66,10 @@ propose_breakpoints_DE <- function(d, K, avg_points_per_window = 5, n_trials = 1
   }
 
   objective_function <- function(breakpoints, x_vec, y_vec, min_points) {
+    # identical breakpoints make cut() fail, which used to abort the search
+    if (anyDuplicated(breakpoints)) return(1e10)
     segments <- assign_segments(x_vec, breakpoints)
-    if (any(tabulate(segments) < min_points)) return(Inf)
+    if (any(tabulate(segments, nbins = length(breakpoints) + 1) < min_points)) return(1e10)
     compute_sse(build_regression_matrix(x_vec, breakpoints), y_vec)
   }
 
@@ -78,10 +83,12 @@ propose_breakpoints_DE <- function(d, K, avg_points_per_window = 5, n_trials = 1
   upper_bounds <- rep(time_range[2] - buffer, n_breakpoints)
 
   control_params <- DEoptim::DEoptim.control(
-    NP = max(50, 10 * n_breakpoints), itermax = n_trials,
-    reltol = 1e-4, CR = 0.7, strategy = 2, F = 0.8,
-    steptol = 50, trace = FALSE
+    NP = max(100, 20 * n_breakpoints), itermax = n_trials,
+    reltol = 1e-8, CR = 0.7, strategy = 2, F = 0.8,
+    steptol = 200, trace = FALSE
   )
+
+  set.seed(seed)
 
   result <- tryCatch({
     DEoptim::DEoptim(
@@ -97,7 +104,7 @@ propose_breakpoints_DE <- function(d, K, avg_points_per_window = 5, n_trials = 1
 
   optimal_breakpoints <- sort(result$optim$bestmem)
   final_sse <- result$optim$bestval
-  segment_sizes <- tabulate(assign_segments(x, optimal_breakpoints))
+  segment_sizes <- tabulate(assign_segments(x, optimal_breakpoints), nbins = K)
 
   if (any(segment_sizes < avg_points_per_window)) {
     cli::cli_alert_warning("Final breakpoints violate constraints.")
@@ -157,7 +164,7 @@ segment_fit <- function(data,
   all_evaluations <- list()
 
   for (k in seq(max_segments, 1)) {
-    proposed_bp <- propose_breakpoints_DE(d = data, K = k, avg_points_per_window = min_segment_size, n_trials = 10)$optimal_breakpoints
+    proposed_bp <- propose_breakpoints_DE(d = data, K = k, avg_points_per_window = min_segment_size, seed = seed)$optimal_breakpoints
     if (is.null(proposed_bp)) next
 
     segments <- sort(c(min(data$time), proposed_bp, max(data$time)))

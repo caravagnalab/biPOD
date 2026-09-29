@@ -4,7 +4,13 @@
 \alias{propose_breakpoints_DE}
 \title{Propose breakpoints using Differential Evolution}
 \usage{
-propose_breakpoints_DE(d, K, avg_points_per_window = 5, n_trials = 10)
+propose_breakpoints_DE(
+  d,
+  K,
+  avg_points_per_window = 5,
+  n_trials = 2000,
+  seed = 123
+)
 }
 \arguments{
 \item{d}{A data frame with columns \code{time} and \code{count}.}
@@ -13,7 +19,11 @@ propose_breakpoints_DE(d, K, avg_points_per_window = 5, n_trials = 10)
 
 \item{avg_points_per_window}{Minimum average number of points per segment.}
 
-\item{n_trials}{Number of optimization iterations.}
+\item{n_trials}{Maximum number of DE generations. Short runs do not converge
+(different seeds then give different segmentations); the search stops
+earlier once the best value has not improved for 200 generations.}
+
+\item{seed}{Random seed for the DE search.}
 }
 \value{
 A list with:
