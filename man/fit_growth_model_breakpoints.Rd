@@ -31,12 +31,14 @@ fit_growth_model_breakpoints(
 
 \item{cores}{Parallel chains.}
 
-\item{t_prior_sd}{Standard deviation for breakpoint prior.}
+\item{t_prior_sd}{Standard deviation of the breakpoint prior around the
+proposed breakpoints. Default \code{NULL} uses 2\% of the observed time span.}
 }
 \value{
 A list with the fitted object and summary statistics.
 }
 \description{
 Fits the exponential growth model (with or without initiation) given
-a set of fixed breakpoints.
+a set of proposed breakpoints, which are refined within \code{t_prior_sd}.
+Every chain is initialised at the proposed breakpoints.
 }

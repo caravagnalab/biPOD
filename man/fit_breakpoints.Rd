@@ -19,7 +19,8 @@ fit_breakpoints(
   iter = 4000,
   seed = 1234,
   cores = 4,
-  t_prior_sd = 0.5
+  t_prior_sd = NULL,
+  max_rhat = 1.05
 )
 }
 \arguments{
@@ -45,7 +46,11 @@ fit_breakpoints(
 
 \item{cores}{Parallel chains.}
 
-\item{t_prior_sd}{Standard deviation for breakpoint prior.}
+\item{t_prior_sd}{Standard deviation of the breakpoint prior around the
+proposed breakpoints. Default \code{NULL} uses 2\% of the observed time span.}
+
+\item{max_rhat}{Maximum Rhat of breakpoints and rates for the refined
+breakpoints to be used; otherwise the proposed breakpoints are kept.}
 
 \item{data}{Data frame with columns \code{time} and \code{count}.}
 }
@@ -56,6 +61,7 @@ A list with:
 \item{final_breakpoints}{Breakpoints estimated in final fit.}
 \item{final_fit}{Final fitted model object.}
 \item{final_summary}{Summary of the final fit.}
+\item{converged}{Whether the breakpoint refit converged (\code{max_rhat}).}
 }
 \description{
 This is the main exported function. It first proposes breakpoints via DE,

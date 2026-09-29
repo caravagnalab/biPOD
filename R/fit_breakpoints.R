@@ -197,10 +197,47 @@ segment_fit <- function(data,
        best_breakpoints = best$breakpoints, evaluation_table = do.call(rbind, all_evaluations))
 }
 
+#' Initial values for the breakpoint growth models
+#'
+#' Chains start at the proposed breakpoints, with per-segment rates from a
+#' least-squares slope of log counts. Without inits Stan starts `t_array` near 0,
+#' far from the data, and the piecewise likelihood traps chains there.
+#'
+#' @inheritParams fit_growth_model_breakpoints
+#' @param chain_id Chain index; chains after the first are jittered.
+#' @return A named list of initial values for one chain.
+breakpoint_inits <- function(data, breakpoints, noise_model, with_initiation, chain_id = 1) {
+  t <- data$time
+  y <- log(pmax(data$count, 0.5))
+  edges <- c(-Inf, sort(breakpoints), Inf)
+  G <- length(breakpoints) + 1
+  rho <- vapply(seq_len(G), function(g) {
+    idx <- t > edges[g] & t <= edges[g + 1]
+    if (sum(idx) < 2) return(0)
+    unname(stats::coef(stats::lm(y[idx] ~ t[idx]))[2])
+  }, numeric(1))
+  rho[is.na(rho)] <- 0
+
+  span <- diff(range(t))
+  jitter <- if (chain_id == 1) 0 else stats::rnorm(length(breakpoints), 0, 0.01 * span)
+  t_array <- sort(pmin(pmax(breakpoints + jitter, min(t) + 1e-3 * span), max(t) - 1e-3 * span))
+
+  init <- list(rho = as.array(rho), t_array = as.array(t_array))
+  if (with_initiation) {
+    init$t0 <- if (rho[1] > 0) min(t) - max(y[1], 0.5) / rho[1] else min(t) - 1
+  } else {
+    init$n0 <- max(data$count[1], 0.5)
+  }
+  if (noise_model == "lognormal") init$sigma <- 1
+  if (noise_model == "negbinomial") init$phi <- 10
+  init
+}
+
 #' Fit a Bayesian growth model with breakpoints
 #'
 #' Fits the exponential growth model (with or without initiation) given
-#' a set of fixed breakpoints.
+#' a set of proposed breakpoints, which are refined within `t_prior_sd`.
+#' Every chain is initialised at the proposed breakpoints.
 #'
 #' @inheritParams fit_breakpoints
 #' @param breakpoints Proposed breakpoints
@@ -220,10 +257,14 @@ fit_growth_model_breakpoints <- function(data,
   stan_data <- list(S = nrow(data), G = G, N = data$count, T = data$time,
                     t_prior = as.vector(breakpoints), t_prior_sd = t_prior_sd, prior_only = 0)
   model <- if (with_initiation) get_model("exponential_with_init_bp", noise_model) else get_model("exponential_no_init_bp", noise_model)
+  set.seed(seed)
+  inits <- lapply(seq_len(chains), function(i) {
+    breakpoint_inits(data, breakpoints, noise_model, with_initiation, chain_id = i)
+  })
   message("Fitting breakpoint growth model")
   fit <- suppressMessages(suppressWarnings(model$sample(
     data = stan_data, chains = chains, iter_warmup = iter / 2, iter_sampling = iter / 2,
-    seed = seed, parallel_chains = cores, refresh = 0)))
+    seed = seed, parallel_chains = cores, refresh = 0, init = inits)))
   parsed_fit <- parse_stan_fit(fit)
   list(fit = parsed_fit, summary = fit$summary())
 }
@@ -246,7 +287,10 @@ fit_growth_model_breakpoints <- function(data,
 #' @param iter Total iterations.
 #' @param seed Random seed.
 #' @param cores Parallel chains.
-#' @param t_prior_sd Standard deviation for breakpoint prior.
+#' @param t_prior_sd Standard deviation of the breakpoint prior around the
+#'   proposed breakpoints. Default `NULL` uses 2% of the observed time span.
+#' @param max_rhat Maximum Rhat of breakpoints and rates for the refined
+#'   breakpoints to be used; otherwise the proposed breakpoints are kept.
 #'
 #' @return A list with:
 #' \item{evaluation_table}{Model evaluation results.}
@@ -254,6 +298,7 @@ fit_growth_model_breakpoints <- function(data,
 #' \item{final_breakpoints}{Breakpoints estimated in final fit.}
 #' \item{final_fit}{Final fitted model object.}
 #' \item{final_summary}{Summary of the final fit.}
+#' \item{converged}{Whether the breakpoint refit converged (`max_rhat`).}
 #' @export
 fit_breakpoints <- function(x,
                             with_initiation,
@@ -269,13 +314,15 @@ fit_breakpoints <- function(x,
                             iter = 4000,
                             seed = 1234,
                             cores = 4,
-                            t_prior_sd = 0.5) {
+                            t_prior_sd = NULL,
+                            max_rhat = 1.05) {
 
   comparison <- match.arg(comparison)
   noise_model <- match.arg(noise_model)
 
   data = x$counts
   user_breakpoints = x$metadata$breakpoints
+  if (is.null(t_prior_sd)) t_prior_sd <- 0.02 * diff(range(data$time))
 
   if (floor(nrow(data) / min_segment_size) < max_segments) {
     message("Reducing max_segements due to low number of observations")
@@ -313,10 +360,19 @@ fit_breakpoints <- function(x,
     t_prior_sd = t_prior_sd
   )
 
-  final_bps <- final_fit$summary %>%
-    dplyr::filter(grepl("t_array", .data$variable)) %>%
-    dplyr::pull(.data$median) %>%
-    sort()
+  conv_vars <- final_fit$summary %>%
+    dplyr::filter(grepl("^t_array|^rho\\[", .data$variable))
+  converged <- all(conv_vars$rhat < max_rhat, na.rm = TRUE)
+
+  final_bps <- if (converged) {
+    final_fit$summary %>%
+      dplyr::filter(grepl("t_array", .data$variable)) %>%
+      dplyr::pull(.data$median) %>%
+      sort()
+  } else {
+    cli::cli_alert_warning("Breakpoint refit did not converge (Rhat >= {max_rhat}); keeping the proposed breakpoints.")
+    sort(first_bp)
+  }
 
   # Validate, if present, user breakpoints
   if (!is.null(user_breakpoints)) {
