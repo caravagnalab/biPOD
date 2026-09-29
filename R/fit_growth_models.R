@@ -319,8 +319,14 @@ fit_growth_models_VI <- function(data, breakpoints, with_initiation = TRUE,
 
 #' Fit and compare tumor recovery models
 #'
-#' Fits and compares multiple recovery models (two-population de-novo, pre-existing, and single-population)
-#' to determine the best one using either LOO or BIC as selection criterion.
+#' Fits and compares three candidate recovery models: a two-population mixture
+#' (`two_pop_both`, a decaying "sensitive" population plus a growing "resistant"
+#' population, i.e. relapse), a single growing population (`two_pop_single`, no
+#' mixture detected), and a single shrinking-only population (`single_pop_decay`,
+#' modeling a tumor that never relapses). The best of the three is selected using
+#' either LOO or BIC. If the two-population mixture wins, a further posterior-median
+#' check on the resistant clone's birth time (`t0_r`) refits with either the
+#' de-novo or pre-existing resistant-clone model.
 #'
 #' @param data Data frame with `time` and `count` columns.
 #' @param chains Number of MCMC chains.
@@ -330,7 +336,8 @@ fit_growth_models_VI <- function(data, breakpoints, with_initiation = TRUE,
 #' @param comparison Criterion for model selection: `"loo"` or `"bic"`.
 #'
 #' @return A list containing:
-#'   \item{best_model}{Name of the best recovery model.}
+#'   \item{best_model}{Name of the best recovery model: `"pre-existing"`, `"de-novo"`,
+#'     `"single-pop-growing"`, or `"single-pop-shrinking"`.}
 #'   \item{best_fit}{Parsed Stan fit object for the best model.}
 #'   \item{all_fits}{List of all fitted models.}
 #'   \item{model_table}{Comparison table with IC values.}
@@ -354,7 +361,7 @@ fit_best_recovery_model <- function(data,
   data <- data[order(data$time), ]
 
   stan_data <- list(S = nrow(data), N = data$count, T = data$time, prior_only = 0)
-  model_files <- c("two_pop_both", "two_pop_single")
+  model_files <- c("two_pop_both", "two_pop_single", "single_pop_decay")
 
   fits <- list()
   ic_values <- numeric(length(model_files))
@@ -372,7 +379,16 @@ fit_best_recovery_model <- function(data,
       ic_values[i] <- loo::loo(log_lik)$estimates["elpd_loo", "Estimate"]
     } else {
       log_lik_sum <- sum(apply(log_lik, 1, mean))
-      k <- length(fit$metadata()$parameters)
+      # fit$metadata()$parameters does not exist in current cmdstanr
+      # (always NULL); this silently zeroed BIC's complexity penalty for
+      # every candidate model. model_params is the correct field. Note it
+      # counts ALL stan variables incl. generated quantities (log_lik, yrep,
+      # ns, nr), not just sampled parameters, so the absolute k is inflated by
+      # a constant -- but that constant is identical across two_pop_both,
+      # two_pop_single and single_pop_decay (they share the same generated-
+      # quantities block) and n is fixed within one call, so it cancels
+      # exactly in the which.min() comparison below.
+      k <- length(fit$metadata()$model_params)
       n <- nrow(data)
       ic_values[i] <- -2 * log_lik_sum + k * log(n)
     }
@@ -397,9 +413,12 @@ fit_best_recovery_model <- function(data,
       data = stan_data, chains = chains, iter_warmup = iter, iter_sampling = iter,
       seed = seed, parallel_chains = cores, refresh = 0
     )))
+  } else if (model_files[best_idx] == "two_pop_single") {
+    best_fit = fits[[best_idx]]
+    best_model = "single-pop-growing"
   } else {
     best_fit = fits[[best_idx]]
-    best_model = "single-pop"
+    best_model = "single-pop-shrinking"
   }
 
   best_fit <- biPOD:::parse_stan_fit(best_fit)

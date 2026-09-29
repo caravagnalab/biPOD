@@ -29,15 +29,22 @@ fit_best_recovery_model(
 }
 \value{
 A list containing:
-\item{best_model}{Name of the best recovery model.}
+\item{best_model}{Name of the best recovery model: \code{"pre-existing"}, \code{"de-novo"},
+\code{"single-pop-growing"}, or \code{"single-pop-shrinking"}.}
 \item{best_fit}{Parsed Stan fit object for the best model.}
 \item{all_fits}{List of all fitted models.}
 \item{model_table}{Comparison table with IC values.}
 \item{criterion}{Criterion used for model selection.}
 }
 \description{
-Fits and compares multiple recovery models (two-population de-novo, pre-existing, and single-population)
-to determine the best one using either LOO or BIC as selection criterion.
+Fits and compares three candidate recovery models: a two-population mixture
+(\code{two_pop_both}, a decaying "sensitive" population plus a growing "resistant"
+population, i.e. relapse), a single growing population (\code{two_pop_single}, no
+mixture detected), and a single shrinking-only population (\code{single_pop_decay},
+modeling a tumor that never relapses). The best of the three is selected using
+either LOO or BIC. If the two-population mixture wins, a further posterior-median
+check on the resistant clone's birth time (\code{t0_r}) refits with either the
+de-novo or pre-existing resistant-clone model.
 }
 \examples{
 \dontrun{
