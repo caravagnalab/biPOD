@@ -397,7 +397,7 @@ fit_breakpoints <- function(x,
 
   x$breakpoints_fit = list(evaluation_table = eval_table, first_breakpoints = first_bp,
                            final_breakpoints = final_bps, final_fit = final_fit$fit,
-                           final_summary = final_fit$summary)
+                           final_summary = final_fit$summary, converged = converged)
   x$metadata$breakpoints = final_bps
   x
 }
