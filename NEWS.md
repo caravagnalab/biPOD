@@ -1,0 +1,46 @@
+# biPOD (development version)
+
+## New models
+
+* `fit_clone_selection()`: joint piecewise-exponential model of clone-resolved
+  read counts. All clones share one breakpoint; each has its own initial size,
+  response-phase rate and post-breakpoint rate, with negative-binomial counts and
+  per-sample depth offsets. Clones that are small or undetected at baseline are
+  allowed. Returns per-clone rates and the posterior probability that a clone's
+  relative frequency increased (`p_selected`). A narrow `t_b_prior_sd` fixes the
+  breakpoint (chains start at its prior centre).
+* `fit_held_phase()` and `compare_held_phase()`: model for a continuous marker
+  with a non-tumour background: decline
+  (allowed only until `t_decline_max`), an optional held phase, then regrowth.
+  Student-t noise on the log scale. `compare_held_phase()` compares continuous
+  regrowth with a held phase by PSIS-LOO, refitting exactly where Pareto k is
+  high, and classifies the evidence. The seed fraction `exp(-r * H)` implied by a
+  held phase is returned.
+* Negative-binomial versions of the five recovery models
+  (`fit_best_recovery_model(noise_model = "negbinomial")`), and a
+  `single_pop_decay` model for series that never regrow.
+
+## Fixes
+
+* `fit_breakpoints()`: the final breakpoint refit now starts every chain at the
+  proposed breakpoints with per-segment slopes (`breakpoint_inits()`). Without
+  inits, chains got stuck. If the refit does not
+  converge, the proposed breakpoints are kept and `converged` is `FALSE`. The
+  default `t_prior_sd` is 2% of the time span.
+* `propose_breakpoints_DE()`: runs up to 2000 seeded DE generations (was 10,
+  unseeded), so proposals no longer change from run to run; duplicated
+  breakpoints and too-short segments are scored as invalid.
+* `fit_best_recovery_model()`: chains start from data-driven values
+  (`recovery_inits()`); BIC uses the maximum log-likelihood and the number of
+  sampled parameters (it averaged over observations and summed over draws, so
+  one stuck chain could decide the model); each run writes to its own output
+  directory; `max_rhat` and `converged` are reported. Default noise model is
+  `"poisson"`.
+* Recovery models: the timing priors `t0_r ~ N(T[1], 5)` and `t_end ~ N(T[S], 5)`
+  forced the sensitive population to survive to the last sample; their sd is now
+  the observed time span.
+
+## Tests
+
+* First test suite (`tests/testthat`). Model-fitting tests need CmdStan and run
+  with `NOT_CRAN=true BIPOD_SLOW_TESTS=true`.
