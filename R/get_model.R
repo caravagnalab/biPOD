@@ -18,7 +18,9 @@ get_model <- function(model_name, noise_model) {
     "two_pop_denovo"            = "two_pop_denovo.stan",
     "two_pop_preexisting"       = "two_pop_preexisting.stan",
     "two_pop_single"            = "two_pop_single.stan",
-    "single_pop_decay"          = "single_pop_decay.stan"
+    "single_pop_decay"          = "single_pop_decay.stan",
+    "clone_selection"           = "clone_selection.stan",
+    "held_phase"                = "held_phase.stan"
   )
 
   # GBM models live under inst/cmdstan/gbm/{noise_model}/
