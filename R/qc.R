@@ -34,12 +34,20 @@ stan_qc <- function(model, fit, stan_data,
   pars <- intersect(pars, colnames(draws_df))
 
   # ---------------- Goodness of fit (LOO) -------------
-  out$loo <- NULL
+  # loo() errors on non-finite log-likelihoods; the fit is still usable for
+  # BIC, so record the problem and skip the Pareto-k rule instead of stopping
+  # an explicit NULL element, so out$loo cannot partial-match loo_error
+  out["loo"] <- list(NULL)
   loo_k <- NULL
   ll_mat <- posterior::as_draws_matrix(fit$draws(loglik_name))
-  loo_fit <- loo::loo(ll_mat)
-  out$loo <- loo_fit
-  loo_k <- as.numeric(loo_fit$diagnostics$pareto_k)
+  out$n_nonfinite_loglik <- sum(!is.finite(ll_mat))
+  loo_fit <- tryCatch(loo::loo(ll_mat), error = function(e) NULL)
+  if (!is.null(loo_fit)) {
+    out$loo <- loo_fit
+    loo_k <- as.numeric(loo_fit$diagnostics$pareto_k)
+  } else {
+    out$loo_error <- sprintf("loo failed (%d non-finite log-likelihood values)", out$n_nonfinite_loglik)
+  }
 
   # ---------------- Identifiability -------------------
   # Prior-only run

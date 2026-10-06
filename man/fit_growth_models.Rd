@@ -12,7 +12,7 @@ fit_growth_models(
   iter = 2000,
   seed = 123,
   cores = 4,
-  comparison = c("loo", "bic"),
+  comparison = c("bic", "loo"),
   models_to_fit = c("exponential", "logistic", "gompertz"),
   noise_model = c("lognormal", "poisson", "negbinomial")
 )

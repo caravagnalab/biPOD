@@ -40,6 +40,15 @@
   count between `t_end` and `t0_r` is impossible and the posterior gets hard
   walls on which the sampler diverges), so the model and its outputs are
   unchanged.
+* `stan_qc()` called `loo::loo()` unguarded for every candidate model, so any
+  non-finite log-likelihood stopped `fit_growth()` and `fit_breakpoints()` with
+  a loo error even with `comparison = "bic"`. A loo failure is now recorded in
+  `loo_error` (with `loo` set to `NULL`) and the Pareto-k rule is skipped;
+  `n_nonfinite_loglik` counts the non-finite values.
+* `fit_growth_models()` and `fit_growth_models_VI()` default to
+  `comparison = "bic"`, like `fit_growth()` and `fit_breakpoints()` (they
+  defaulted to `"loo"`; every caller passes the argument, so results do not
+  change).
 * `fit_breakpoints()`: the final breakpoint refit now starts every chain at the
   proposed breakpoints with per-segment slopes (`breakpoint_inits()`). Without
   inits, chains got stuck. If the refit does not

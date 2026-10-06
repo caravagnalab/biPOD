@@ -106,7 +106,7 @@ fit_growth <- function(x,
 #' @return A list containing model fits, comparisons, and model selection metrics.
 fit_growth_models <- function(data, breakpoints, with_initiation = TRUE,
                               chains = 4, iter = 2000, seed = 123, cores = 4,
-                              comparison = c("loo", "bic"),
+                              comparison = c("bic", "loo"),
                               models_to_fit = c("exponential", "logistic", "gompertz"),
                               noise_model = c("lognormal", "poisson", "negbinomial")) {
   comparison <- match.arg(comparison)
@@ -179,7 +179,7 @@ fit_growth_models <- function(data, breakpoints, with_initiation = TRUE,
 #' @return A list containing model fits, comparisons, and model selection metrics.
 fit_growth_models_VI <- function(data, breakpoints, with_initiation = TRUE,
                                  chains = 4, iter = 2000, seed = 123, cores = 4,
-                                 comparison = c("loo", "bic"),
+                                 comparison = c("bic", "loo"),
                                  models_to_fit = c("exponential", "logistic", "gompertz"),
                                  noise_model = c("lognormal", "poisson", "negbinomial"),
                                  method = c("sampling", "vi"),
