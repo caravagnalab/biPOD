@@ -47,7 +47,8 @@ test_that("stan_qc reports a non-finite log_lik instead of stopping in loo", {
 test_that("fit_growth_models with BIC survives a non-finite log_lik", {
   slow()
   model <- biPOD:::get_model("exponential_no_init", "negbinomial")
-  nan_model <- list(sample = function(...) with_nan_loglik(model$sample(...)))
+  nan_model <- list(sample = function(...) with_nan_loglik(model$sample(...)),
+                    variables = function() model$variables())
   local_mocked_bindings(get_model = function(...) nan_model)
   res <- fit_growth_models(zero_heavy, breakpoints = NULL, with_initiation = FALSE, chains = 2,
                            iter = 200, cores = 2, models_to_fit = "exponential",

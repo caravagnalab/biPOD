@@ -60,6 +60,12 @@
   inits, chains got stuck. If the refit does not
   converge, the proposed breakpoints are kept and `converged` is `FALSE`. The
   default `t_prior_sd` is 2% of the time span.
+* Growth models (`fit_growth()`, and the segmentation scores of
+  `fit_breakpoints()`): BIC averaged the log-likelihood over draws, so a
+  poorly mixing fit was penalised for its worst draws, and the parameter count
+  (`rho`, `n0`, `t0`, `K` by name) missed `phi`, `sigma` and `b`. BIC now uses
+  the best draw and every sampled parameter, as for the recovery models.
+  Segmentations chosen by `fit_breakpoints()` can change.
 * `propose_breakpoints_DE()` fitted `log(count)`, so a single zero count made
   every multi-segment proposal score non-finite and `fit_breakpoints()`
   silently evaluated one segment only on zero-heavy series. Zeros now enter

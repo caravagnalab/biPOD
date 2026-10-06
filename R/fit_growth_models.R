@@ -98,6 +98,16 @@ fit_growth <- function(x,
   x
 }
 
+# BIC from the best draw's log-likelihood and the number of sampled
+# parameters, as for the recovery models. Averaging the log-likelihood over
+# draws let one poorly mixing chain decide the model, and the parameter count
+# missed phi, sigma and b.
+growth_bic <- function(log_lik, model, fit, n) {
+  pars <- names(model$variables()$parameters)
+  sizes <- fit$metadata()$stan_variable_sizes[pars]
+  -2 * max(rowSums(log_lik), na.rm = TRUE) + log(n) * sum(vapply(sizes, prod, numeric(1)))
+}
+
 #' Fit growth models via MCMC sampling
 #'
 #' Internal function that fits multiple growth models to the data using MCMC sampling.
@@ -148,12 +158,7 @@ fit_growth_models <- function(data, breakpoints, with_initiation = TRUE,
       comparisons[[model_name]] <- loo::loo(log_lik)
       info_criteria[i] <- comparisons[[model_name]]$estimates["looic", "Estimate"]
     } else {
-      log_mean_lik <- apply(log_lik, 2, mean)
-      log_lik_sum <- sum(log_mean_lik)
-      param_cols <- grep("^rho\\[|^n0$|^t0$|^K$", colnames(draws), value = TRUE)
-      n_params <- length(param_cols)
-      N <- length(data$count)
-      info_criteria[i] <- -2 * log_lik_sum + log(N) * n_params
+      info_criteria[i] <- growth_bic(log_lik, model, fit, nrow(data))
     }
   }
 
@@ -241,12 +246,7 @@ fit_growth_models_VI <- function(data, breakpoints, with_initiation = TRUE,
         comparisons[[model_name]] <- loo::loo(log_lik)
         info_criteria[i] <- comparisons[[model_name]]$estimates["looic", "Estimate"]
       } else if (comparison == "bic") {
-        log_mean_lik <- apply(log_lik, 2, mean)
-        log_lik_sum <- sum(log_mean_lik)
-        param_cols <- grep("^rho\\[|^n0$|^t0$|^K$", colnames(draws), value = TRUE)
-        n_params <- length(param_cols)
-        N <- length(data$count)
-        info_criteria[i] <- -2 * log_lik_sum + log(N) * n_params
+        info_criteria[i] <- growth_bic(log_lik, model, fit, nrow(data))
       }
 
     } else if (method == "vi") {
@@ -274,12 +274,7 @@ fit_growth_models_VI <- function(data, breakpoints, with_initiation = TRUE,
           comparisons[[model_name]] <- loo::loo(log_lik)
           info_criteria[i] <- comparisons[[model_name]]$estimates["looic", "Estimate"]
         } else if (comparison == "bic") {
-          log_mean_lik <- apply(log_lik, 2, mean)
-          log_lik_sum <- sum(log_mean_lik)
-          param_cols <- grep("^rho\\[|^n0$|^t0$|^K$", colnames(draws), value = TRUE)
-          n_params <- length(param_cols)
-          N <- length(data$count)
-          info_criteria[i] <- -2 * log_lik_sum + log(N) * n_params
+          info_criteria[i] <- growth_bic(log_lik, model, fit, nrow(data))
         }
       } else {
         warning(paste0("No log_lik found in draws for model ", model_name," - cannot compute ", comparison))
