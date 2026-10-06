@@ -60,6 +60,10 @@
   inits, chains got stuck. If the refit does not
   converge, the proposed breakpoints are kept and `converged` is `FALSE`. The
   default `t_prior_sd` is 2% of the time span.
+* `propose_breakpoints_DE()` fitted `log(count)`, so a single zero count made
+  every multi-segment proposal score non-finite and `fit_breakpoints()`
+  silently evaluated one segment only on zero-heavy series. Zeros now enter
+  as 0.5, as in `breakpoint_inits()`.
 * `propose_breakpoints_DE()`: runs up to 2000 seeded DE generations (was 10,
   unseeded), so proposals no longer change from run to run; duplicated
   breakpoints and too-short segments are scored as invalid.

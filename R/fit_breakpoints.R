@@ -24,9 +24,10 @@ propose_breakpoints_DE <- function(d, K, avg_points_per_window = 5, n_trials = 2
     nrow(d) >= K * avg_points_per_window
   )
 
-  # Prepare data
+  # Prepare data; zero counts (below detection) are legitimate, and log(0)
+  # would make every segmentation's SSE non-finite
   x <- d$time
-  y <- log(d$count)
+  y <- log(pmax(d$count, 0.5))
   n <- length(x)
 
   if (K == 1) {
