@@ -388,6 +388,26 @@ sample_recovery_model <- function(model_name, stan_data, data, noise_model, chai
   tryCatch(run(seed), error = function(e) run(seed + 1000))
 }
 
+# Fits one candidate. A fit that has not converged is refitted once with twice
+# the iterations and another seed, and the better-converged fit is kept.
+fit_recovery_candidate <- function(model_name, stan_data, data, noise_model, chains,
+                                   iter, seed, cores, max_rhat) {
+  params <- recovery_model_params(model_name, noise_model)
+  fit <- sample_recovery_model(model_name, stan_data, data, noise_model, chains, iter, seed, cores)
+  rhat <- max(fit$summary(params)$rhat, na.rm = TRUE)
+  refit <- rhat >= max_rhat
+  if (refit) {
+    fit2 <- sample_recovery_model(model_name, stan_data, data, noise_model, chains,
+                                  2 * iter, seed + 1, cores)
+    rhat2 <- max(fit2$summary(params)$rhat, na.rm = TRUE)
+    if (rhat2 < rhat) {
+      fit <- fit2
+      rhat <- rhat2
+    }
+  }
+  list(fit = fit, rhat = rhat, refit = refit)
+}
+
 #' Fit and compare tumor recovery models
 #'
 #' Fits and compares three candidate recovery models: a two-population mixture
@@ -402,7 +422,12 @@ sample_recovery_model <- function(model_name, stan_data, data, noise_model, chai
 #' Every chain is initialised from data-driven values (see `recovery_inits`).
 #' BIC is computed from the maximum log-likelihood over draws and the number of
 #' sampled parameters, so a chain stuck in a poor mode cannot decide the model
-#' choice. Convergence of the final fit is reported in `converged`.
+#' choice. A candidate whose fit has not converged (Rhat at or above
+#' `max_rhat`) is refitted once with twice the iterations and another seed.
+#' Selection still uses the criterion over all candidates: their BIC rests on
+#' the best draw, which non-convergence barely affects. Non-convergence makes
+#' the parameters of the chosen model unreliable instead, so `converged`
+#' requires both the chosen candidate and the final fit to have converged.
 #'
 #' @param data Data frame with `time` and `count` columns.
 #' @param noise_model `"poisson"` or `"negbinomial"`.
@@ -411,17 +436,23 @@ sample_recovery_model <- function(model_name, stan_data, data, noise_model, chai
 #' @param seed Random seed.
 #' @param cores Number of CPU cores.
 #' @param comparison Criterion for model selection: `"bic"` or `"loo"`.
-#' @param max_rhat Rhat threshold used for the `converged` flag.
+#' @param max_rhat Rhat threshold for refitting a candidate and for the
+#'   `converged` flag.
 #'
 #' @return A list containing:
 #'   \item{best_model}{Name of the best recovery model: `"pre-existing"`, `"de-novo"`,
 #'     `"single-pop-growing"`, or `"single-pop-shrinking"`.}
 #'   \item{first_fit}{Parsed Stan fit of the selected candidate model.}
 #'   \item{final_fit}{Parsed Stan fit of the final model.}
-#'   \item{model_table}{Comparison table with IC values and Rhat per candidate.}
+#'   \item{model_table}{Comparison table of all candidates: IC value, Rhat,
+#'     and whether the candidate was refitted (`refit`).}
 #'   \item{criterion}{Criterion used for model selection.}
 #'   \item{max_rhat}{Maximum Rhat of the final fit's parameters.}
-#'   \item{converged}{Whether `max_rhat` is below the threshold.}
+#'   \item{winner_rhat}{Maximum Rhat of the chosen candidate's fit.}
+#'   \item{n_candidates_converged}{Number of candidates with Rhat below the
+#'     threshold.}
+#'   \item{converged}{Whether both `winner_rhat` and `max_rhat` are below the
+#'     threshold.}
 #'
 #' @examples
 #' \dontrun{
@@ -447,7 +478,9 @@ fit_best_recovery_model <- function(data,
 
   fits <- list()
   model_table <- dplyr::bind_rows(lapply(model_files, function(m) {
-    fit <- sample_recovery_model(m, stan_data, data, noise_model, chains, iter, seed, cores)
+    cand <- fit_recovery_candidate(m, stan_data, data, noise_model, chains, iter, seed,
+                                   cores, max_rhat)
+    fit <- cand$fit
     fits[[m]] <<- fit
     log_lik <- posterior::as_draws_matrix(fit$draws("log_lik"))
     params <- recovery_model_params(m, noise_model)
@@ -456,7 +489,7 @@ fit_best_recovery_model <- function(data,
     } else {
       -2 * max(rowSums(log_lik)) + length(params) * log(n)
     }
-    row <- dplyr::tibble(model = m, ic = ic, rhat = max(fit$summary(params)$rhat, na.rm = TRUE))
+    row <- dplyr::tibble(model = m, ic = ic, rhat = cand$rhat, refit = cand$refit)
     names(row)[2] <- toupper(comparison)
     row
   }))
@@ -476,6 +509,10 @@ fit_best_recovery_model <- function(data,
                                       2 * iter, seed, cores)
   }
 
+  winner_rhat <- model_table$rhat[model_table$model == best]
+  if (winner_rhat >= max_rhat) {
+    cli::cli_alert_warning("Selected candidate {best} did not converge (max Rhat {round(winner_rhat, 2)}).")
+  }
   final_rhat <- max(best_fit$summary(recovery_model_params(final_name, noise_model))$rhat, na.rm = TRUE)
   if (final_rhat >= max_rhat) {
     cli::cli_alert_warning("Recovery model {final_name} did not converge (max Rhat {round(final_rhat, 2)}).")
@@ -483,5 +520,7 @@ fit_best_recovery_model <- function(data,
 
   list(best_model = best_model, first_fit = parse_stan_fit(fits[[best]]),
        final_fit = parse_stan_fit(best_fit), model_table = model_table, criterion = comparison,
-       max_rhat = final_rhat, converged = final_rhat < max_rhat)
+       max_rhat = final_rhat, winner_rhat = winner_rhat,
+       n_candidates_converged = sum(model_table$rhat < max_rhat),
+       converged = winner_rhat < max_rhat && final_rhat < max_rhat)
 }

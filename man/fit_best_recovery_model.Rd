@@ -30,7 +30,8 @@ fit_best_recovery_model(
 
 \item{comparison}{Criterion for model selection: \code{"bic"} or \code{"loo"}.}
 
-\item{max_rhat}{Rhat threshold used for the \code{converged} flag.}
+\item{max_rhat}{Rhat threshold for refitting a candidate and for the
+\code{converged} flag.}
 }
 \value{
 A list containing:
@@ -38,10 +39,15 @@ A list containing:
 \code{"single-pop-growing"}, or \code{"single-pop-shrinking"}.}
 \item{first_fit}{Parsed Stan fit of the selected candidate model.}
 \item{final_fit}{Parsed Stan fit of the final model.}
-\item{model_table}{Comparison table with IC values and Rhat per candidate.}
+\item{model_table}{Comparison table of all candidates: IC value, Rhat,
+and whether the candidate was refitted (\code{refit}).}
 \item{criterion}{Criterion used for model selection.}
 \item{max_rhat}{Maximum Rhat of the final fit's parameters.}
-\item{converged}{Whether \code{max_rhat} is below the threshold.}
+\item{winner_rhat}{Maximum Rhat of the chosen candidate's fit.}
+\item{n_candidates_converged}{Number of candidates with Rhat below the
+threshold.}
+\item{converged}{Whether both \code{winner_rhat} and \code{max_rhat} are below the
+threshold.}
 }
 \description{
 Fits and compares three candidate recovery models: a two-population mixture
@@ -57,7 +63,12 @@ de-novo or pre-existing resistant-clone model.
 Every chain is initialised from data-driven values (see \code{recovery_inits}).
 BIC is computed from the maximum log-likelihood over draws and the number of
 sampled parameters, so a chain stuck in a poor mode cannot decide the model
-choice. Convergence of the final fit is reported in \code{converged}.
+choice. A candidate whose fit has not converged (Rhat at or above
+\code{max_rhat}) is refitted once with twice the iterations and another seed.
+Selection still uses the criterion over all candidates: their BIC rests on
+the best draw, which non-convergence barely affects. Non-convergence makes
+the parameters of the chosen model unreliable instead, so \code{converged}
+requires both the chosen candidate and the final fit to have converged.
 }
 \examples{
 \dontrun{

@@ -65,6 +65,14 @@
   one stuck chain could decide the model); each run writes to its own output
   directory; `max_rhat` and `converged` are reported. Default noise model is
   `"poisson"`.
+* `fit_best_recovery_model()`: `converged` and `max_rhat` described only the
+  final refit, so a model chosen from a candidate fit that had not converged
+  was reported as converged. A candidate with Rhat at or above `max_rhat` is now refitted once
+  with twice the iterations and another seed; `converged` requires both the
+  chosen candidate and the final fit to have converged, and `winner_rhat`,
+  `n_candidates_converged` and a `refit` column in `model_table` are returned.
+  Selection still uses the criterion over all candidates, since BIC rests on
+  the best draw, which non-convergence barely affects.
 * Recovery models: the timing priors `t0_r ~ N(T[1], 5)` and `t_end ~ N(T[S], 5)`
   forced the sensitive population to survive to the last sample; their sd is now
   the observed time span.
