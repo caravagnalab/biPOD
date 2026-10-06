@@ -17,6 +17,7 @@ data {
   array[S] int<lower=0> N; // observations
   array[S] real T;         // observations
   int<lower=0,upper=1> prior_only;
+  real<lower=0> rho_s_prior_sd;   // sd of the half-normal prior on rho_s (per day)
 }
 
 parameters {
@@ -29,14 +30,16 @@ model {
   vector[S] log_mu;           // log expected values for N
 
   // Priors
-  rho_s ~ normal(0, 1);       // Prior for rho_s
+  rho_s ~ normal(0, rho_s_prior_sd);
   t_end ~ normal(T[S], T[S] - T[1]);    // Prior for t_end
   phi ~ gamma(2, 0.1);
 
   for (i in 1:S) {
     log_mu[i] = log_ns(T[i], rho_s, t_end);
   }
-  N ~ neg_binomial_2_log(log_mu, phi);
+  if (prior_only == 0) {
+    N ~ neg_binomial_2_log(log_mu, phi);
+  }
 }
 
 generated quantities {

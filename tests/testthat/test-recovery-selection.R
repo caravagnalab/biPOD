@@ -68,3 +68,18 @@ test_that("a converged candidate is not refitted", {
   expect_length(m$calls(), 3)
   expect_false(any(res$model_table$refit))
 })
+
+test_that("the rate priors of the recovery models follow rho_r_prior_sd and rho_s_prior_sd", {
+  skip_on_cran()
+  skip_if_not_installed("cmdstanr")
+  skip_if_not(identical(Sys.getenv("BIPOD_SLOW_TESTS"), "true"), "set BIPOD_SLOW_TESTS=true to run")
+  stan_data <- list(S = nrow(d), N = as.integer(d$count), T = d$time, prior_only = 1,
+                    rho_r_prior_sd = 0.1, rho_s_prior_sd = 0.5)
+  fit <- biPOD:::get_model("two_pop_both", "negbinomial")$sample(
+    data = stan_data, chains = 2, iter_warmup = 1000, iter_sampling = 2000, seed = 1,
+    refresh = 0, show_messages = FALSE
+  )
+  med <- apply(posterior::as_draws_matrix(fit$draws(c("rho_r", "rho_s"))), 2, stats::median)
+  # median of a half-normal is 0.674 sd
+  expect_equal(unname(med), c(0.0674, 0.337), tolerance = 0.1)
+})

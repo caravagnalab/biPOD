@@ -73,6 +73,15 @@
   `n_candidates_converged` and a `refit` column in `model_table` are returned.
   Selection still uses the criterion over all candidates, since BIC rests on
   the best draw, which non-convergence barely affects.
+* Recovery models: the rates had half-normal(0, 1) priors per day, so the
+  prior's median doubling time was 1 day and 89% of it was below 5 days; once
+  the timing priors were widened (below), nothing kept fitted regrowth
+  plausible. The
+  scales are now `fit_best_recovery_model()` arguments: `rho_r_prior_sd = 0.1`
+  for regrowth (95% of the prior at doubling times of 3.5 days or more,
+  median 10 days) and a wider `rho_s_prior_sd = 0.5` for the decay, which can
+  span several logs within weeks. Recovery models now also honour
+  `prior_only`.
 * Recovery models: the timing priors `t0_r ~ N(T[1], 5)` and `t_end ~ N(T[S], 5)`
   forced the sensitive population to survive to the last sample; their sd is now
   the observed time span.

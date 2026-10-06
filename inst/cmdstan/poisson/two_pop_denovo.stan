@@ -17,6 +17,8 @@ data {
   array[S] int<lower=0> N; // observations
   array[S] real T;         // observations
   int<lower=0,upper=1> prior_only;
+  real<lower=0> rho_r_prior_sd;   // sd of the half-normal prior on rho_r (per day)
+  real<lower=0> rho_s_prior_sd;   // sd of the half-normal prior on rho_s (per day)
 }
 
 parameters {
@@ -30,15 +32,17 @@ model {
   vector[S] log_mu;           // log expected values for N
 
   // Priors
-  rho_r ~ normal(0, 1);       // Prior for rho_r
-  rho_s ~ normal(0, 1);       // Prior for rho_s
+  rho_r ~ normal(0, rho_r_prior_sd);
+  rho_s ~ normal(0, rho_s_prior_sd);
   t0_r ~ normal(T[1], T[S] - T[1]);         // Prior for t_r
   t_end ~ normal(T[S], T[S] - T[1]);
 
   for (i in 1:S) {
     log_mu[i] = log_sum_exp(log_ns(T[i], rho_s, t_end), log_nr(T[i], rho_r, t0_r));
   }
-  N ~ poisson_log(log_mu);
+  if (prior_only == 0) {
+    N ~ poisson_log(log_mu);
+  }
 }
 
 generated quantities {

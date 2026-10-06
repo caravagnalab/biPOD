@@ -438,6 +438,14 @@ fit_recovery_candidate <- function(model_name, stan_data, data, noise_model, cha
 #' @param comparison Criterion for model selection: `"bic"` or `"loo"`.
 #' @param max_rhat Rhat threshold for refitting a candidate and for the
 #'   `converged` flag.
+#' @param rho_r_prior_sd Standard deviation (per day) of the half-normal prior
+#'   on the regrowth rate `rho_r`. The default 0.1 puts 95% of the prior on
+#'   doubling times of at least 3.5 days (median 10 days); faster growth is
+#'   still possible if the data demand it.
+#' @param rho_s_prior_sd Standard deviation (per day) of the half-normal prior
+#'   on the decay rate `rho_s`. The default 0.5 is wider than for regrowth, since
+#'   a decline can span several logs within weeks; 95% of the prior is below
+#'   0.98/day (half-life of at least 0.7 days).
 #'
 #' @return A list containing:
 #'   \item{best_model}{Name of the best recovery model: `"pre-existing"`, `"de-novo"`,
@@ -466,14 +474,18 @@ fit_best_recovery_model <- function(data,
                                     seed = 123,
                                     cores = 4,
                                     comparison = c("bic", "loo"),
-                                    max_rhat = 1.05) {
+                                    max_rhat = 1.05,
+                                    rho_r_prior_sd = 0.1,
+                                    rho_s_prior_sd = 0.5) {
   comparison <- match.arg(comparison)
   noise_model <- match.arg(noise_model)
   stopifnot(all(c("time", "count") %in% colnames(data)))
   data <- data[order(data$time), ]
   n <- nrow(data)
 
-  stan_data <- list(S = n, N = as.integer(round(data$count)), T = data$time, prior_only = 0)
+  stopifnot(rho_r_prior_sd > 0, rho_s_prior_sd > 0)
+  stan_data <- list(S = n, N = as.integer(round(data$count)), T = data$time, prior_only = 0,
+                    rho_r_prior_sd = rho_r_prior_sd, rho_s_prior_sd = rho_s_prior_sd)
   model_files <- c("two_pop_both", "two_pop_single", "single_pop_decay")
 
   fits <- list()

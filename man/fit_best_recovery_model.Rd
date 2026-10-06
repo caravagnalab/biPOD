@@ -12,7 +12,9 @@ fit_best_recovery_model(
   seed = 123,
   cores = 4,
   comparison = c("bic", "loo"),
-  max_rhat = 1.05
+  max_rhat = 1.05,
+  rho_r_prior_sd = 0.1,
+  rho_s_prior_sd = 0.5
 )
 }
 \arguments{
@@ -32,6 +34,16 @@ fit_best_recovery_model(
 
 \item{max_rhat}{Rhat threshold for refitting a candidate and for the
 \code{converged} flag.}
+
+\item{rho_r_prior_sd}{Standard deviation (per day) of the half-normal prior
+on the regrowth rate \code{rho_r}. The default 0.1 puts 95\% of the prior on
+doubling times of at least 3.5 days (median 10 days); faster growth is
+still possible if the data demand it.}
+
+\item{rho_s_prior_sd}{Standard deviation (per day) of the half-normal prior
+on the decay rate \code{rho_s}. The default 0.5 is wider than for regrowth, since
+a decline can span several logs within weeks; 95\% of the prior is below
+0.98/day (half-life of at least 0.7 days).}
 }
 \value{
 A list containing:
