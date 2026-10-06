@@ -25,7 +25,9 @@
 * Poisson and negative-binomial growth models (`fit_breakpoints()`,
   `fit_growth()`): `poisson_rng()` and `neg_binomial_2_rng()` in generated
   quantities fail when the predicted mean reaches 2^30 (about 1.1e9), and the
-  negative-binomial one also fails when a small `phi` makes its gamma draw 0.
+  negative-binomial one also fails when a small `phi` makes its gamma draw 0
+  or when a steep decline over a long gap underflows the mean (`phi / mu`
+  overflows).
   CmdStan then writes the whole draw as NaN, `log_lik` included. Sparse,
   zero-heavy series on long windows reach such means easily (with a small
   `phi` the curve can extrapolate far above the data), and `stan_qc()` then

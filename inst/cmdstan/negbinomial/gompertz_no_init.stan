@@ -1,10 +1,11 @@
 functions {
-  // neg_binomial_2_rng fails when its gamma draw is 0 (small phi) or reaches
-  // 2^30, and an exception in generated quantities turns the whole draw,
-  // log_lik included, into NaN. Draw the gamma-Poisson mixture directly;
+  // neg_binomial_2_rng fails when its gamma rate phi / mu overflows (mu
+  // underflows on a steep decline), when its gamma draw is 0 (small phi) or
+  // reaches 2^30, and an exception in generated quantities turns the whole
+  // draw, log_lik included, into NaN. Draw the gamma-Poisson mixture directly;
   // -1 marks draws whose rate is too large.
   int safe_neg_binomial_2_rng(real mu, real phi) {
-    if (mu <= 0) return 0;
+    if (mu <= 0 || is_inf(phi / mu)) return 0;
     if (mu >= 1e9) return -1;
     real lambda = gamma_rng(phi, phi / mu);
     if (lambda <= 0) return 0;

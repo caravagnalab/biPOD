@@ -53,6 +53,18 @@ test_that("growth models keep log_lik finite when the predicted mean is huge", {
   }
 })
 
+test_that("growth models keep log_lik finite when the predicted mean underflows", {
+  slow()
+  # a steep decline over a long gap: mu ~ 1e-316, so phi / mu overflowed in
+  # the gamma draw of neg_binomial_2_rng
+  d <- data.frame(time = c(0, 1336, 1488, 1710), count = c(16016, 0, 0, 0))
+  fit <- suppressWarnings(biPOD:::get_model("exponential_no_init", "negbinomial")$sample(
+    data = growth_stan_data(d), chains = 4, iter_warmup = 200, iter_sampling = 200,
+    seed = 1234, refresh = 0, show_messages = FALSE
+  ))
+  expect_true(all(is.finite(posterior::as_draws_matrix(fit$draws("log_lik")))))
+})
+
 test_that("series with 40%+ zeros fit without filtering", {
   slow()
   expect_gte(mean(zero_heavy$count == 0), 0.4)
