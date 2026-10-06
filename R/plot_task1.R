@@ -413,15 +413,17 @@ plot_ribbon <- function(x, ci = 0.9) {
 
   draws_long <- draws_df %>%
     tidyr::pivot_longer(-c(.data$chain, .data$iter), names_to = "time_index", values_to = "y_rep") %>%
-    dplyr::mutate(time_index = as.numeric(.data$time_index))
+    dplyr::mutate(time_index = as.numeric(.data$time_index),
+                  # count models write -1 where the mean was too large to sample
+                  y_rep = ifelse(.data$y_rep < 0, NA_real_, .data$y_rep))
 
   alpha <- (1 - ci) / 2
   ribbon_df <- draws_long %>%
     dplyr::group_by(.data$time_index) %>%
     dplyr::summarise(
-      median = stats::median(.data$y_rep),
-      lower = stats::quantile(.data$y_rep, alpha),
-      upper = stats::quantile(.data$y_rep, 1 - alpha),
+      median = stats::median(.data$y_rep, na.rm = TRUE),
+      lower = stats::quantile(.data$y_rep, alpha, na.rm = TRUE),
+      upper = stats::quantile(.data$y_rep, 1 - alpha, na.rm = TRUE),
       .groups = "drop"
     ) %>%
     dplyr::arrange(.data$time_index)
@@ -453,7 +455,7 @@ plot_ribbon <- function(x, ci = 0.9) {
   }
 
   if (!is.null(shadow_breakpoints)) {
-    p = add_breakpoint_shadows(p, shadow_breakpoints, colors = shadow_colors)
+    p = add_breakpoint_shadows(p, shadow_breakpoints)
   }
 
   p

@@ -42,6 +42,10 @@
   count between `t_end` and `t0_r` is impossible and the posterior gets hard
   walls on which the sampler diverges), so the model and its outputs are
   unchanged.
+* `plot_ribbon()`: stopped with "object 'shadow_colors' not found" whenever
+  the object had breakpoints, and counted the `yrep = -1` marker of count
+  models (a mean too large to sample) as a predicted count. The marker is now
+  dropped from the ribbon and the breakpoints use the default shading.
 * `stan_qc()` called `loo::loo()` unguarded for every candidate model, so any
   non-finite log-likelihood stopped `fit_growth()` and `fit_breakpoints()` with
   a loo error even with `comparison = "bic"`. A loo failure is now recorded in
