@@ -1,4 +1,12 @@
 functions {
+  // poisson_rng fails for a rate of 0 or of 2^30 or more, and an exception in
+  // generated quantities turns the whole draw, log_lik included, into NaN;
+  // -1 marks draws whose rate is too large
+  int safe_poisson_rng(real mu) {
+    if (mu <= 0) return 0;
+    return mu < 1e9 ? poisson_rng(mu) : -1;
+  }
+
   real integrated_r(real t, real t0, vector t_array, vector rho_array) {
     int n_t = num_elements(t_array);
     int n_rho = num_elements(rho_array);
@@ -74,7 +82,7 @@ generated quantities {
     for (i in 1:S) {
       mu_pred[i] = mean_t(T[i], T[1], n0, K, t_array, rho);
       log_lik[i] = poisson_lpmf(N[i] | mu_pred[i]);
-      yrep[i]    = poisson_rng(mu_pred[i]);
+      yrep[i]    = safe_poisson_rng(mu_pred[i]);
     }
     
   }

@@ -1,3 +1,17 @@
+functions {
+  // Populations on the log scale: exp() of the exponents overflows on long
+  // follow-up. An absent population keeps the floor of 1e-9 (a mean of
+  // exactly 0 would make any positive count impossible and leave hard walls
+  // in the posterior).
+  real log_ns(real t, real rho_s, real t_end) {
+    return t < t_end ? -rho_s * (t - t_end) : log(1e-9);
+  }
+
+  real log_nr(real t, real rho_r, real t0_r) {
+    return t >= t0_r ? rho_r * (t - t0_r) : log(1e-9);
+  }
+}
+
 data {
   int<lower=1> S; // Number of steps
   array[S] int<lower=0> N; // observations
@@ -12,22 +26,17 @@ parameters {
 }
 
 model {
-  vector[S] mu;               // Expected values for N given x
-  vector[S] ns;
-  vector[S] nr;
-
-  // Define the expected value based on the given equation
-  for (i in 1:S) {
-    nr[i] = exp(rho_r * (T[i] - t0_r));
-    ns[i] = 0.0;
-    mu[i] =  nr[i] + ns[i];
-  }
+  vector[S] log_mu;           // log expected values for N
 
   // Priors
   rho_r ~ normal(0, 1);       // Prior for rho_r
   t0_r ~ normal(T[1], T[S] - T[1]);         // Prior for t_r
   phi ~ gamma(2, 0.1);
-  N ~ neg_binomial_2(mu, phi);
+
+  for (i in 1:S) {
+    log_mu[i] = log_nr(T[i], rho_r, t0_r);
+  }
+  N ~ neg_binomial_2_log(log_mu, phi);
 }
 
 generated quantities {
@@ -37,9 +46,9 @@ generated quantities {
   vector[S] nr;
 
   for (i in 1:S) {
-    nr[i] = exp(rho_r * (T[i] - t0_r));
+    nr[i] = exp(log_nr(T[i], rho_r, t0_r));
     ns[i] = 0.0;
-    yrep[i] =  nr[i] + ns[i];
-    log_lik[i] = neg_binomial_2_lpmf(N[i] | yrep[i], phi); // Log-likelihood calculation
+    yrep[i] = nr[i];
+    log_lik[i] = neg_binomial_2_log_lpmf(N[i] | log_nr(T[i], rho_r, t0_r), phi);
   }
 }

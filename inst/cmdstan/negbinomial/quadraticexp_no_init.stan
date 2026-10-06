@@ -1,4 +1,16 @@
 functions {
+  // neg_binomial_2_rng fails when its gamma draw is 0 (small phi) or reaches
+  // 2^30, and an exception in generated quantities turns the whole draw,
+  // log_lik included, into NaN. Draw the gamma-Poisson mixture directly;
+  // -1 marks draws whose rate is too large.
+  int safe_neg_binomial_2_rng(real mu, real phi) {
+    if (mu <= 0) return 0;
+    if (mu >= 1e9) return -1;
+    real lambda = gamma_rng(phi, phi / mu);
+    if (lambda <= 0) return 0;
+    return lambda < 1e9 ? poisson_rng(lambda) : -1;
+  }
+
   real integrated_r(real t, real t0, vector t_array, vector rho_array) {
     int n_t = num_elements(t_array);
     int n_rho = num_elements(rho_array);
@@ -61,7 +73,7 @@ generated quantities {
     for (i in 1:S) {
       mu_pred[i] = mean_t(T[i], T[1], n0, b, t_array, rho);
       log_lik[i] = neg_binomial_2_lpmf(N[i] | mu_pred[i], phi);
-      yrep[i]    = neg_binomial_2_rng(mu_pred[i], phi);
+      yrep[i]    = safe_neg_binomial_2_rng(mu_pred[i], phi);
     }
   }
 }
