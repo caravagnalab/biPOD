@@ -1,14 +1,14 @@
 functions {
   // Populations on the log scale: exp() of the exponents overflows on long
-  // follow-up. An absent population keeps the floor of 1e-9 (a mean of
-  // exactly 0 would make any positive count impossible and leave hard walls
-  // in the posterior).
+  // follow-up. An absent population contributes nothing (log 0); the assay
+  // background keeps the mean positive, so a small count after clearance does
+  // not require a population to explain it.
   real log_ns(real t, real rho_s, real t_end) {
-    return t < t_end ? -rho_s * (t - t_end) : log(1e-9);
+    return t < t_end ? -rho_s * (t - t_end) : negative_infinity();
   }
 
   real log_nr(real t, real rho_r, real t0_r) {
-    return t >= t0_r ? rho_r * (t - t0_r) : log(1e-9);
+    return t >= t0_r ? rho_r * (t - t0_r) : negative_infinity();
   }
 }
 
@@ -18,12 +18,21 @@ data {
   array[S] real T;         // observations
   int<lower=0,upper=1> prior_only;
   real<lower=0> rho_r_prior_sd;   // sd of the half-normal prior on rho_r (per day)
+  int<lower=0,upper=1> fit_background; // 1: background is sampled; 0: fixed
+  real<lower=0> background_fixed;      // background (counts) when not sampled
+  real<lower=0> background_prior_mean; // mean of its exponential prior when sampled
 }
 
 parameters {
   real<lower=0> rho_r;        // Parameter rho_r (rate for recover)
   real<upper=T[1]> t0_r;                   // Parameter t_r (time shift)
   real<lower=0> phi;           // NB overdispersion
+  array[fit_background] real<lower=0> background_par;
+}
+
+transformed parameters {
+  // expected count of the assay with no tumour present
+  real background = fit_background ? background_par[1] : background_fixed;
 }
 
 model {
@@ -33,9 +42,10 @@ model {
   rho_r ~ normal(0, rho_r_prior_sd);
   t0_r ~ normal(T[1], T[S] - T[1]);         // Prior for t_r
   phi ~ gamma(2, 0.1);
+  background_par ~ exponential(1 / background_prior_mean);
 
   for (i in 1:S) {
-    log_mu[i] = log_nr(T[i], rho_r, t0_r);
+    log_mu[i] = log_sum_exp({log(background), log_nr(T[i], rho_r, t0_r)});
   }
   if (prior_only == 0) {
     N ~ neg_binomial_2_log(log_mu, phi);
@@ -44,14 +54,15 @@ model {
 
 generated quantities {
   vector[S] log_lik;             // Log-likelihood for each observation
-  vector[S] yrep;               // Expected values for N given x
   vector[S] ns;
   vector[S] nr;
+  vector[S] yrep;               // Expected values for N given x
 
   for (i in 1:S) {
-    nr[i] = exp(log_nr(T[i], rho_r, t0_r));
+    real log_mu = log_sum_exp({log(background), log_nr(T[i], rho_r, t0_r)});
     ns[i] = 0.0;
-    yrep[i] = nr[i];
-    log_lik[i] = neg_binomial_2_log_lpmf(N[i] | log_nr(T[i], rho_r, t0_r), phi);
+    nr[i] = exp(log_nr(T[i], rho_r, t0_r));
+    yrep[i] = exp(log_mu);
+    log_lik[i] = neg_binomial_2_log_lpmf(N[i] | log_mu, phi);
   }
 }

@@ -4,7 +4,13 @@
 \alias{recovery_inits}
 \title{Initial values for the recovery models}
 \usage{
-recovery_inits(data, model_name, noise_model, chain_id = 1)
+recovery_inits(
+  data,
+  model_name,
+  noise_model,
+  chain_id = 1,
+  background_prior_mean = NULL
+)
 }
 \arguments{
 \item{data}{Data frame with \code{time} and \code{count}, sorted by time.}
@@ -14,6 +20,9 @@ recovery_inits(data, model_name, noise_model, chain_id = 1)
 \item{noise_model}{\code{"poisson"} or \code{"negbinomial"}.}
 
 \item{chain_id}{Chain index.}
+
+\item{background_prior_mean}{Prior mean of a sampled background, or \code{NULL}
+if the background is fixed.}
 }
 \value{
 A named list of initial values for one chain.
@@ -22,5 +31,6 @@ A named list of initial values for one chain.
 Rates are taken from the decline to the minimum (sensitive) and the rise from
 the minimum to the last observation (resistant); \code{t_end} and \code{t0_r} are set so
 that the curves pass through the first and last observations, then clipped
-to each model's constraints. Chains after the first are jittered.
+to each model's constraints. A sampled background starts at its prior mean.
+Chains after the first are jittered.
 }

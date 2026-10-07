@@ -14,7 +14,9 @@ fit_best_recovery_model(
   comparison = c("bic", "loo"),
   max_rhat = 1.05,
   rho_r_prior_sd = 0.1,
-  rho_s_prior_sd = 0.5
+  rho_s_prior_sd = 0.5,
+  background = NULL,
+  background_prior_mean = 1
 )
 }
 \arguments{
@@ -44,6 +46,14 @@ still possible if the data demand it.}
 on the decay rate \code{rho_s}. The default 0.5 is wider than for regrowth, since
 a decline can span several logs within weeks; 95\% of the prior is below
 0.98/day (half-life of at least 0.7 days).}
+
+\item{background}{Expected count with no tumour present, in the units of
+\code{count} (for instance an assay's false-positive rate per sample). \code{NULL}
+(default) samples it; a positive number fixes it.}
+
+\item{background_prior_mean}{Mean of the exponential prior on a sampled
+background, in counts. The default 1 puts 95\% of the prior below 3 counts;
+the data can still pull it higher.}
 }
 \value{
 A list containing:
@@ -52,8 +62,11 @@ A list containing:
 \item{first_fit}{Parsed Stan fit of the selected candidate model.}
 \item{final_fit}{Parsed Stan fit of the final model.}
 \item{model_table}{Comparison table of all candidates: IC value, Rhat,
-and whether the candidate was refitted (\code{refit}).}
+whether the candidate was refitted (\code{refit}), and the posterior median
+of the background.}
 \item{criterion}{Criterion used for model selection.}
+\item{background}{Posterior median of the background in the final fit, or
+the fixed value.}
 \item{max_rhat}{Maximum Rhat of the final fit's parameters.}
 \item{winner_rhat}{Maximum Rhat of the chosen candidate's fit.}
 \item{n_candidates_converged}{Number of candidates with Rhat below the
@@ -72,6 +85,17 @@ check on the resistant clone's birth time (\code{t0_r}) refits with either the
 de-novo or pre-existing resistant-clone model.
 }
 \details{
+The expected count is \code{background + sensitive(t) + resistant(t)}. The
+background is what the assay reports with no tumour present (false-positive
+droplets, reads or events). Without it the mean after clearance is zero, a
+single small count after clearance is nearly impossible under the decay
+model, and selection is forced into a regrowth model. The background is
+sampled with an exponential prior of mean \code{background_prior_mean}, or fixed
+with \code{background}; when sampled it adds one parameter to every candidate.
+Many zeros after clearance pull a sampled background low, so a final count
+of a few units can still favour regrowth. When the assay's false-positive
+rate is known, fixing \code{background} is better identified.
+
 Every chain is initialised from data-driven values (see \code{recovery_inits}).
 BIC is computed from the maximum log-likelihood over draws and the number of
 sampled parameters, so a chain stuck in a poor mode cannot decide the model

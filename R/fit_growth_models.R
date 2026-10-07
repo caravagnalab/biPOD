@@ -317,14 +317,18 @@ fit_growth_models_VI <- function(data, breakpoints, with_initiation = TRUE,
 #' Rates are taken from the decline to the minimum (sensitive) and the rise from
 #' the minimum to the last observation (resistant); `t_end` and `t0_r` are set so
 #' that the curves pass through the first and last observations, then clipped
-#' to each model's constraints. Chains after the first are jittered.
+#' to each model's constraints. A sampled background starts at its prior mean.
+#' Chains after the first are jittered.
 #'
 #' @param data Data frame with `time` and `count`, sorted by time.
 #' @param model_name One of the recovery model names.
 #' @param noise_model `"poisson"` or `"negbinomial"`.
 #' @param chain_id Chain index.
+#' @param background_prior_mean Prior mean of a sampled background, or `NULL`
+#'   if the background is fixed.
 #' @return A named list of initial values for one chain.
-recovery_inits <- function(data, model_name, noise_model, chain_id = 1) {
+recovery_inits <- function(data, model_name, noise_model, chain_id = 1,
+                           background_prior_mean = NULL) {
   t <- data$time
   y <- pmax(data$count, 1)
   S <- length(t)
@@ -347,17 +351,19 @@ recovery_inits <- function(data, model_name, noise_model, chain_id = 1) {
     single_pop_decay    = list(rho_s = rho_decay, t_end = t[1] + max(log(y[1]), 0.5) / rho_decay)
   )
   if (noise_model == "negbinomial") init$phi <- 10
+  if (!is.null(background_prior_mean)) init$background_par <- array(background_prior_mean * jit, dim = 1)
   init
 }
 
 # Sampled parameters of each recovery model (the BIC penalty counts these only)
-recovery_model_params <- function(model_name, noise_model) {
+recovery_model_params <- function(model_name, noise_model, fit_background = FALSE) {
   p <- switch(model_name,
     two_pop_both = , two_pop_preexisting = , two_pop_denovo = c("rho_s", "rho_r", "t0_r", "t_end"),
     two_pop_single = c("rho_r", "t0_r"),
     single_pop_decay = c("rho_s", "t_end")
   )
   if (noise_model == "negbinomial") p <- c(p, "phi")
+  if (fit_background) p <- c(p, "background")
   p
 }
 
@@ -366,7 +372,8 @@ sample_recovery_model <- function(model_name, stan_data, data, noise_model, chai
   mod <- get_model(model_name, noise_model)
   run <- function(seed) {
     set.seed(seed)
-    inits <- lapply(seq_len(chains), function(i) recovery_inits(data, model_name, noise_model, i))
+    bg_mean <- if (stan_data$fit_background == 1) stan_data$background_prior_mean
+    inits <- lapply(seq_len(chains), function(i) recovery_inits(data, model_name, noise_model, i, bg_mean))
     # cmdstanr names output CSVs by model and minute; a unique directory per
     # run stops a garbage-collected earlier fit from deleting these files
     out_dir <- tempfile("biPOD_recovery_")
@@ -387,7 +394,7 @@ sample_recovery_model <- function(model_name, stan_data, data, noise_model, chai
 # the iterations and another seed, and the better-converged fit is kept.
 fit_recovery_candidate <- function(model_name, stan_data, data, noise_model, chains,
                                    iter, seed, cores, max_rhat) {
-  params <- recovery_model_params(model_name, noise_model)
+  params <- recovery_model_params(model_name, noise_model, stan_data$fit_background == 1)
   fit <- sample_recovery_model(model_name, stan_data, data, noise_model, chains, iter, seed, cores)
   rhat <- max(fit$summary(params)$rhat, na.rm = TRUE)
   refit <- rhat >= max_rhat
@@ -413,6 +420,17 @@ fit_recovery_candidate <- function(model_name, stan_data, data, noise_model, cha
 #' either LOO or BIC. If the two-population mixture wins, a further posterior-median
 #' check on the resistant clone's birth time (`t0_r`) refits with either the
 #' de-novo or pre-existing resistant-clone model.
+#'
+#' The expected count is `background + sensitive(t) + resistant(t)`. The
+#' background is what the assay reports with no tumour present (false-positive
+#' droplets, reads or events). Without it the mean after clearance is zero, a
+#' single small count after clearance is nearly impossible under the decay
+#' model, and selection is forced into a regrowth model. The background is
+#' sampled with an exponential prior of mean `background_prior_mean`, or fixed
+#' with `background`; when sampled it adds one parameter to every candidate.
+#' Many zeros after clearance pull a sampled background low, so a final count
+#' of a few units can still favour regrowth. When the assay's false-positive
+#' rate is known, fixing `background` is better identified.
 #'
 #' Every chain is initialised from data-driven values (see `recovery_inits`).
 #' BIC is computed from the maximum log-likelihood over draws and the number of
@@ -441,6 +459,12 @@ fit_recovery_candidate <- function(model_name, stan_data, data, noise_model, cha
 #'   on the decay rate `rho_s`. The default 0.5 is wider than for regrowth, since
 #'   a decline can span several logs within weeks; 95% of the prior is below
 #'   0.98/day (half-life of at least 0.7 days).
+#' @param background Expected count with no tumour present, in the units of
+#'   `count` (for instance an assay's false-positive rate per sample). `NULL`
+#'   (default) samples it; a positive number fixes it.
+#' @param background_prior_mean Mean of the exponential prior on a sampled
+#'   background, in counts. The default 1 puts 95% of the prior below 3 counts;
+#'   the data can still pull it higher.
 #'
 #' @return A list containing:
 #'   \item{best_model}{Name of the best recovery model: `"pre-existing"`, `"de-novo"`,
@@ -448,8 +472,11 @@ fit_recovery_candidate <- function(model_name, stan_data, data, noise_model, cha
 #'   \item{first_fit}{Parsed Stan fit of the selected candidate model.}
 #'   \item{final_fit}{Parsed Stan fit of the final model.}
 #'   \item{model_table}{Comparison table of all candidates: IC value, Rhat,
-#'     and whether the candidate was refitted (`refit`).}
+#'     whether the candidate was refitted (`refit`), and the posterior median
+#'     of the background.}
 #'   \item{criterion}{Criterion used for model selection.}
+#'   \item{background}{Posterior median of the background in the final fit, or
+#'     the fixed value.}
 #'   \item{max_rhat}{Maximum Rhat of the final fit's parameters.}
 #'   \item{winner_rhat}{Maximum Rhat of the chosen candidate's fit.}
 #'   \item{n_candidates_converged}{Number of candidates with Rhat below the
@@ -471,16 +498,23 @@ fit_best_recovery_model <- function(data,
                                     comparison = c("bic", "loo"),
                                     max_rhat = 1.05,
                                     rho_r_prior_sd = 0.1,
-                                    rho_s_prior_sd = 0.5) {
+                                    rho_s_prior_sd = 0.5,
+                                    background = NULL,
+                                    background_prior_mean = 1) {
   comparison <- match.arg(comparison)
   noise_model <- match.arg(noise_model)
   stopifnot(all(c("time", "count") %in% colnames(data)))
   data <- data[order(data$time), ]
   n <- nrow(data)
 
-  stopifnot(rho_r_prior_sd > 0, rho_s_prior_sd > 0)
+  stopifnot(rho_r_prior_sd > 0, rho_s_prior_sd > 0, background_prior_mean > 0)
+  fit_bg <- is.null(background)
+  if (!fit_bg) stopifnot(is.numeric(background), length(background) == 1, is.finite(background),
+                         background > 0)
   stan_data <- list(S = n, N = as.integer(round(data$count)), T = data$time, prior_only = 0,
-                    rho_r_prior_sd = rho_r_prior_sd, rho_s_prior_sd = rho_s_prior_sd)
+                    rho_r_prior_sd = rho_r_prior_sd, rho_s_prior_sd = rho_s_prior_sd,
+                    fit_background = as.integer(fit_bg), background_fixed = if (fit_bg) 0 else background,
+                    background_prior_mean = background_prior_mean)
   model_files <- c("two_pop_both", "two_pop_single", "single_pop_decay")
 
   fits <- list()
@@ -490,13 +524,14 @@ fit_best_recovery_model <- function(data,
     fit <- cand$fit
     fits[[m]] <<- fit
     log_lik <- posterior::as_draws_matrix(fit$draws("log_lik"))
-    params <- recovery_model_params(m, noise_model)
+    params <- recovery_model_params(m, noise_model, fit_bg)
     ic <- if (comparison == "loo") {
       suppressWarnings(loo::loo(log_lik)$estimates["elpd_loo", "Estimate"])
     } else {
       -2 * max(rowSums(log_lik)) + length(params) * log(n)
     }
-    row <- dplyr::tibble(model = m, ic = ic, rhat = cand$rhat, refit = cand$refit)
+    row <- dplyr::tibble(model = m, ic = ic, rhat = cand$rhat, refit = cand$refit,
+                         background = fit$summary("background")$median)
     names(row)[2] <- toupper(comparison)
     row
   }))
@@ -520,13 +555,15 @@ fit_best_recovery_model <- function(data,
   if (winner_rhat >= max_rhat) {
     cli::cli_alert_warning("Selected candidate {best} did not converge (max Rhat {round(winner_rhat, 2)}).")
   }
-  final_rhat <- max(best_fit$summary(recovery_model_params(final_name, noise_model))$rhat, na.rm = TRUE)
+  final_rhat <- max(best_fit$summary(recovery_model_params(final_name, noise_model, fit_bg))$rhat,
+                    na.rm = TRUE)
   if (final_rhat >= max_rhat) {
     cli::cli_alert_warning("Recovery model {final_name} did not converge (max Rhat {round(final_rhat, 2)}).")
   }
 
   list(best_model = best_model, first_fit = parse_stan_fit(fits[[best]]),
        final_fit = parse_stan_fit(best_fit), model_table = model_table, criterion = comparison,
+       background = best_fit$summary("background")$median,
        max_rhat = final_rhat, winner_rhat = winner_rhat,
        n_candidates_converged = sum(model_table$rhat < max_rhat),
        converged = winner_rhat < max_rhat && final_rhat < max_rhat)

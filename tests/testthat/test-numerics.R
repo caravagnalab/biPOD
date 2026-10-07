@@ -23,7 +23,8 @@ growth_stan_data <- function(d) {
 test_that("recovery models start from a rate whose exp() would overflow", {
   slow()
   stan_data <- list(S = nrow(sparse), N = as.integer(sparse$count), T = sparse$time, prior_only = 0,
-                    rho_r_prior_sd = 0.1, rho_s_prior_sd = 0.5)
+                    rho_r_prior_sd = 0.1, rho_s_prior_sd = 0.5,
+                    fit_background = 1L, background_fixed = 0, background_prior_mean = 1)
   # rho_s * (t_end - T[1]) = 2000 > 709.78. Only the negative binomial can
   # start here: the Poisson log-likelihood of such a mean is -inf in any
   # parameterisation.

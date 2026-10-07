@@ -22,6 +22,21 @@
 
 ## Fixes
 
+* Recovery models (`fit_best_recovery_model()`): the expected count is now
+  `background + sensitive(t) + resistant(t)`. Before, an absent population had
+  a mean floor of 1e-9, so once the sensitive population had cleared, a single
+  positive count cost the decay model about 100 log-likelihood units and
+  selection was forced into a regrowth model (in a synthetic cleared series,
+  one final count of 1 selected `"de-novo"` by a BIC margin of ~17). The
+  background is sampled with an exponential prior of mean
+  `background_prior_mean` (default 1 count), or fixed with the new argument
+  `background` (for instance an assay's known false-positive rate). A sampled background adds one parameter to every
+  candidate's BIC. The fitted or fixed value is returned as `background`, and
+  each candidate's in `model_table`. `ns` and `nr` are now 0 where a
+  population is absent (were 1e-9); `yrep` includes the background. With many
+  zeros after clearance a sampled background is estimated low, so a final
+  count of a few units can still favour regrowth; fix `background` when the
+  assay's rate is known.
 * Poisson and negative-binomial growth models (`fit_breakpoints()`,
   `fit_growth()`): `poisson_rng()` and `neg_binomial_2_rng()` in generated
   quantities fail when the predicted mean reaches 2^30 (about 1.1e9), and the
@@ -38,10 +53,8 @@
   (`log_sum_exp`, `poisson_log`, `neg_binomial_2_log`). On long follow-up
   `exp(-rho_s * (T - t_end))` overflowed, so those draws were rejected (Poisson)
   or threw (negative binomial), and chains started from a large `rho_s` failed.
-  The 1e-9 floor for an absent population is kept (without it, a positive
-  count between `t_end` and `t0_r` is impossible and the posterior gets hard
-  walls on which the sampler diverges), so the model and its outputs are
-  unchanged.
+  The 1e-9 floor for an absent population is replaced by the assay background
+  (see the background entry).
 * `plot_ribbon()`: stopped with "object 'shadow_colors' not found" whenever
   the object had breakpoints, and counted the `yrep = -1` marker of count
   models (a mean too large to sample) as a predicted count. The marker is now
